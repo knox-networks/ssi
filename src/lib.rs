@@ -10,15 +10,22 @@ pub fn create_credential(
     return Err("Not implemented".into());
 }
 
-pub fn create_presentation() -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+pub fn create_presentation(
+    _creds: Vec<serde_json::Value>,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     return Err("Not implemented".into());
 }
 
-pub fn create_identity(_mnemonic: &str) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+pub fn create_identity(
+    _mnemonic: &str,
+    _password: Option<String>,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     return Err("Not implemented".into());
 }
 
-pub fn create_data_integrity_proof() -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+pub fn create_data_integrity_proof(
+    _doc: serde_json::Value,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     return Err("Not implemented".into());
 }
 
@@ -30,13 +37,4 @@ pub fn verify_data_integrity_proof(
 
 pub fn verify_presentation(_doc: serde_json::Value) -> Result<bool, Box<dyn std::error::Error>> {
     return Err("Not implemented".into());
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
 }
