@@ -1,5 +1,5 @@
 pub trait DidResolver {
-    fn read(&self) -> serde_json::Value;
+    fn read(&self, did: &str) -> serde_json::Value;
     fn create(&self, did: &str, doc: serde_json::Value) -> String;
 }
 
