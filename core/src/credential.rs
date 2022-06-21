@@ -1,5 +1,6 @@
 
-#[derive(Deserialize, Debug)]
+
+// #[derive(Deserialize, Debug)]
 pub struct VerifiableCredential {
 	context: String,
 	id: String,
@@ -10,16 +11,17 @@ pub struct VerifiableCredential {
 	proof: *mut CredentialProof,
 }
 
+// JSON-LD 
 impl <'a> VerifiableCredential {
     pub fn init(credType: &str, credSubject: serde_json::Value) -> Self  {
         Self {
-            context: String::default(),
-            id: String::default(),
+            context: String::default(), // array defined by us 
+            id: String::default(), // provided  by client 
             credType: String::from(credType),
-            issuer: String::default(),
+            issuer: String::default(), // provided  by client 
             issuanceDate: String::default(),
-            subject: credSubject,
-            proof: &mut CredentialProof{
+            subject: credSubject, //
+            proof: &mut CredentialProof{ // we don't have it 
                 proofType:String::default(),
                 created:String::default(),
                 verificationMethod:String::default(),
@@ -39,8 +41,5 @@ pub struct CredentialProof {
 	proofValue: String,
 }
 
-pub enum CredentialSubject {
-    String,
-    Value, 
-    Object(serde_json::Map<String, serde_json::Value>),
-}
+type CredentialSubject = serde_json::Value;
+
