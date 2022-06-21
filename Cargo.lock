@@ -606,6 +606,7 @@ version = "0.1.0"
 dependencies = [
  "prost",
  "prost-build",
+ "prost-types",
  "tonic",
  "tonic-build",
  "tonic-health",

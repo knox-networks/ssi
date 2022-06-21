@@ -1,8 +1,4 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}
+#[path = "../target/proto/registry_api.v1.rs"]
+#[allow(clippy::all)]
+#[rustfmt::skip]
+pub mod registry;
