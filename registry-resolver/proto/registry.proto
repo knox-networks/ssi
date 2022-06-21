@@ -1,0 +1,46 @@
+// protoc --go_out=plugins=grpc:. *.proto
+
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+package registry_api.v1;
+option go_package = "github.com/knox-networks/gomono/protos/registry-mgmt/registry_api/v1";
+
+message CreateRequest {
+  string did = 1;
+  google.protobuf.Struct document = 2;
+}
+
+message CreateResponse {}
+
+message ReadRequest { string did = 1; }
+
+message ReadResponse {
+  string did = 1;
+  google.protobuf.Struct document = 2;
+  ResolutionMetadata metadata = 3;
+}
+
+message ResolutionMetadata {
+  google.protobuf.Timestamp created = 1;
+  google.protobuf.Timestamp updated = 2;
+}
+
+message UpdateRequest {
+  string did = 1;
+  google.protobuf.Struct document = 2;
+}
+
+message UpdateResponse {}
+
+message RevokeRequest { string did = 1; }
+message RevokeResponse {}
+
+service RegistryService {
+  rpc Create(CreateRequest) returns (CreateResponse);
+  rpc Read(ReadRequest) returns (ReadResponse);
+  rpc Update(UpdateRequest) returns (UpdateResponse);
+  rpc Revoke(RevokeRequest) returns (RevokeResponse);
+}
