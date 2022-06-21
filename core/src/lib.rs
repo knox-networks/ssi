@@ -3,7 +3,6 @@ use serde_json;
 use credential::*;
 use serde::Deserialize;
 use serde_json::Map;
-// pub use crate::map::Map;
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
@@ -23,8 +22,7 @@ pub fn create_credential(
     _cred_subject: serde_json::Value,
 ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     let vc = VerifiableCredential::init(_cred_type, _cred_subject);
-    Ok(_cred_subject)
-    // let vcVec = serde_json::from_str(_cred_type.unwrap();
+    Ok(vc.serialize())
 }
 
 /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
