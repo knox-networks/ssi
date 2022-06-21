@@ -11,9 +11,8 @@ pub struct VerifiableCredential {
 	proof: *mut CredentialProof,
 }
 
-// JSON-LD 
 impl <'a> VerifiableCredential {
-    pub fn init(credType: &str, credSubject: serde_json::Value) -> Self  {
+    pub fn init(credType: &'a str, credSubject: serde_json::Value) -> Self  {
         Self {
             context: String::default(), // array defined by us 
             id: String::default(), // provided  by client 
