@@ -12,6 +12,6 @@ tonic = "0.7.1"
 tonic-health = "0.6.0"
 
 [build-dependencies]
-tonic-build = "0.7.0"
+tonic-build = {version= "0.7.0", features=["prost"]}
 prost-build = "0.10.1"
 

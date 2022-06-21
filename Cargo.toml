@@ -3,8 +3,3 @@ members = [
 	"core",
 	"registry-resolver"
 ]
-
-[patch.crates-io]
-# tonic = { git = "https://github.com/hyperium/tonic" }
-# tonic-build = { git = "https://github.com/hyperium/tonic" }
-# tonic-health = { git = "https://github.com/hyperium/tonic" }
