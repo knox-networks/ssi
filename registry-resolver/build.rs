@@ -1,4 +1,8 @@
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tonic_build::compile_protos("proto/registry.proto")?;
+    let package_path = "buf.build/knox-networks/registry-mgmt";
+    std::process::Command::new("buf")
+        .arg("generate")
+        .arg(package_path)
+        .spawn()?;
     Ok(())
 }
