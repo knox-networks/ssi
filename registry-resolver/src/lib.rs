@@ -1,6 +1,5 @@
-pub mod registry {
-    include!("gen/registry_api.v1.rs");
-}
+#[path = "gen/registry_api.v1.rs"]
+pub mod registry {}
 
 pub struct RegistryResolver {}
 
