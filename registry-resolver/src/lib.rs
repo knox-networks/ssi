@@ -1,5 +1,5 @@
 pub mod registry {
-    tonic::include_proto!("registry_api.v1");
+    include!("gen/registry_api.v1.rs");
 }
 
 pub struct RegistryResolver {}
