@@ -2,31 +2,29 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 
+type JsonContext = [&'static str; 2];
+const JSON_LD_CONTEXT:  JsonContext = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
+
 type CredentialSubject = serde_json::Value;
-type CredentialTypes = [VerifiableCredential];
 
 
-// #[derive(Deserialize, Debug)]
-pub struct VerifiableCredential {
-	context: String,
+pub struct VerifiableCredential <'a> {
+	context:  JsonContext,
 	id: String,
-    cred_type: String,
+    cred_type:  &'a [String],
 	issuer: String,
 	issuance_date: String,
 	subject: CredentialSubject,
 	proof: *mut CredentialProof,
 }
 
-impl <'a> VerifiableCredential {
-    pub fn init(cred_type: &'a str, cred_subject: serde_json::Value) -> Self  {
+impl <'a> VerifiableCredential <'a>  {
+    pub fn init(cred_type: &'a[String], cred_subject: serde_json::Value, issuer: &'a str, id: &'a str) -> Self  {
         Self {
-            /// context is a slice, it is  defined by us based on parsed cred type and cred subject
-            context: String::default(), 
-            /// provided  by client
-            id: String::default(), 
-            cred_type: String::from(cred_type),
-            /// provided  by client 
-            issuer: String::default(), 
+            context: JSON_LD_CONTEXT,
+            id: String::from(id), 
+            cred_type: cred_type,
+            issuer: String::from(issuer), 
             issuance_date: String::default(),
             subject: cred_subject,
             /// created empty object on VerifiableCredential init step, will be filled on "create_data_integrity_proof" step
@@ -52,10 +50,4 @@ pub struct CredentialProof {
 	verification_method: String,
 	proof_purpose: String,
 	proof_value: String,
-}
-
-pub struct VerifiablePresentation {
-    nonce: String,
-    endpoint: String, 
-    credential_types: CredentialTypes,
 }
