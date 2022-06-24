@@ -7,14 +7,14 @@ use serde_json::Value;
 type VCContext = [String];
 
 pub(crate) const JSON_LD_CONTEXT:  VCContext = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
-pub(crate) const CRED_TYPE_PASSPORT: str = "Passport";
-pub(crate) const CRED_TYPE_DRIVER_LICENSE: str = "DriverLicense";
+pub(crate) const CRED_TYPE_PERMANENT_RESIDENT_CARD: str = "PermanentResidentCard";
+pub(crate) const CRED_TYPE_BANK_CARD: str = "BankCard";
 
 type CredentialSubject = serde_json::Value;
 
 enum CredType {
-    Passport(String),
-    DriverLicense(String)
+    PermanentResidentCard(String),
+    BankCard(String)
 }
 
 pub trait VCCredential {
@@ -28,7 +28,7 @@ impl VCCredential for VerifiableCredential<'_> {
         self.cred_type = ""
     }
     fn getSubject (&self) -> String {
-        self.cred_type = ""
+        self.subject = ""
     }
     fn getContext (&self) ->[String] {
         return crate::credential::JSON_LD_CONTEXT
@@ -51,18 +51,18 @@ pub struct VerifiableCredential <'a> {
 impl <'a> VerifiableCredential <'a>  {
     pub fn init(cred_type: String, cred_subject: serde_json::Value, issuer: &'a str, id: &'a str) -> Self  {
         let ctype = match cred_type {
-            CRED_TYPE_PASSPORT => {
-                Some(CredType::Passport(cred_type))
+            CRED_TYPE_PERMANENT_RESIDENT_CARD => {
+                Some(CredType::PermanentResidentCard(cred_type))
             },
-            CRED_TYPE_DRIVER_LICENSE => {
-                Some(CredType::DriverLicense(cred_type))
+            CRED_TYPE_BANK_CARD => {
+                Some(CredType::BankCard(cred_type))
             },
             _ => {
                 None
             }
         };
         let s = Self {
-            context: JSON_LD_CONTEXT,
+            context: [],
             id: String::from(id), 
             cred_type: ctype,
             issuer: String::from(issuer), 
@@ -77,9 +77,7 @@ impl <'a> VerifiableCredential <'a>  {
                 proof_value:String::default(),
             },
         };
-        s.cred_type = s.getCredType();
         s.context = s.getContext();
-        s.subject = s.getSubject();
         
         return s;
     }
