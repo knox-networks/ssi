@@ -1,8 +1,9 @@
 mod credential;
-use serde_json;
+
+use serde_json::{self, json};
 use credential::*;
-use serde::Deserialize;
-use serde_json::Map;
+use serde::{Deserialize, Serialize};
+use serde_json::Result;
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
@@ -18,10 +19,12 @@ pub trait DIDResolver {
 /// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
 /// In order to become a Verifiable Credential, a data integrity proof must be created for the credential and appended to the JSON-LD document.
 pub fn create_credential(
-    _cred_type: &str,
-    _cred_subject: serde_json::Value,
+    cred_type: String, 
+    cred_subject: serde_json::Value, 
+    issuer: &str, 
+    id: &str
 ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-    let vc = VerifiableCredential::init(_cred_type, _cred_subject);
+    let vc = VerifiableCredential::init(cred_type, cred_subject, issuer, id);
     Ok(vc.serialize())
 }
 
