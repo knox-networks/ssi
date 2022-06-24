@@ -9,8 +9,8 @@ pub struct RegistryResolver {
 }
 
 impl RegistryResolver {
-    pub async fn new(url: String) -> Result<Self, tonic::transport::Error> {
-        return Ok(Self { url });
+    pub async fn new(url: String) -> Self {
+        return Self { url };
     }
 }
 #[async_trait::async_trait]
