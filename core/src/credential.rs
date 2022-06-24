@@ -7,31 +7,47 @@ use serde_json::Value;
 type VCContext = [String];
 
 pub(crate) const JSON_LD_CONTEXT:  VCContext = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
-pub(crate) const CRED_TYPE_PERMANENT_RESIDENT_CARD: str = "PermanentResidentCard";
-pub(crate) const CRED_TYPE_BANK_CARD: str = "BankCard";
+// pub(crate) const CRED_TYPE_PERMANENT_RESIDENT_CARD: str = "PermanentResidentCard";
+// pub(crate) const CRED_TYPE_BANK_CARD: str = "BankCard";
 
 type CredentialSubject = serde_json::Value;
 
-enum CredType {
-    PermanentResidentCard(String),
-    BankCard(String)
+// enum CredType {
+//     PermanentResidentCard(String),
+//     BankCard(String)
+// }
+
+pub trait DocumentBuilder {
+    // fn getCredType (&self) -> String;
+    // fn getSubject (&self) -> String;
+    // fn getContext (&self) -> [String];
+
+    /// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
+    /// In order to become a Verifiable Credential, a data integrity proof must be created for the credential and appended to the JSON-LD document.
+    pub fn create_credential(
+        &self,
+        cred_type: String, 
+        cred_subject: serde_json::Value, 
+        issuer: &str, 
+        id: &str
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+        // let vc = VerifiableCredential::init(cred_type, cred_subject, issuer, id);
+        let vc = self::init(cred_type, cred_subject, issuer, id);
+        Ok(vc.serialize())
+    }
+
+    /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
+    /// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
+    pub fn create_presentation(
+        _creds: Vec<serde_json::Value>,
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+        unimplemented!();
+    }
 }
 
-pub trait VCCredential {
-    fn getCredType (&self) -> String;
-    fn getSubject (&self) -> String;
-    fn getContext (&self) -> [String];
-}
+impl ssi::DocumentBuilder for VerifiableCredential<'_> {
+    fn create_credential()->Result<serde_json::Value, Box<dyn std::error::Error>>{
 
-impl VCCredential for VerifiableCredential<'_> {
-    fn getCredType (&self) -> String {
-        self.cred_type = ""
-    }
-    fn getSubject (&self) -> String {
-        self.subject = ""
-    }
-    fn getContext (&self) ->[String] {
-        return crate::credential::JSON_LD_CONTEXT
     }
 }
 
@@ -40,12 +56,17 @@ pub struct VerifiableCredential <'a> {
     #[serde(rename = "@context")]
 	context:  VCContext,
 	id: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    cred_type:  Option<CredType>,
+    cred_type:  String,
 	issuer: String,
 	issuance_date: String,
 	subject: CredentialSubject,
-	proof: *mut CredentialProof,
+    #[serde(skip_serializing_if = "Option::is_none")]
+	proof: Option <*mut CredentialProof>,
+}
+
+pub struct VerifiableCredentialIssued {
+    // VerifiableCredential, 
+    proof: *mut CredentialProof,
 }
 
 impl <'a> VerifiableCredential <'a>  {
@@ -69,13 +90,13 @@ impl <'a> VerifiableCredential <'a>  {
             issuance_date: String::default(),
             subject: cred_subject,
             /// created empty object on VerifiableCredential init step, will be filled on "create_data_integrity_proof" step
-            proof: &mut CredentialProof { 
-                proof_type:String::default(),
-                created:String::default(),
-                verification_method:String::default(),
-                proof_purpose:String::default(),
-                proof_value:String::default(),
-            },
+            // proof: &mut CredentialProof { 
+            //     proof_type:String::default(),
+            //     created:String::default(),
+            //     verification_method:String::default(),
+            //     proof_purpose:String::default(),
+            //     proof_value:String::default(),
+            // },
         };
         s.context = s.getContext();
         
@@ -86,7 +107,6 @@ impl <'a> VerifiableCredential <'a>  {
         return serde_json::to_string(&self);
     }
 }
-
 
 pub struct CredentialProof {
 	proof_type: String,

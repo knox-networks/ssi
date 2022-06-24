@@ -16,25 +16,6 @@ pub trait DIDResolver {
     fn create(&self, did: &str, doc: serde_json::Value) -> String;
 }
 
-/// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
-/// In order to become a Verifiable Credential, a data integrity proof must be created for the credential and appended to the JSON-LD document.
-pub fn create_credential(
-    cred_type: String, 
-    cred_subject: serde_json::Value, 
-    issuer: &str, 
-    id: &str
-) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-    let vc = VerifiableCredential::init(cred_type, cred_subject, issuer, id);
-    Ok(vc.serialize())
-}
-
-/// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
-/// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
-pub fn create_presentation(
-    _creds: Vec<serde_json::Value>,
-) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-    unimplemented!();
-}
 
 // ed25519 cryptography key generation & DID Document creation
 pub fn create_identity(
