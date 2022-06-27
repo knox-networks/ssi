@@ -14,7 +14,7 @@ pub trait DIDResolver {
     ) -> Result<(), Box<dyn std::error::Error>>;
     // Returns the DID Method that the DID Resolver is compatible with. Each resolver can only be compatible with one.
     fn get_method() -> String;
-    // Placeholder
+    // Given a `did` and `key` it will construct the proper `verificationMethod` to use as part of the data integrity proof creation process.
     fn create_verification_method(did: String, key_id: String) -> String {
         return format!("{}:{}#{}", did, Self::get_method(), key_id);
     }
