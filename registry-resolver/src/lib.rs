@@ -4,6 +4,8 @@ use std::collections::HashMap;
 #[path = "gen/registry_api.v1.rs"]
 pub mod registry;
 
+const DID_METHOD: &str = "knox";
+
 pub struct RegistryResolver {
     url: String,
 }
@@ -15,6 +17,10 @@ impl RegistryResolver {
 }
 #[async_trait::async_trait]
 impl ssi::DIDResolver for RegistryResolver {
+    fn get_method() -> String {
+        return String::from(DID_METHOD);
+    }
+
     async fn create(
         self: &RegistryResolver,
         did: String,
