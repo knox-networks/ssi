@@ -4,7 +4,7 @@ use std::collections::HashMap;
 #[path = "gen/registry_api.v1.rs"]
 pub mod registry;
 
-const DID_METHOD: &str = "knox";
+const DID_METHOD: &'static str = "knox";
 
 pub struct RegistryResolver {
     url: String,
