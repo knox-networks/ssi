@@ -23,11 +23,12 @@ impl ssi::DIDResolver for RegistryResolver {
         let mut client = RegistryServiceClient::connect(self.url.clone())
             .await
             .unwrap();
-        let doc: HashMap<String, pbjson_types::Value> = serde_json::from_value(doc).unwrap();
+        let document: HashMap<String, pbjson_types::Value> =
+            serde_json::from_value(document).unwrap();
         client
             .create(registry::CreateRequest {
                 did,
-                document: Some(doc.into()),
+                document: Some(document.into()),
             })
             .await
             .unwrap();
@@ -39,9 +40,25 @@ impl ssi::DIDResolver for RegistryResolver {
             .await
             .unwrap();
         let res = client.read(registry::ReadRequest { did }).await.unwrap();
-        let doc =
+        let document =
             serde_json::to_value(res.into_inner().document.unwrap_or_default()).unwrap_or_default();
 
-        return doc;
+        return document;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn test_create() -> Result<(), String> {
+        assert!(false);
+        Ok(())
+    }
+
+    #[test]
+    fn test_read() -> Result<(), String> {
+        assert!(false);
+        Ok(())
     }
 }
