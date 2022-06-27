@@ -18,7 +18,7 @@ impl ssi::DIDResolver for RegistryResolver {
     async fn create(
         self: &RegistryResolver,
         did: String,
-        doc: serde_json::Value,
+        document: serde_json::Value,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let mut client = RegistryServiceClient::connect(self.url.clone())
             .await
