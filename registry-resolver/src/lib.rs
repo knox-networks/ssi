@@ -55,6 +55,7 @@ impl ssi::DIDResolver for RegistryResolver {
 
 #[cfg(test)]
 mod tests {
+    use crate::DID_METHOD;
 
     #[test]
     fn test_create() -> Result<(), String> {
@@ -65,6 +66,12 @@ mod tests {
     #[test]
     fn test_read() -> Result<(), String> {
         assert!(false);
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_method() -> Result<(), String> {
+        assert_eq!(DID_METHOD, "knox");
         Ok(())
     }
 }
