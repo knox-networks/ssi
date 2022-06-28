@@ -14,11 +14,15 @@ impl RegistryResolver {
     pub async fn new(url: String) -> Self {
         return Self { url };
     }
+
+    const fn get_method_helper() -> &'static str {
+        return DID_METHOD;
+    }
 }
 #[async_trait::async_trait]
 impl ssi::DIDResolver for RegistryResolver {
     fn get_method() -> String {
-        return String::from(DID_METHOD);
+        return String::from(Self::get_method_helper());
     }
 
     async fn create(
