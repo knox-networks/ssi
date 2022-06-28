@@ -701,14 +701,12 @@ name = "registry-resolver"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "map",
  "pbjson",
  "pbjson-types",
  "prost",
  "prost-types",
  "serde",
  "serde_json",
- "signature",
  "ssi",
  "tonic",
 ]
@@ -786,6 +784,8 @@ name = "ssi"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "map",
+ "serde",
  "serde_json",
  "signature",
 ]
