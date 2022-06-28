@@ -7,12 +7,16 @@ pub mod registry;
 const DID_METHOD: &'static str = "knox";
 
 pub struct RegistryResolver {
-    url: String,
+    client: RegistryServiceClient<tonic::transport::Channel>,
 }
 
 impl RegistryResolver {
     pub async fn new(url: String) -> Self {
-        return Self { url };
+        let client = RegistryServiceClient::connect(url.clone())
+            .await
+            .unwrap()
+            .to_owned();
+        return Self { client: client };
     }
 
     const fn get_method_helper() -> &'static str {
@@ -20,21 +24,19 @@ impl RegistryResolver {
     }
 }
 #[async_trait::async_trait]
-impl ssi::DIDResolver for RegistryResolver {
+impl<'a> ssi::DIDResolver for RegistryResolver {
     fn get_method() -> &'static str {
         return Self::get_method_helper();
     }
 
     async fn create(
-        self: &RegistryResolver,
+        self,
         did: String,
         document: serde_json::Value,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let mut client = RegistryServiceClient::connect(self.url.clone())
-            .await
-            .unwrap();
         let document: HashMap<String, pbjson_types::Value> =
             serde_json::from_value(document).unwrap();
+        let mut client = self.client;
         client
             .create(registry::CreateRequest {
                 did,
@@ -45,10 +47,8 @@ impl ssi::DIDResolver for RegistryResolver {
         Ok(())
     }
 
-    async fn read(&self, did: String) -> serde_json::Value {
-        let mut client = RegistryServiceClient::connect(self.url.clone())
-            .await
-            .unwrap();
+    async fn read(self, did: String) -> serde_json::Value {
+        let mut client = self.client;
         let res = client.read(registry::ReadRequest { did }).await.unwrap();
         let document =
             serde_json::to_value(res.into_inner().document.unwrap_or_default()).unwrap_or_default();
