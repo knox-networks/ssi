@@ -8,3 +8,5 @@ plugins:
       - file_descriptor_set
   - remote: buf.build/prost/plugins/tonic:v0.1.1-1
     out: src/gen
+    opt:
+      - no_server

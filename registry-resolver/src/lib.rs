@@ -1,22 +1,19 @@
-use registry::registry_service_client::RegistryServiceClient;
+use mockall::predicate::*;
+use registry_client::RegistryClient;
 use std::collections::HashMap;
 
-#[path = "gen/registry_api.v1.rs"]
-pub mod registry;
+mod registry_client;
 
 const DID_METHOD: &'static str = "knox";
 
 pub struct RegistryResolver {
-    client: RegistryServiceClient<tonic::transport::Channel>,
+    client: registry_client::GrpcClient,
 }
 
 impl RegistryResolver {
     pub async fn new(url: String) -> Self {
-        let client = RegistryServiceClient::connect(url.clone())
-            .await
-            .unwrap()
-            .to_owned();
-        return Self { client: client };
+        let client = registry_client::GrpcClient::new(url).await;
+        return Self { client };
     }
 
     const fn get_method_helper() -> &'static str {
@@ -24,7 +21,7 @@ impl RegistryResolver {
     }
 }
 #[async_trait::async_trait]
-impl<'a> ssi::DIDResolver for RegistryResolver {
+impl ssi::DIDResolver for RegistryResolver {
     fn get_method() -> &'static str {
         return Self::get_method_helper();
     }
@@ -36,20 +33,16 @@ impl<'a> ssi::DIDResolver for RegistryResolver {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let document: HashMap<String, pbjson_types::Value> =
             serde_json::from_value(document).unwrap();
-        let mut client = self.client;
-        client
-            .create(registry::CreateRequest {
-                did,
-                document: Some(document.into()),
-            })
+        self.client
+            .create(did, Some(document.into()))
             .await
             .unwrap();
+
         Ok(())
     }
 
     async fn read(self, did: String) -> serde_json::Value {
-        let mut client = self.client;
-        let res = client.read(registry::ReadRequest { did }).await.unwrap();
+        let res = self.client.read(did).await.unwrap();
         let document =
             serde_json::to_value(res.into_inner().document.unwrap_or_default()).unwrap_or_default();
 
