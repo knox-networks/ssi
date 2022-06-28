@@ -79,18 +79,20 @@ impl <'a> CredentialManager <'a> {
                     }
                   }"###),
                 (CRED_TYPE_BANK_CARD, r###"{
-                        "id": "did:example:b34ca6cd37bbf23",
-                        "givenName": "JOHN",
-                        "familyName": "SMITH",
-                        "gender": "Male",
-                        "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-                        "residentSince": "2015-01-01",
-                        "lprCategory": "C09",
-                        "lprNumber": "999-999-999",
-                        "commuterClassification": "C1",
-                        "birthCountry": "Bahamas",
-                        "birthDate": "1958-07-17"
-                }"###),
+                    "account":"",
+                    "address":"",
+                    "birthDate":"",
+                    "branch":"",
+                    "country":"",
+                    "familyName":"",
+                    "gender":"",
+                    "givenName":"",
+                    "id":"",
+                    "phone":"",
+                    "type":[
+                       "BankCard"
+                    ]
+                 }"###),
             ]);
         return Self { 
             credential_subject: cred_subject_template,
