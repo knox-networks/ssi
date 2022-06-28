@@ -19,22 +19,23 @@ pub trait DIDResolver {
 }
 
 pub trait DocumentBuilder {
-    // fn getCredType (&self) -> String;
-    // fn getSubject (&self) -> String;
-    // fn getContext (&self) -> [String];
-
     /// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
     /// In order to become a Verifiable Credential, a data integrity proof must be created for the credential and appended to the JSON-LD document.
-    /// Example implementation:
-    /// let vc = ssi::VerifiableCredential::new(cred_type, cred_subject, issuer, id);
-    /// Ok(vc.serialize())
+    /// this is the default implementation of the `create` method. The `create` method can be overridden to create a custom credential.
     pub fn create_credential(
         &self,
         cred_type: String, 
         cred_subject: serde_json::Value, 
         issuer: &str, 
         id: &str
-    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {}
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+        let cm = CredentialManager::new();
+        let vc = cm.initVerifiableCredential(cred_type, cred_subject, issuer, id);
+        match vc {
+            Ok(vc) => return Ok(vc.serialize()),
+            Err(e) => return e,
+        }
+    }
 
     /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
     /// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
