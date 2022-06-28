@@ -16,7 +16,7 @@ pub trait DIDResolver {
     fn get_method() -> String;
     // Given a `did` and `key` it will construct the proper `verificationMethod` to use as part of the data integrity proof creation process.
     fn create_verification_method(did: String, key_id: String) -> String {
-        return format!("{}:{}#{}", did, Self::get_method(), key_id);
+        return format!("did:{}:{}#{}", Self::get_method(), did, key_id);
     }
 }
 

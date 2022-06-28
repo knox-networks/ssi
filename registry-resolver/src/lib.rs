@@ -59,7 +59,9 @@ impl ssi::DIDResolver for RegistryResolver {
 
 #[cfg(test)]
 mod tests {
-    use crate::DID_METHOD;
+    use ssi::DIDResolver;
+
+    use crate::RegistryResolver;
 
     #[test]
     fn test_create() -> Result<(), String> {
@@ -75,7 +77,18 @@ mod tests {
 
     #[test]
     fn test_get_method() -> Result<(), String> {
-        assert_eq!(DID_METHOD, "knox");
+        assert_eq!(RegistryResolver::get_method(), "knox");
+        Ok(())
+    }
+
+    #[test]
+    fn test_create_verification_method() -> Result<(), String> {
+        let did = String::from("12345");
+        let key_id = String::from("123456");
+        assert_eq!(
+            RegistryResolver::create_verification_method(did, key_id),
+            "did:knox:12345#123456"
+        );
         Ok(())
     }
 }
