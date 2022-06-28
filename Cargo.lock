@@ -403,6 +403,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "map"
+version = "0.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ddce5132fa5c614c7de5b17df939b227e6ae3fc763b4498da5c13d87b7e1248c"
+
+[[package]]
 name = "matchit"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -695,11 +701,14 @@ name = "registry-resolver"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "map",
  "pbjson",
  "pbjson-types",
  "prost",
  "prost-types",
+ "serde",
  "serde_json",
+ "signature",
  "ssi",
  "tonic",
 ]
