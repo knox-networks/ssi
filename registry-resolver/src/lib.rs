@@ -21,8 +21,8 @@ impl RegistryResolver {
 }
 #[async_trait::async_trait]
 impl ssi::DIDResolver for RegistryResolver {
-    fn get_method() -> String {
-        return String::from(Self::get_method_helper());
+    fn get_method() -> &'static str {
+        return Self::get_method_helper();
     }
 
     async fn create(
