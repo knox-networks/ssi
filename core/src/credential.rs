@@ -13,7 +13,7 @@ use serde_json::Value;
 // --- 
 // Default context and Cred types are defaulted but can be redefined 
 
-type VCContext = [String];
+type VCContext = [&'static str];
 
 pub(crate) const JSON_LD_CONTEXT:  VCContext = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
 
