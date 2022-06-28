@@ -1,18 +1,20 @@
 use mockall::predicate::*;
-use registry_client::RegistryClient;
+use mockall_double::double;
 use std::collections::HashMap;
 
 mod registry_client;
-
 const DID_METHOD: &'static str = "knox";
 
+#[double]
+use registry_client::GrpcClient;
+
 pub struct RegistryResolver {
-    client: registry_client::GrpcClient,
+    client: GrpcClient,
 }
 
 impl RegistryResolver {
     pub async fn new(url: String) -> Self {
-        let client = registry_client::GrpcClient::new(url).await;
+        let client = GrpcClient::new(url).await;
         return Self { client };
     }
 
@@ -52,13 +54,25 @@ impl ssi::DIDResolver for RegistryResolver {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use serde_json::json;
     use ssi::DIDResolver;
 
     use crate::RegistryResolver;
 
     #[test]
     fn test_create() -> Result<(), String> {
-        assert!(false);
+        let mock_client = GrpcClient::default();
+
+        let resolver = RegistryResolver {
+            client: mock_client,
+        };
+
+        let did = String::from("");
+        let doc = json!("{}");
+
+        let _res = resolver.create(did, doc);
+        // assert!(res.is_ok());
         Ok(())
     }
 
