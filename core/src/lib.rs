@@ -4,6 +4,8 @@ use serde_json::{self, json};
 use credential::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
+use std::collections::HashMap;
+use std::time::{Duration, SystemTime};
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
@@ -14,6 +16,33 @@ pub trait DIDResolver {
     fn read(&self, did: &str) -> serde_json::Value;
     /// Given a `did` and the associated DID Document, register the DID Document with the external source used by the DIDResolver.
     fn create(&self, did: &str, doc: serde_json::Value) -> String;
+}
+
+pub trait DocumentBuilder {
+    // fn getCredType (&self) -> String;
+    // fn getSubject (&self) -> String;
+    // fn getContext (&self) -> [String];
+
+    /// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
+    /// In order to become a Verifiable Credential, a data integrity proof must be created for the credential and appended to the JSON-LD document.
+    /// Example implementation:
+    /// let vc = ssi::VerifiableCredential::new(cred_type, cred_subject, issuer, id);
+    /// Ok(vc.serialize())
+    pub fn create_credential(
+        &self,
+        cred_type: String, 
+        cred_subject: serde_json::Value, 
+        issuer: &str, 
+        id: &str
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {}
+
+    /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
+    /// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
+    pub fn create_presentation(
+        _creds: Vec<serde_json::Value>,
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {}
+        // unimplemented!();
+    // }
 }
 
 
