@@ -1,21 +1,20 @@
 use mockall::predicate::*;
-use mockall_double::double;
 use std::collections::HashMap;
 
 mod registry_client;
 const DID_METHOD: &'static str = "knox";
-
-#[double]
 use registry_client::GrpcClient;
 
 pub struct RegistryResolver {
-    client: GrpcClient,
+    client: Box<dyn registry_client::RegistryClient + Send + Sync>,
 }
 
 impl RegistryResolver {
     pub async fn new(url: String) -> Self {
         let client = GrpcClient::new(url).await;
-        return Self { client };
+        return Self {
+            client: Box::new(client),
+        };
     }
 
     const fn get_method_helper() -> &'static str {
@@ -62,14 +61,19 @@ mod tests {
 
     #[test]
     fn test_create() -> Result<(), String> {
-        let mock_client = GrpcClient::default();
-
-        let resolver = RegistryResolver {
-            client: mock_client,
-        };
+        let mut mock_client = registry_client::MockRegistryClient::default();
 
         let did = String::from("");
         let doc = json!("{}");
+        let document = pbjson_types::Struct::default();
+
+        mock_client
+            .expect_create()
+            .with(eq(did.clone()), eq(Some(document.clone().into())));
+
+        let resolver = RegistryResolver {
+            client: Box::new(mock_client),
+        };
 
         let _res = resolver.create(did, doc);
         // assert!(res.is_ok());
