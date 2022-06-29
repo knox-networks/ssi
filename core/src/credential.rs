@@ -15,9 +15,9 @@ use std::io::ErrorKind;
 // --- 
 // Default context and Cred types are defaulted but can be redefined 
 
-type VCContext = [&'static str];
+type VerificationContext = [&'static str];
 
-pub(crate) const JSON_LD_CONTEXT:  VCContext = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
+pub(crate) const JSON_LD_CONTEXT:  VerificationContext = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
 
 pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: str = "PermanentResidentCard";
 pub const CRED_TYPE_BANK_CARD: str = "BankCard";
@@ -27,7 +27,7 @@ type CredentialSubject = serde_json::Value;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct VerifiableCredential <'a> {
     #[serde(rename = "@context")]
-	context:  VCContext,
+	context:  VerificationContext,
     #[serde(rename = "@id")]
 	id: String,
     cred_type:  String,
@@ -46,7 +46,7 @@ pub struct IssuedCredential <'a> {
 
 pub struct CredentialManager {
     credential_subject: HashMap<String, String>,
-    context: VCContext,
+    context: VerificationContext,
 }
 
 trait VC {
@@ -56,7 +56,7 @@ trait VC {
             None => Err(Error::new(ErrorKind::Other, "Key not found")),
         } 
     }
-    fn getContext(&self) -> VCContext {
+    fn getContext(&self) -> VerificationContext {
         self.context.clone()
     }
     fn getCredentialTypes(&self) -> [String] {
