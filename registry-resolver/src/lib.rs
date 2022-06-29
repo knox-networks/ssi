@@ -1,5 +1,4 @@
 use mockall::predicate::*;
-use std::collections::HashMap;
 
 mod registry_client;
 const DID_METHOD: &'static str = "knox";
@@ -32,12 +31,8 @@ impl ssi::DIDResolver for RegistryResolver {
         did: String,
         document: serde_json::Value,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let document: HashMap<String, pbjson_types::Value> =
-            serde_json::from_value(document).unwrap();
-        self.client
-            .create(did, Some(document.into()))
-            .await
-            .unwrap();
+        let document: pbjson_types::Struct = serde_json::from_value(document)?;
+        self.client.create(did, Some(document)).await.unwrap();
 
         Ok(())
     }
@@ -59,11 +54,17 @@ mod tests {
 
     use crate::RegistryResolver;
 
+    macro_rules! tokio_await {
+        ($e:expr) => {
+            tokio_test::block_on($e)
+        };
+    }
+
     #[test]
     fn test_create() -> Result<(), String> {
         let mut mock_client = registry_client::MockRegistryClient::default();
 
-        let did = String::from("");
+        let did = String::from("did:knox:123456");
         let doc = json!({
                 "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
                 "id":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh",
@@ -81,18 +82,19 @@ mod tests {
                 }]
             }
         );
-        let document = pbjson_types::Struct::default();
+
+        let document: pbjson_types::Struct = serde_json::from_value(doc.clone()).unwrap();
 
         mock_client
             .expect_create()
-            .with(eq(did.clone()), eq(Some(document.clone().into())));
+            .with(eq(did.clone()), eq(Some(document.clone())));
 
         let resolver = RegistryResolver {
             client: Box::new(mock_client),
         };
 
-        let _res = resolver.create(did, doc);
-        // assert!(res.is_ok());
+        let res = tokio_await!(resolver.create(did, doc));
+        assert!(res.is_ok());
         Ok(())
     }
 
