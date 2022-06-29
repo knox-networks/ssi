@@ -47,7 +47,7 @@ pub trait DocumentBuilder {
     pub fn create_presentation(
         _creds: Vec<serde_json::Value>,
     ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {}
-        // unimplemented!();
+        unimplemented!();
     // }
 }
 

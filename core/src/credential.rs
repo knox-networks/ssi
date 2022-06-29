@@ -5,6 +5,8 @@ use std::{error::Error, time::{Instant, SystemTime}};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use crate::HashMap;
+use std::io::ErrorKind;
 
 // cred_subject is a generic that implements trait X
 // trait X allows us to encode that object into JSON-LD
@@ -34,18 +36,21 @@ pub struct VerifiableCredential <'a> {
 	subject: CredentialSubject,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IssuedCredential <'a> {
-    verifiable_credential:VerifiableCredential,
-    proof: *mut CredentialProof,
+    #[serde(flatten)]
+    verifiable_credential:VerifiableCredential <'a>,
+    #[serde(flatten)]
+    proof: CredentialProof <'a>,
 }
 
 pub struct CredentialManager {
-    credential_subject: HashMap<&str, &str>,
+    credential_subject: HashMap<String, String>,
     context: VCContext,
 }
 
 trait VC {
-    fn getSubject(&self, key: &str) -> Result<String, Error> {
+    fn getSubject(&self, key: &str) -> Result<String, Box<dyn std::error::Error>> {
         match self.credential_subject.get(key) {
             Some(&value) => Ok(value.to_string()),
             None => Err(Error::new(ErrorKind::Other, "Key not found")),
@@ -54,16 +59,18 @@ trait VC {
     fn getContext(&self) -> VCContext {
         self.context.clone()
     }
+    fn getCredentialTypes(&self) -> [String] {
+        [CRED_TYPE_PERMANENT_RESIDENT_CARD, CRED_TYPE_BANK_CARD];
+    }
 }
 
 /// Default VC trait implementation for CredentialManager.
-/// Callers may re-implement this trait in their code by: impl VC for CredentialManager {/...code here.../}
+/// Callers may reimplement this trait in their code by: impl VC for CredentialManager {/...code here.../}
 impl VC for CredentialManager {}
 
-impl <'a> CredentialManager <'a> {
+impl CredentialManager {
     /// returns CredentialManager cred_subject_template with default configuration accessible for overlapping via VC trait
     pub fn new() -> CredentialManager {
-        ///default credential subjects for different credential types 
         let cred_subject_template: HashMap<&str, &str> = HashMap::from([
                 (CRED_TYPE_PERMANENT_RESIDENT_CARD, r###"{
                     "@id": "https://w3id.org/citizenship#PermanentResidentCard",
@@ -71,7 +78,9 @@ impl <'a> CredentialManager <'a> {
                       "@version": 1.1,
                       "@protected": true,
                       "id": "@id",
-                      "type": "@type",
+                      "type": "[
+                        "PermanentResidentCard"
+                     ]",
                       "description": "http://schema.org/description",
                       "name": "http://schema.org/name",
                       "identifier": "http://schema.org/identifier",
@@ -100,8 +109,9 @@ impl <'a> CredentialManager <'a> {
          }
     }
 
-    pub fn initVerifiableCredential (&self, cred_type: String, cred_subject: serde_json::Value, issuer: &'a str, id: &'a str) -> Result(VerifiableCredential, Error) {
-        match self.getSubject(key) {
+    pub fn initVerifiableCredential (&self, cred_type: String, cred_subject: serde_json::Value, issuer: &str, id: &str) 
+    -> Result<VerifiableCredential, Box<dyn std::error::Error>> {
+        match self.getSubject(&cred_type) {
             Ok(value) => {
                 let vc = VerifiableCredential {
                     context: self.getContext(),
@@ -118,27 +128,13 @@ impl <'a> CredentialManager <'a> {
     }  
 }
 
-impl <'a> VerifiableCredential <'a>  {
-    pub fn new(cred_type: String, cred_subject: serde_json::Value, issuer: &'a str, id: &'a str) -> Self  {
-        let s = Self {
-            context: [],
-            id: String::from(id), 
-            cred_type: ctype,
-            issuer: String::from(issuer), 
-            issuance_date: String::default(),
-            subject: cred_subject,
-        };
-        s.context = s.getContext();
-        
-        return s;
-    }
-
+impl VerifiableCredential <'_>  {
     pub fn serialize(self) -> serde_json::Value {
         return serde_json::to_string(&self);
     }
 }
 
-pub struct CredentialProof {
+pub struct CredentialProof <'a> {
 	proof_type: String,
 	created: String,
 	verification_method: String,
