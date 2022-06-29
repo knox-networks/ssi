@@ -25,6 +25,14 @@ pub const CRED_TYPE_BANK_CARD: str = "BankCard";
 type CredentialSubject = serde_json::Value;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Credential <'a> {
+    #[serde(flatten)]
+    verifiable_credential:VerifiableCredential <'a>,
+    #[serde(flatten)]
+    proof: CredentialProof <'a>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct VerifiableCredential <'a> {
     #[serde(rename = "@context")]
 	context:  VerificationContext,
@@ -36,12 +44,12 @@ pub struct VerifiableCredential <'a> {
 	subject: CredentialSubject,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct IssuedCredential <'a> {
-    #[serde(flatten)]
-    verifiable_credential:VerifiableCredential <'a>,
-    #[serde(flatten)]
-    proof: CredentialProof <'a>,
+pub struct CredentialProof <'a> {
+	proof_type: String,
+	created: String,
+	verification_method: String,
+	proof_purpose: String,
+	proof_value: String,
 }
 
 pub struct CredentialManager {
@@ -132,12 +140,4 @@ impl VerifiableCredential <'_>  {
     pub fn serialize(self) -> serde_json::Value {
         return serde_json::to_string(&self);
     }
-}
-
-pub struct CredentialProof <'a> {
-	proof_type: String,
-	created: String,
-	verification_method: String,
-	proof_purpose: String,
-	proof_value: String,
 }
