@@ -5,7 +5,7 @@ use credential::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::collections::HashMap;
-use std::time::{Duration, SystemTime};
+use serde_json::Value;
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
@@ -30,25 +30,22 @@ pub trait DocumentBuilder {
     pub fn create_credential(
         &self,
         cred_type: String, 
-        cred_subject: serde_json::Value, 
-        issuer: &str, 
+        cred_subject: HashMap<String, Value>,
+        property_set: HashMap<String, Value>,
         id: &str
     ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
         let cm = CredentialManager::new();
-        let vc = cm.initVerifiableCredential(cred_type, cred_subject, issuer, id);
-        match vc {
-            Ok(vc) => return Ok(vc.serialize()),
-            Err(e) => return e,
-        }
+        let vc = cm.initVerifiableCredential(cred_type, cred_subject, property_set, id);
+        Ok(vc.serialize());
     }
 
     /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
     /// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
     pub fn create_presentation(
         _creds: Vec<serde_json::Value>,
-    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {}
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
         unimplemented!();
-    // }
+    }
 }
 
 

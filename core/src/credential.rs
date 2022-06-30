@@ -1,12 +1,11 @@
 
 #![allow(unused_variables)]
 #![allow(dead_code)]
-use std::{error::Error, time::{Instant, SystemTime}};
+use std::{time::{SystemTime}};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use crate::HashMap;
-use std::io::ErrorKind;
 
 // cred_subject is a generic that implements trait X
 // trait X allows us to encode that object into JSON-LD
@@ -22,7 +21,11 @@ pub(crate) const JSON_LD_CONTEXT:  VerificationContext = ["https://www.w3.org/20
 pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: str = "PermanentResidentCard";
 pub const CRED_TYPE_BANK_CARD: str = "BankCard";
 
-type CredentialSubject = serde_json::Value;
+#[derive(Serialize, Deserialize, Clone)]
+struct CredentialSubject {
+    #[serde(flatten)]
+    pub property_set: HashMap<String, Value>,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Credential <'a> {
@@ -35,35 +38,29 @@ pub struct Credential <'a> {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct VerifiableCredential <'a> {
     #[serde(rename = "@context")]
-	context:  VerificationContext,
+    context:  VerificationContext,
     #[serde(rename = "@id")]
-	id: String,
-    cred_type:  String,
-	issuer: String,
-	issuance_date: SystemTime,
-	subject: CredentialSubject,
+    id: String,
+    cred_type: String,
+    issuance_date: SystemTime,
+    subject: CredentialSubject,
+    #[serde(flatten)]
+    pub property_set: HashMap<String, Value>,
 }
 
 pub struct CredentialProof <'a> {
-	proof_type: String,
-	created: String,
-	verification_method: String,
-	proof_purpose: String,
-	proof_value: String,
+    proof_type: String,
+    created: String,
+    verification_method: String,
+    proof_purpose: String,
+    proof_value: String,
 }
 
 pub struct CredentialManager {
-    credential_subject: HashMap<String, String>,
     context: VerificationContext,
 }
 
 trait VC {
-    fn getSubject(&self, key: &str) -> Result<String, Box<dyn std::error::Error>> {
-        match self.credential_subject.get(key) {
-            Some(&value) => Ok(value.to_string()),
-            None => Err(Error::new(ErrorKind::Other, "Key not found")),
-        } 
-    }
     fn getContext(&self) -> VerificationContext {
         self.context.clone()
     }
@@ -77,67 +74,45 @@ trait VC {
 impl VC for CredentialManager {}
 
 impl CredentialManager {
-    /// returns CredentialManager cred_subject_template with default configuration accessible for overlapping via VC trait
     pub fn new() -> CredentialManager {
-        let cred_subject_template: HashMap<&str, &str> = HashMap::from([
-                (CRED_TYPE_PERMANENT_RESIDENT_CARD, r###"{
-                    "@id": "https://w3id.org/citizenship#PermanentResidentCard",
-                    "@context": {
-                      "@version": 1.1,
-                      "@protected": true,
-                      "id": "@id",
-                      "type": "[
-                        "PermanentResidentCard"
-                     ]",
-                      "description": "http://schema.org/description",
-                      "name": "http://schema.org/name",
-                      "identifier": "http://schema.org/identifier",
-                      "image": {"@id": "http://schema.org/image", "@type": "@id"}
-                    }
-                  }"###),
-                (CRED_TYPE_BANK_CARD, r###"{
-                    "account":"",
-                    "address":"",
-                    "birthDate":"",
-                    "branch":"",
-                    "country":"",
-                    "familyName":"",
-                    "gender":"",
-                    "givenName":"",
-                    "id":"",
-                    "phone":"",
-                    "type":[
-                       "BankCard"
-                    ]
-                 }"###),
-            ]);
-        return Self { 
-            credential_subject: cred_subject_template,
-            context: JSON_LD_CONTEXT,
-         }
-    }
-
-    pub fn initVerifiableCredential (&self, cred_type: String, cred_subject: serde_json::Value, issuer: &str, id: &str) 
-    -> Result<VerifiableCredential, Box<dyn std::error::Error>> {
-        match self.getSubject(&cred_type) {
-            Ok(value) => {
-                let vc = VerifiableCredential {
-                    context: self.getContext(),
-                    id: id.to_string(),
-                    cred_type: cred_type.to_string(),
-                    issuer: issuer.to_string(),
-                    issuance_date: SystemTime::now(),
-                    subject: value,
-                };
-                return Ok(vc);
-            },
-            Err(e) => return Err(e),
+        CredentialManager {
+            context: JSON_LD_CONTEXT.clone(),
         }
+    }
+    pub fn initVerifiableCredential (&self, 
+        cred_type: String, 
+        cred_subject: HashMap<String, Value>, 
+        property_set: HashMap<String, Value>, 
+        id: &str) 
+    -> VerifiableCredential {    
+        let vc = VerifiableCredential::new(&self, 
+            self.getContext(), 
+            cred_type, 
+            cred_subject, 
+            property_set,
+            id);
     }  
 }
 
 impl VerifiableCredential <'_>  {
-    pub fn serialize(self) -> serde_json::Value {
+    pub fn new (&self,
+        context: VerificationContext,
+        cred_type: String, 
+        cred_subject: HashMap<String, Value>, 
+        property_set: HashMap<String, Value>, id: &str) 
+    -> VerifiableCredential {    
+        let vc = VerifiableCredential {
+            context: context,
+            id: id.to_string(),
+            cred_type: cred_type.to_string(),
+            issuance_date: SystemTime::now(),
+            subject: CredentialSubject{
+                property_set: cred_subject,
+            },
+            property_set: property_set,
+        };
+    } 
+    pub fn serialize(self) -> Value {
         return serde_json::to_string(&self);
     }
 }
