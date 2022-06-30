@@ -78,5 +78,4 @@ impl VerifiableCredential <'_>  {
     pub fn serialize(self) -> Value {
         return serde_json::to_string(&self);
     }
-    
 }

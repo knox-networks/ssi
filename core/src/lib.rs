@@ -33,14 +33,14 @@ pub trait DocumentBuilder {
         cred_subject: HashMap<String, Value>,
         property_set: HashMap<String, Value>,
         id: &str
-    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    ) -> Result<VerifiableCredential, Box<dyn std::error::Error>> {
         let vc = VerifiableCredential::new(CONTEXT_CREDENTIALS,
             cred_type,
             cred_subject,
             property_set,
             id
         );
-        Ok(vc.serialize());
+        Ok(vc);
     }
 
     /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
