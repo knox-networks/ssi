@@ -52,7 +52,7 @@ mod tests {
     use serde_json::json;
     use ssi::DIDResolver;
 
-    use crate::RegistryResolver;
+    use crate::{registry_client::registry, RegistryResolver};
 
     macro_rules! tokio_await {
         ($e:expr) => {
@@ -84,10 +84,10 @@ mod tests {
         );
 
         let document: pbjson_types::Struct = serde_json::from_value(doc.clone()).unwrap();
-
         mock_client
             .expect_create()
-            .with(eq(did.clone()), eq(Some(document.clone())));
+            .with(eq(did.clone()), eq(Some(document.clone())))
+            .return_once(|_, _| (Ok(tonic::Response::new(registry::CreateResponse {}))));
 
         let resolver = RegistryResolver {
             client: Box::new(mock_client),
