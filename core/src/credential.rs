@@ -16,7 +16,7 @@ use crate::HashMap;
 
 type VerificationContext = [&'static str];
 
-pub(crate) const JSON_LD_CONTEXT:  VerificationContext = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
+pub const CONTEXT_CREDENTIALS:  VerificationContext = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
 
 pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: str = "PermanentResidentCard";
 pub const CRED_TYPE_BANK_CARD: str = "BankCard";
@@ -56,44 +56,6 @@ pub struct CredentialProof <'a> {
     proof_value: String,
 }
 
-pub struct CredentialManager {
-    context: VerificationContext,
-}
-
-trait VC {
-    fn getContext(&self) -> VerificationContext {
-        self.context.clone()
-    }
-    fn getCredentialTypes(&self) -> [String] {
-        [CRED_TYPE_PERMANENT_RESIDENT_CARD, CRED_TYPE_BANK_CARD];
-    }
-}
-
-/// Default VC trait implementation for CredentialManager.
-/// Callers may reimplement this trait in their code by: impl VC for CredentialManager {/...code here.../}
-impl VC for CredentialManager {}
-
-impl CredentialManager {
-    pub fn new() -> CredentialManager {
-        CredentialManager {
-            context: JSON_LD_CONTEXT.clone(),
-        }
-    }
-    pub fn initVerifiableCredential (&self, 
-        cred_type: String, 
-        cred_subject: HashMap<String, Value>, 
-        property_set: HashMap<String, Value>, 
-        id: &str) 
-    -> VerifiableCredential {    
-        let vc = VerifiableCredential::new(&self, 
-            self.getContext(), 
-            cred_type, 
-            cred_subject, 
-            property_set,
-            id);
-    }  
-}
-
 impl VerifiableCredential <'_>  {
     pub fn new (&self,
         context: VerificationContext,
@@ -111,8 +73,10 @@ impl VerifiableCredential <'_>  {
             },
             property_set: property_set,
         };
-    } 
+    }
+
     pub fn serialize(self) -> Value {
         return serde_json::to_string(&self);
     }
+    
 }

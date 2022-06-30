@@ -34,8 +34,12 @@ pub trait DocumentBuilder {
         property_set: HashMap<String, Value>,
         id: &str
     ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-        let cm = CredentialManager::new();
-        let vc = cm.initVerifiableCredential(cred_type, cred_subject, property_set, id);
+        let vc = VerifiableCredential::new(CONTEXT_CREDENTIALS,
+            cred_type,
+            cred_subject,
+            property_set,
+            id
+        );
         Ok(vc.serialize());
     }
 
