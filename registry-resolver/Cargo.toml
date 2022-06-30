@@ -11,7 +11,6 @@ prost-types = "0.10.1"
 tonic = { version = "0.7.1", features = ["compression"] }
 ssi = {path = "../core"}
 serde_json = "1.0.81"
-serde = { version = "1.0", features = ["derive"] }
 pbjson = "0.3"
 pbjson-types = "0.3"
 async-trait = "0.1.53"

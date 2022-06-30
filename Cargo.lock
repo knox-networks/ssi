@@ -705,7 +705,6 @@ dependencies = [
  "pbjson-types",
  "prost",
  "prost-types",
- "serde",
  "serde_json",
  "ssi",
  "tonic",
