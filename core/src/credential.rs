@@ -57,7 +57,7 @@ pub struct IntegrityProof <'a> {
 }
 
 impl VerifiableCredential <'_>  {
-    pub fn new (&self,
+    pub fn new (
         context: VerificationContext,
         cred_type: String, 
         cred_subject: HashMap<String, Value>, 
@@ -69,6 +69,7 @@ impl VerifiableCredential <'_>  {
             cred_type: cred_type.to_string(),
             issuance_date: SystemTime::now(),
             subject: CredentialSubject{
+                id: id.to_string(),
                 property_set: cred_subject,
             },
             property_set: property_set,

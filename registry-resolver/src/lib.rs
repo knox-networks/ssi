@@ -49,7 +49,7 @@ impl ssi::DIDResolver for RegistryResolver {
 
 #[cfg(test)]
 mod tests {
-
+    use ssi::DIDResolver;
     #[test]
     fn test_create() -> Result<(), String> {
         assert!(false);
