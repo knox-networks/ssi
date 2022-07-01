@@ -23,6 +23,7 @@ pub const CRED_TYPE_BANK_CARD: str = "BankCard";
 
 #[derive(Serialize, Deserialize, Clone)]
 struct CredentialSubject {
+    id : String,
     #[serde(flatten)]
     pub property_set: HashMap<String, Value>,
 }
@@ -31,8 +32,7 @@ struct CredentialSubject {
 pub struct Credential <'a> {
     #[serde(flatten)]
     verifiable_credential:VerifiableCredential <'a>,
-    #[serde(flatten)]
-    proof: CredentialProof <'a>,
+    proof: IntegrityProof <'a>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -48,7 +48,7 @@ pub struct VerifiableCredential <'a> {
     pub property_set: HashMap<String, Value>,
 }
 
-pub struct CredentialProof <'a> {
+pub struct IntegrityProof <'a> {
     proof_type: String,
     created: String,
     verification_method: String,
