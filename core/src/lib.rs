@@ -95,6 +95,7 @@ pub trait DocumentBuilder {
 mod tests {
     use core::DocumentBuilder;
     use std::collections::HashMap;
+    use assert_json_diff::assert_json_include;
 
     use serde_json::Value;
     struct TestObj {}
@@ -112,10 +113,63 @@ mod tests {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
         let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
-        to.create_credential(
+        let expect = json!({
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://w3id.org/citizenship/v1"
+            ],
+            "id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+            "type": ["VerifiableCredential", "PermanentResidentCard"],
+            "issuer": "did:example:28394728934792387",
+            "identifier": "83627465",
+            "name": "Permanent Resident Card",
+            "description": "Government of Example Permanent Resident Card.",
+            "issuanceDate": "2019-12-03T12:19:52Z",
+            "expirationDate": "2029-12-03T12:19:52Z",
+            "credentialSubject": {
+              "id": "did:example:b34ca6cd37bbf23",
+              "type": ["PermanentResident", "Person"],
+              "givenName": "JOHN",
+              "familyName": "SMITH",
+              "gender": "Male",
+              "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+              "residentSince": "2015-01-01",
+              "lprCategory": "C09",
+              "lprNumber": "999-999-999",
+              "commuterClassification": "C1",
+              "birthCountry": "Bahamas",
+              "birthDate": "1958-07-17"
+            },
+        });
 
+        kv_body.entry("type").insert_entry(Value::Array((["VerifiableCredential", "PermanentResidentCard"])));
+        kv_body.entry("issuer").insert_entry(Value::String(("did:example:28394728934792387")));
+        kv_body.entry("identifier").insert_entry(Value::String(("did:example:28394728934792387")));
+        kv_body.entry("name").insert_entry(Value::String(("Permanent Resident Card")));
+        kv_body.entry("description").insert_entry(Value::String(("Government of Example Permanent Resident Card.")));
+        kv_body.entry("issuanceDate").insert_entry(Value::String(("2019-12-03T12:19:52Z")));
+        kv_body.entry("expirationDate").insert_entry(Value::String(("2029-12-03T12:19:52Z")));
+       
+        kv_subject.entry("id").insert_entry(Value::String(("did:example:b34ca6cd37bbf23")));
+        kv_subject.entry("type").insert_entry(Value::Array((["PermanentResident", "Person"])));
+        kv_subject.entry("givenName").insert_entry(Value::String(("JOHN")));
+        kv_subject.entry("familyName").insert_entry(Value::String(("SMITH")));
+        kv_subject.entry("gender").insert_entry(Value::String(("Male")));
+        kv_subject.entry("image").insert_entry(Value::String(("data:image/png;base64,iVBORw0KGgo...kJggg==")));
+        kv_subject.entry("residentSince").insert_entry(Value::String(("2015-01-01")));
+        kv_subject.entry("lprCategory").insert_entry(Value::String(("C09")));
+        kv_subject.entry("lprNumber").insert_entry(Value::String(("999-999-999")));
+        kv_subject.entry("commuterClassification").insert_entry(Value::String(("C1")));
+        kv_subject.entry("birthCountry").insert_entry(Value::String(("Bahamas")));
+        kv_subject.entry("birthDate").insert_entry(Value::String(("1958-07-17")));
+
+        let vc = to.create_credential(
+            DocumentBuilder::CRED_TYPE_PERMANENT_RESIDENT_CARD,
+            kv_subject,
+            kv_body,
+            "https://issuer.oidp.uscis.gov/credentials/83627465",
         );
-        assert!(false);
+        assert_json_include!(vc, expect);
         Ok(())
     } 
 }
