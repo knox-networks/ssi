@@ -32,7 +32,7 @@ impl ssi::DIDResolver for RegistryResolver {
         document: serde_json::Value,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let document: pbjson_types::Struct = serde_json::from_value(document)?;
-        self.client.create(did, Some(document)).await.unwrap();
+        self.client.create(did, Some(document)).await?;
 
         Ok(())
     }
@@ -52,7 +52,7 @@ mod tests {
     use serde_json::json;
     use ssi::DIDResolver;
 
-    use crate::{registry_client::registry, RegistryResolver};
+    use crate::{registry_client::registry::CreateResponse, RegistryResolver};
 
     macro_rules! tokio_await {
         ($e:expr) => {
@@ -60,6 +60,9 @@ mod tests {
         };
     }
 
+    // Test Case One - Succeeds
+    // Test Case Two - Fails Due To Network Error
+    // Test Case Three - Fails Due To Parsing Error
     #[test]
     fn test_create() -> Result<(), String> {
         let mut mock_client = registry_client::MockRegistryClient::default();
@@ -82,12 +85,13 @@ mod tests {
                 }]
             }
         );
-
+        //Err(tonic::Status::invalid_argument("message"))
+        //Ok(tonic::Response::new(CreateResponse {}))
         let document: pbjson_types::Struct = serde_json::from_value(doc.clone()).unwrap();
         mock_client
             .expect_create()
             .with(eq(did.clone()), eq(Some(document.clone())))
-            .return_once(|_, _| (Ok(tonic::Response::new(registry::CreateResponse {}))));
+            .return_once(|_, _| (Ok(tonic::Response::new(CreateResponse {}))));
 
         let resolver = RegistryResolver {
             client: Box::new(mock_client),
