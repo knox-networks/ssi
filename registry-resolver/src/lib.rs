@@ -88,7 +88,6 @@ mod tests {
         return String::from("did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh");
     }
 
-    // Test Case Three - Fails Due To Parsing Error
     #[rstest::rstest]
     #[case(
         create_did(),
