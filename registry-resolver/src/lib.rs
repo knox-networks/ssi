@@ -145,6 +145,15 @@ mod tests {
          }))),
         true
     )]
+    #[case::parsing_failure(
+        create_did(),
+        Some(Ok(tonic::Response::new(ReadResponse {
+            did: create_did(),
+            document: Some(create_did_struct(create_did_doc(create_did()))),
+            metadata: None,
+         }))),
+        false
+    )]
     async fn test_read(
         #[case] did: String,
         #[case] mock_read_response: Option<Result<tonic::Response<ReadResponse>, tonic::Status>>,
