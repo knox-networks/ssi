@@ -82,19 +82,19 @@ mod tests {
     }
 
     #[rstest::rstest]
-    #[case(
+    #[case::network_failure(
         create_did(),
         create_did_doc(create_did()),
         Some(Err(tonic::Status::invalid_argument("message"))),
         false
     )]
-    #[case(
+    #[case::success(
         create_did(),
         create_did_doc(create_did()),
         Some(Ok(tonic::Response::new(CreateResponse {}))),
         true
     )]
-    #[case(
+    #[case::parsing_failure(
         create_did(),
         serde_json::json!("{}"),
         None,
