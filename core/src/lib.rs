@@ -3,7 +3,7 @@ mod credential;
 use serde_json::{self, Value};
 use credential::*;
 // use serde::{Deserialize, Serialize};
-use serde_json::Result;
+// use serde_json::Result;
 use std::{collections::HashMap, error::Error};
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
@@ -19,7 +19,7 @@ pub trait DIDResolver {
         &self,
         did: String,
         doc: serde_json::Value,
-    ) -> Result<(), Box<dyn std::error::Error>>;
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>>;
 }
 
 pub trait DocumentBuilder {
@@ -46,7 +46,7 @@ pub trait DocumentBuilder {
     /// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
     fn create_presentation(
         _creds: Vec<serde_json::Value>,
-    ) -> Result<VerifiableCredential, Box<dyn std::error::Error>> {
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
         unimplemented!();
     }
 }
@@ -93,9 +93,10 @@ pub trait DocumentBuilder {
 
 #[cfg(test)]
 mod tests {
-    use core::DocumentBuilder;
+    use crate::DocumentBuilder;
     use std::collections::HashMap;
-    use assert_json_diff::assert_json_include;
+    use assert_json_diff::{assert_json_eq};
+    use crate::serde_json::json;
 
     use serde_json::Value;
     struct TestObj {}
@@ -105,7 +106,7 @@ mod tests {
             TestObj {  }
         }
     }
-    impl DocumentBuilder::create_credential for TestObj {}
+    impl DocumentBuilder for TestObj {}
 
     #[test]
     fn test_create_credential() -> Result<(), String> {
@@ -169,7 +170,7 @@ mod tests {
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
         );
-        assert_json_include!(vc, expect);
+        assert_json_eq!(vc, expect);
         Ok(())
     } 
 }

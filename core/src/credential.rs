@@ -14,12 +14,11 @@ use crate::HashMap;
 // --- 
 // Default context and Cred types are defaulted but can be redefined 
 
-type VerificationContext = [&'static str];
+type VerificationContext = [&'static str;2];
 
 pub const CONTEXT_CREDENTIALS:  VerificationContext = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
-
-pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: str = "PermanentResidentCard";
-pub const CRED_TYPE_BANK_CARD: str = "BankCard";
+pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: &'static str = "PermanentResidentCard";
+pub const CRED_TYPE_BANK_CARD: &'static str = "BankCard";
 
 #[derive(Serialize, Deserialize, Clone)]
 struct CredentialSubject {
@@ -56,7 +55,7 @@ pub struct IntegrityProof <'a> {
     proof_value: String,
 }
 
-impl VerifiableCredential <'_>  {
+impl <'a> VerifiableCredential <'a>  {
     pub fn new (
         context: VerificationContext,
         cred_type: String, 
