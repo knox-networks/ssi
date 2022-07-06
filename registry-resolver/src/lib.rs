@@ -60,46 +60,63 @@ mod tests {
         };
     }
 
-    // Test Case One - Succeeds
-    // Test Case Two - Fails Due To Network Error
-    // Test Case Three - Fails Due To Parsing Error
-    #[test]
-    fn test_create() -> Result<(), String> {
-        let mut mock_client = registry_client::MockRegistryClient::default();
-
-        let did = String::from("did:knox:123456");
-        let doc = json!({
+    fn create_did_doc(did: String) -> serde_json::Value {
+        return json!({
                 "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
-                "id":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh",
+                "id":did,
                 "authentication":[
-                    {"id":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh#z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","type":"Ed25519VerificationKey2020","controller":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","publicKeyMultibase":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh"
+                    {"id":format!("did:knox:{}#{}", did, did),"type":"Ed25519VerificationKey2020","controller":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","publicKeyMultibase":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh"
                 }],
                 "capabilityInvocation":[
-                    {"id":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh#z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","type":"Ed25519VerificationKey2020","controller":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","publicKeyMultibase":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh"
+                    {"id":format!("did:knox:{}#{}", did, did),"type":"Ed25519VerificationKey2020","controller":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","publicKeyMultibase":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh"
                 }],
                 "capabilityDelegation":[
-                    {"id":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh#z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","type":"Ed25519VerificationKey2020","controller":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","publicKeyMultibase":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh"
+                    {"id":format!("did:knox:{}#{}", did, did),"type":"Ed25519VerificationKey2020","controller":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","publicKeyMultibase":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh"
                 }],
                 "assertionMethod":[
-                    {"id":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh#z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","type":"Ed25519VerificationKey2020","controller":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","publicKeyMultibase":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh"
+                    {"id":format!("did:knox:{}#{}", did, did),"type":"Ed25519VerificationKey2020","controller":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","publicKeyMultibase":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh"
                 }]
             }
         );
-        //Err(tonic::Status::invalid_argument("message"))
-        //Ok(tonic::Response::new(CreateResponse {}))
+    }
+
+    fn create_did() -> String {
+        return String::from("did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh");
+    }
+
+    // Test Case Three - Fails Due To Parsing Error
+    #[rstest::rstest]
+    #[case(
+        create_did(),
+        create_did_doc(create_did()),
+        Err(tonic::Status::invalid_argument("message")),
+        false
+    )]
+    #[case(
+        create_did(),
+        create_did_doc(create_did()),
+        Ok(tonic::Response::new(CreateResponse {})),
+        true
+    )]
+    fn test_create(
+        #[case] did: String,
+        #[case] doc: serde_json::Value,
+        #[case] mock_create_response: Result<tonic::Response<CreateResponse>, tonic::Status>,
+        #[case] expect_ok: bool,
+    ) {
+        let mut mock_client = registry_client::MockRegistryClient::default();
         let document: pbjson_types::Struct = serde_json::from_value(doc.clone()).unwrap();
         mock_client
             .expect_create()
             .with(eq(did.clone()), eq(Some(document.clone())))
-            .return_once(|_, _| (Ok(tonic::Response::new(CreateResponse {}))));
+            .return_once(|_, _| (mock_create_response));
 
         let resolver = RegistryResolver {
             client: Box::new(mock_client),
         };
 
         let res = tokio_await!(resolver.create(did, doc));
-        assert!(res.is_ok());
-        Ok(())
+        assert_eq!(res.is_ok(), expect_ok);
     }
 
     #[test]
