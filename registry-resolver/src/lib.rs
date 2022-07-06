@@ -8,7 +8,7 @@ pub struct RegistryResolver {
 
 impl RegistryResolver {
     pub async fn new(url: impl Into<String>) -> Self {
-        let client = GrpcClient::new(url).await;
+        let client = GrpcClient::new(url.into()).await;
         return Self {
             client: Box::new(client),
         };
