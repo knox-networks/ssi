@@ -127,9 +127,6 @@ mod tests {
         assert_eq!(res.is_ok(), expect_ok);
     }
 
-    // Test Case One - Network Failure
-    // Test Case Two - Network Success
-    // Test Case Three - Parsing Failure
     #[rstest::rstest]
     #[case::network_failure(
         create_did(),
