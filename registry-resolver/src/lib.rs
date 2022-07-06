@@ -53,12 +53,6 @@ mod tests {
         RegistryResolver,
     };
 
-    macro_rules! tokio_await {
-        ($e:expr) => {
-            tokio_test::block_on($e)
-        };
-    }
-
     fn create_did_doc(did: String) -> serde_json::Value {
         return serde_json::json!({
                 "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
@@ -106,7 +100,7 @@ mod tests {
         None,
         false
     )]
-    fn test_create(
+    async fn test_create(
         #[case] did: String,
         #[case] doc: serde_json::Value,
         #[case] mock_create_response: Option<
@@ -129,7 +123,7 @@ mod tests {
             client: Box::new(mock_client),
         };
 
-        let res = tokio_await!(resolver.create(did, doc));
+        let res = resolver.create(did, doc).await;
         assert_eq!(res.is_ok(), expect_ok);
     }
 
