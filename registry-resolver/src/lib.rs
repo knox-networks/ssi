@@ -1,5 +1,3 @@
-use mockall::predicate::*;
-
 mod registry_client;
 const DID_METHOD: &'static str = "knox";
 use registry_client::GrpcClient;
@@ -48,11 +46,12 @@ impl ssi::DIDResolver for RegistryResolver {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use serde_json::json;
     use ssi::DIDResolver;
 
-    use crate::{registry_client::registry::CreateResponse, RegistryResolver};
+    use crate::{
+        registry_client::registry::CreateResponse, registry_client::MockRegistryClient,
+        RegistryResolver,
+    };
 
     macro_rules! tokio_await {
         ($e:expr) => {
@@ -61,7 +60,7 @@ mod tests {
     }
 
     fn create_did_doc(did: String) -> serde_json::Value {
-        return json!({
+        return serde_json::json!({
                 "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
                 "id":did,
                 "authentication":[
@@ -103,7 +102,7 @@ mod tests {
     )]
     #[case(
         create_did(),
-        json!("{}"),
+        serde_json::json!("{}"),
         None,
         false
     )]
@@ -115,11 +114,14 @@ mod tests {
         >,
         #[case] expect_ok: bool,
     ) {
-        let mut mock_client = registry_client::MockRegistryClient::default();
+        let mut mock_client = MockRegistryClient::default();
         if mock_create_response.is_some() {
             mock_client
                 .expect_create()
-                .with(eq(did.clone()), eq(Some(create_did_struct(doc.clone()))))
+                .with(
+                    mockall::predicate::eq(did.clone()),
+                    mockall::predicate::eq(Some(create_did_struct(doc.clone()))),
+                )
                 .return_once(|_, _| (mock_create_response.unwrap()));
         }
 
