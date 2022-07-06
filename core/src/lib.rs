@@ -5,7 +5,7 @@
 pub trait DIDResolver {
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
     /// Return the JSON-LD document representing the DID.
-    async fn read(self, did: String) -> serde_json::Value;
+    async fn read(self, did: String) -> Result<serde_json::Value, Box<dyn std::error::Error>>;
     /// Given a `did` and the associated DID Document, register the DID Document with the external source used by the DIDResolver.
     async fn create(
         self,

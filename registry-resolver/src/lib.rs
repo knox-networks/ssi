@@ -35,12 +35,12 @@ impl ssi::DIDResolver for RegistryResolver {
         Ok(())
     }
 
-    async fn read(self, did: String) -> serde_json::Value {
-        let res = self.client.read(did).await.unwrap();
+    async fn read(self, did: String) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+        let res = self.client.read(did).await?;
         let document =
             serde_json::to_value(res.into_inner().document.unwrap_or_default()).unwrap_or_default();
 
-        return document;
+        return Ok(document);
     }
 }
 
@@ -49,7 +49,7 @@ mod tests {
     use ssi::DIDResolver;
 
     use crate::{
-        registry_client::registry::CreateResponse, registry_client::MockRegistryClient,
+        registry_client::{registry::CreateResponse, registry::ReadResponse, MockRegistryClient},
         RegistryResolver,
     };
 
@@ -127,10 +127,43 @@ mod tests {
         assert_eq!(res.is_ok(), expect_ok);
     }
 
-    #[test]
-    fn test_read() -> Result<(), String> {
-        assert!(false);
-        Ok(())
+    // Test Case One - Network Failure
+    // Test Case Two - Network Success
+    // Test Case Three - Parsing Failure
+    #[rstest::rstest]
+    #[case::network_failure(
+        create_did(),
+        Some(Err(tonic::Status::invalid_argument("message"))),
+        false
+    )]
+    #[case::success(
+        create_did(),
+        Some(Ok(tonic::Response::new(ReadResponse {
+            did: create_did(),
+            document: Some(create_did_struct(create_did_doc(create_did()))),
+            metadata: None,
+         }))),
+        true
+    )]
+    async fn test_read(
+        #[case] did: String,
+        #[case] mock_read_response: Option<Result<tonic::Response<ReadResponse>, tonic::Status>>,
+        #[case] expect_ok: bool,
+    ) {
+        let mut mock_client = MockRegistryClient::default();
+        if mock_read_response.is_some() {
+            mock_client
+                .expect_read()
+                .with(mockall::predicate::eq(did.clone()))
+                .return_once(|_| (mock_read_response.unwrap()));
+        }
+
+        let resolver = RegistryResolver {
+            client: Box::new(mock_client),
+        };
+
+        let res = resolver.read(did).await;
+        assert_eq!(res.is_ok(), expect_ok);
     }
 
     #[test]
