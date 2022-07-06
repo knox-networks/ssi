@@ -80,6 +80,12 @@ mod tests {
         );
     }
 
+    fn create_did_struct(
+        doc: serde_json::Value,
+    ) -> Result<pbjson_types::Struct, serde_json::Error> {
+        return serde_json::from_value(doc);
+    }
+
     fn create_did() -> String {
         return String::from("did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh");
     }
@@ -89,27 +95,37 @@ mod tests {
     #[case(
         create_did(),
         create_did_doc(create_did()),
-        Err(tonic::Status::invalid_argument("message")),
+        Some(Err(tonic::Status::invalid_argument("message"))),
         false
     )]
     #[case(
         create_did(),
         create_did_doc(create_did()),
-        Ok(tonic::Response::new(CreateResponse {})),
+        Some(Ok(tonic::Response::new(CreateResponse {}))),
         true
+    )]
+    #[case(
+        create_did(),
+        json!("{}"),
+        None,
+        false
     )]
     fn test_create(
         #[case] did: String,
         #[case] doc: serde_json::Value,
-        #[case] mock_create_response: Result<tonic::Response<CreateResponse>, tonic::Status>,
+        #[case] mock_create_response: Option<
+            Result<tonic::Response<CreateResponse>, tonic::Status>,
+        >,
         #[case] expect_ok: bool,
     ) {
         let mut mock_client = registry_client::MockRegistryClient::default();
-        let document: pbjson_types::Struct = serde_json::from_value(doc.clone()).unwrap();
-        mock_client
-            .expect_create()
-            .with(eq(did.clone()), eq(Some(document.clone())))
-            .return_once(|_, _| (mock_create_response));
+        if mock_create_response.is_some() {
+            let document: pbjson_types::Struct = create_did_struct(doc.clone()).unwrap();
+            mock_client
+                .expect_create()
+                .with(eq(did.clone()), eq(Some(document.clone())))
+                .return_once(|_, _| (mock_create_response.unwrap()));
+        }
 
         let resolver = RegistryResolver {
             client: Box::new(mock_client),
