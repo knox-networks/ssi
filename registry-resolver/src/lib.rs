@@ -80,10 +80,8 @@ mod tests {
         );
     }
 
-    fn create_did_struct(
-        doc: serde_json::Value,
-    ) -> Result<pbjson_types::Struct, serde_json::Error> {
-        return serde_json::from_value(doc);
+    fn create_did_struct(doc: serde_json::Value) -> pbjson_types::Struct {
+        return serde_json::from_value(doc).unwrap();
     }
 
     fn create_did() -> String {
@@ -120,10 +118,9 @@ mod tests {
     ) {
         let mut mock_client = registry_client::MockRegistryClient::default();
         if mock_create_response.is_some() {
-            let document: pbjson_types::Struct = create_did_struct(doc.clone()).unwrap();
             mock_client
                 .expect_create()
-                .with(eq(did.clone()), eq(Some(document.clone())))
+                .with(eq(did.clone()), eq(Some(create_did_struct(doc.clone()))))
                 .return_once(|_, _| (mock_create_response.unwrap()));
         }
 
