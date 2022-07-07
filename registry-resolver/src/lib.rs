@@ -28,19 +28,34 @@ impl ssi::DIDResolver for RegistryResolver {
         self,
         did: String,
         document: serde_json::Value,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        let document: pbjson_types::Struct = serde_json::from_value(document)?;
-        self.client.create(did, Some(document)).await?;
+    ) -> Result<(), ssi::ResolverError> {
+        let document: pbjson_types::Struct =
+            serde_json::from_value(document).map_err(|e| ssi::ResolverError::new(e.to_string()))?;
+        self.client
+            .create(did, Some(document))
+            .await
+            .map_err(|e| ssi::ResolverError::new(e.to_string()))?;
 
         Ok(())
     }
 
-    async fn read(self, did: String) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-        let res = self.client.read(did).await?;
-        let document =
-            serde_json::to_value(res.into_inner().document.unwrap_or_default()).unwrap_or_default();
+    async fn read(self, did: String) -> Result<serde_json::Value, ssi::ResolverError> {
+        let res = self
+            .client
+            .read(did)
+            .await
+            .map_err(|e| ssi::ResolverError::new(e.to_string()))?;
 
-        return Ok(document);
+        let document = res.into_inner().document;
+
+        if document.is_none() {
+            return Err(ssi::ResolverError::new("Document not found"));
+        }
+
+        let encoded_doc = serde_json::to_value(document.unwrap())
+            .map_err(|e| ssi::ResolverError::new(e.to_string()))?;
+
+        return Ok(encoded_doc);
     }
 }
 
@@ -146,7 +161,7 @@ mod tests {
         create_did(),
         Some(Ok(tonic::Response::new(ReadResponse {
             did: create_did(),
-            document: Some(create_did_struct(create_did_doc(create_did()))),
+            document: None,
             metadata: None,
          }))),
         false
