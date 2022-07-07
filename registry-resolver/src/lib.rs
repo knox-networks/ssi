@@ -157,6 +157,15 @@ mod tests {
          }))),
         true
     )]
+    #[case::no_document(
+        create_did(),
+        Some(Ok(tonic::Response::new(ReadResponse {
+            did: create_did(),
+            document: None,
+            metadata: None,
+         }))),
+        false
+    )]
     #[case::parsing_failure(
         create_did(),
         Some(Ok(tonic::Response::new(ReadResponse {
