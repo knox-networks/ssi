@@ -14,13 +14,26 @@ use crate::HashMap;
 // --- 
 // Default context and Cred types are defaulted but can be redefined 
 
-type VerificationContext = [&'static str;2];
+// type VerificationContext = Vec<String>;
 
-pub const CONTEXT_CREDENTIALS:  VerificationContext = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
+// pub const CONTEXT_CREDENTIALS:  [&static str; 2] = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
+
+pub const CONTEXT_CREDENTIALS: [&'static str; 2] = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
+
+#[derive(Debug, Serialize, Clone)]
+pub struct VerificationContext([&'static str; 2]);
+
+impl VerificationContext {
+    fn to_vec(&self) -> Vec<String> {
+        self.0.into_iter().map(|ctx| ctx.to_string()).collect()
+    }
+}
+
+
 pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: &'static str = "PermanentResidentCard";
 pub const CRED_TYPE_BANK_CARD: &'static str = "BankCard";
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 struct CredentialSubject {
     id : String,
     #[serde(flatten)]
@@ -28,14 +41,14 @@ struct CredentialSubject {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Credential <'a> {
+pub struct Credential {
     #[serde(flatten)]
-    verifiable_credential:VerifiableCredential <'a>,
-    proof: IntegrityProof <'a>,
+    verifiable_credential:VerifiableCredential,
+    proof: IntegrityProof,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct VerifiableCredential <'a> {
+pub struct VerifiableCredential {
     #[serde(rename = "@context")]
     context:  VerificationContext,
     #[serde(rename = "@id")]
@@ -47,7 +60,9 @@ pub struct VerifiableCredential <'a> {
     pub property_set: HashMap<String, Value>,
 }
 
-pub struct IntegrityProof <'a> {
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct IntegrityProof {
     proof_type: String,
     created: String,
     verification_method: String,
@@ -55,13 +70,14 @@ pub struct IntegrityProof <'a> {
     proof_value: String,
 }
 
-impl <'a> VerifiableCredential <'a>  {
+impl VerifiableCredential {
     pub fn new (
         context: VerificationContext,
         cred_type: String, 
         cred_subject: HashMap<String, Value>, 
         property_set: HashMap<String, Value>, id: &str) 
     -> VerifiableCredential {    
+        let context = CONTEXT_CREDENTIALS.map(|x| x.to_string()).collect();
         let vc = VerifiableCredential {
             context: context,
             id: id.to_string(),
@@ -73,9 +89,17 @@ impl <'a> VerifiableCredential <'a>  {
             },
             property_set: property_set,
         };
+        vc
     }
 
-    pub fn serialize(self) -> Value {
-        return serde_json::to_string(&self);
+    const fn get_context(&self) -> VerificationContext {
+        CONTEXT_CREDENTIALS
+    }
+
+    pub fn serialize(&self) -> Value {
+        let mut serialized = serde_json::to_value(self).unwrap();
+        let context = self.get_context().to_vec();
+        serialized["@context"] = Value::Array(context);
+        serialized
     }
 }

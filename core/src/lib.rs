@@ -39,7 +39,7 @@ pub trait DocumentBuilder {
             property_set,
             id
         );
-        Ok(vc);
+        Ok(vc)
     }
 
     /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
