@@ -146,6 +146,7 @@ mod tests {
     #[case::network_failure(
         create_did(),
         Some(Err(tonic::Status::invalid_argument("message"))),
+        Some(ssi::error::ErrorKind::NetworkFailure),
         false
     )]
     #[case::success(
@@ -155,6 +156,7 @@ mod tests {
             document: Some(create_did_struct(create_did_doc(create_did()))),
             metadata: None,
          }))),
+        None,
         true
     )]
     #[case::no_document(
@@ -164,20 +166,13 @@ mod tests {
             document: None,
             metadata: None,
          }))),
-        false
-    )]
-    #[case::parsing_failure(
-        create_did(),
-        Some(Ok(tonic::Response::new(ReadResponse {
-            did: create_did(),
-            document: Some(pbjson_types::Struct::default()),
-            metadata: None,
-         }))),
+        Some(ssi::error::ErrorKind::DocumentNotFound),
         false
     )]
     async fn test_read(
         #[case] did: String,
         #[case] mock_read_response: Option<Result<tonic::Response<ReadResponse>, tonic::Status>>,
+        #[case] expect_error_kind: Option<ssi::error::ErrorKind>,
         #[case] expect_ok: bool,
     ) {
         let mut mock_client = MockRegistryClient::default();
@@ -194,6 +189,10 @@ mod tests {
 
         let res = resolver.read(did).await;
         assert_eq!(res.is_ok(), expect_ok);
+        match res.err() {
+            Some(e) => assert_eq!(e.kind, expect_error_kind.unwrap()),
+            None => assert!(expect_error_kind.is_none()),
+        }
     }
 
     #[test]
