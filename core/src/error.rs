@@ -1,9 +1,15 @@
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum ErrorKind {
-    NotFound,
+    DocumentNotFound,
     InvalidData,
     Uncategorized,
     NetworkFailure,
+}
+
+impl std::fmt::Display for ErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -14,7 +20,7 @@ pub struct ResolverError {
 
 impl std::fmt::Display for ResolverError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.message)
+        write!(f, "{}:{}", self.kind, self.message)
     }
 }
 

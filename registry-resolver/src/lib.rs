@@ -53,7 +53,7 @@ impl ssi::DIDResolver for RegistryResolver {
             })?),
             None => Err(ssi::error::ResolverError::new(
                 "Document not found",
-                ssi::error::ErrorKind::NotFound,
+                ssi::error::ErrorKind::DocumentNotFound,
             )),
         }
     }
