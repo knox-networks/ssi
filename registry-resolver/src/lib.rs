@@ -34,7 +34,7 @@ impl ssi::DIDResolver for RegistryResolver {
         })?;
 
         self.client.create(did, Some(document)).await.map_err(|e| {
-            ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::Uncategorized)
+            ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::NetworkFailure)
         })?;
 
         Ok(())
@@ -101,18 +101,21 @@ mod tests {
         create_did(),
         create_did_doc(create_did()),
         Some(Err(tonic::Status::invalid_argument("message"))),
+        Some(ssi::error::ErrorKind::NetworkFailure),
         false
     )]
     #[case::success(
         create_did(),
         create_did_doc(create_did()),
         Some(Ok(tonic::Response::new(CreateResponse {}))),
+        None,
         true
     )]
     #[case::parsing_failure(
         create_did(),
         serde_json::json!("{}"),
         None,
+        Some(ssi::error::ErrorKind::InvalidData),
         false
     )]
     async fn test_create(
@@ -121,6 +124,7 @@ mod tests {
         #[case] mock_create_response: Option<
             Result<tonic::Response<CreateResponse>, tonic::Status>,
         >,
+        #[case] expect_error_kind: Option<ssi::error::ErrorKind>,
         #[case] expect_ok: bool,
     ) {
         let mut mock_client = MockRegistryClient::default();
@@ -140,6 +144,10 @@ mod tests {
 
         let res = resolver.create(did, doc).await;
         assert_eq!(res.is_ok(), expect_ok);
+        match res.err() {
+            Some(e) => assert_eq!(e.kind, expect_error_kind.unwrap()),
+            None => assert!(expect_error_kind.is_none()),
+        }
     }
 
     #[rstest::rstest]
