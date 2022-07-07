@@ -1,7 +1,7 @@
 mod credential;
 
-use serde_json::{self, Value};
 use credential::*;
+use serde_json::{self, Value};
 // use serde::{Deserialize, Serialize};
 // use serde_json::Result;
 use std::{collections::HashMap, error::Error};
@@ -28,18 +28,19 @@ pub trait DocumentBuilder {
     /// this is the default implementation of the `create` method. The `create` method can be overridden to create a custom credential.
     fn create_credential(
         &self,
-        cred_type: String, 
+        cred_type: String,
         cred_subject: HashMap<String, Value>,
         property_set: HashMap<String, Value>,
-        id: &str
+        id: &str,
     ) -> Result<VerifiableCredential, Box<dyn std::error::Error>> {
-        let vc = VerifiableCredential::new(CONTEXT_CREDENTIALS,
+        let vc = VerifiableCredential::new(
+            CONTEXT_CREDENTIALS,
             cred_type,
             cred_subject,
             property_set,
-            id
+            id,
         );
-        Ok(vc);
+        Ok(vc)
     }
 
     /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
@@ -50,7 +51,6 @@ pub trait DocumentBuilder {
         unimplemented!();
     }
 }
-
 
 // // ed25519 cryptography key generation & DID Document creation
 // pub fn create_identity(
@@ -93,17 +93,17 @@ pub trait DocumentBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::DocumentBuilder;
-    use std::collections::HashMap;
-    use assert_json_diff::{assert_json_eq};
     use crate::serde_json::json;
+    use crate::DocumentBuilder;
+    use assert_json_diff::assert_json_eq;
+    use std::collections::HashMap;
 
     use serde_json::Value;
     struct TestObj {}
 
     impl TestObj {
-        pub fn new() -> Self{
-            TestObj {  }
+        pub fn new() -> Self {
+            TestObj {}
         }
     }
     impl DocumentBuilder for TestObj {}
@@ -143,26 +143,64 @@ mod tests {
             },
         });
 
-        kv_body.entry("type").insert_entry(Value::Array((["VerifiableCredential", "PermanentResidentCard"])));
-        kv_body.entry("issuer").insert_entry(Value::String(("did:example:28394728934792387")));
-        kv_body.entry("identifier").insert_entry(Value::String(("did:example:28394728934792387")));
-        kv_body.entry("name").insert_entry(Value::String(("Permanent Resident Card")));
-        kv_body.entry("description").insert_entry(Value::String(("Government of Example Permanent Resident Card.")));
-        kv_body.entry("issuanceDate").insert_entry(Value::String(("2019-12-03T12:19:52Z")));
-        kv_body.entry("expirationDate").insert_entry(Value::String(("2029-12-03T12:19:52Z")));
-       
-        kv_subject.entry("id").insert_entry(Value::String(("did:example:b34ca6cd37bbf23")));
-        kv_subject.entry("type").insert_entry(Value::Array((["PermanentResident", "Person"])));
-        kv_subject.entry("givenName").insert_entry(Value::String(("JOHN")));
-        kv_subject.entry("familyName").insert_entry(Value::String(("SMITH")));
-        kv_subject.entry("gender").insert_entry(Value::String(("Male")));
-        kv_subject.entry("image").insert_entry(Value::String(("data:image/png;base64,iVBORw0KGgo...kJggg==")));
-        kv_subject.entry("residentSince").insert_entry(Value::String(("2015-01-01")));
-        kv_subject.entry("lprCategory").insert_entry(Value::String(("C09")));
-        kv_subject.entry("lprNumber").insert_entry(Value::String(("999-999-999")));
-        kv_subject.entry("commuterClassification").insert_entry(Value::String(("C1")));
-        kv_subject.entry("birthCountry").insert_entry(Value::String(("Bahamas")));
-        kv_subject.entry("birthDate").insert_entry(Value::String(("1958-07-17")));
+        kv_body.entry("type").insert_entry(Value::Array(
+            (["VerifiableCredential", "PermanentResidentCard"]),
+        ));
+        kv_body
+            .entry("issuer")
+            .insert_entry(Value::String(("did:example:28394728934792387")));
+        kv_body
+            .entry("identifier")
+            .insert_entry(Value::String(("did:example:28394728934792387")));
+        kv_body
+            .entry("name")
+            .insert_entry(Value::String(("Permanent Resident Card")));
+        kv_body.entry("description").insert_entry(Value::String(
+            ("Government of Example Permanent Resident Card."),
+        ));
+        kv_body
+            .entry("issuanceDate")
+            .insert_entry(Value::String(("2019-12-03T12:19:52Z")));
+        kv_body
+            .entry("expirationDate")
+            .insert_entry(Value::String(("2029-12-03T12:19:52Z")));
+
+        kv_subject
+            .entry("id")
+            .insert_entry(Value::String(("did:example:b34ca6cd37bbf23")));
+        kv_subject
+            .entry("type")
+            .insert_entry(Value::Array((["PermanentResident", "Person"])));
+        kv_subject
+            .entry("givenName")
+            .insert_entry(Value::String(("JOHN")));
+        kv_subject
+            .entry("familyName")
+            .insert_entry(Value::String(("SMITH")));
+        kv_subject
+            .entry("gender")
+            .insert_entry(Value::String(("Male")));
+        kv_subject.entry("image").insert_entry(Value::String(
+            ("data:image/png;base64,iVBORw0KGgo...kJggg=="),
+        ));
+        kv_subject
+            .entry("residentSince")
+            .insert_entry(Value::String(("2015-01-01")));
+        kv_subject
+            .entry("lprCategory")
+            .insert_entry(Value::String(("C09")));
+        kv_subject
+            .entry("lprNumber")
+            .insert_entry(Value::String(("999-999-999")));
+        kv_subject
+            .entry("commuterClassification")
+            .insert_entry(Value::String(("C1")));
+        kv_subject
+            .entry("birthCountry")
+            .insert_entry(Value::String(("Bahamas")));
+        kv_subject
+            .entry("birthDate")
+            .insert_entry(Value::String(("1958-07-17")));
 
         let vc = to.create_credential(
             DocumentBuilder::CRED_TYPE_PERMANENT_RESIDENT_CARD,
@@ -172,5 +210,6 @@ mod tests {
         );
         assert_json_eq!(vc, expect);
         Ok(())
-    } 
+    }
 }
+

@@ -19,10 +19,11 @@ impl ssi::DIDResolver for RegistryResolver {
         self: &RegistryResolver,
         did: String,
         document: serde_json::Value,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
         let mut client = RegistryServiceClient::connect(self.url.clone())
             .await
             .unwrap();
+        let doc_value = document.clone();
         let document: HashMap<String, pbjson_types::Value> =
             serde_json::from_value(document).unwrap();
         client
@@ -32,7 +33,7 @@ impl ssi::DIDResolver for RegistryResolver {
             })
             .await
             .unwrap();
-        Ok(())
+        Ok(doc_value)
     }
 
     async fn read(&self, did: String) -> serde_json::Value {
