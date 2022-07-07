@@ -29,33 +29,33 @@ impl ssi::DIDResolver for RegistryResolver {
         did: String,
         document: serde_json::Value,
     ) -> Result<(), ssi::error::ResolverError> {
-        let document: pbjson_types::Struct = serde_json::from_value(document)
-            .map_err(|e| ssi::error::ResolverError::new(e.to_string()))?;
-        self.client
-            .create(did, Some(document))
-            .await
-            .map_err(|e| ssi::error::ResolverError::new(e.to_string()))?;
+        let document: pbjson_types::Struct = serde_json::from_value(document).map_err(|e| {
+            ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::InvalidData)
+        })?;
+
+        self.client.create(did, Some(document)).await.map_err(|e| {
+            ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::Uncategorized)
+        })?;
 
         Ok(())
     }
 
     async fn read(self, did: String) -> Result<serde_json::Value, ssi::error::ResolverError> {
-        let res = self
-            .client
-            .read(did)
-            .await
-            .map_err(|e| ssi::error::ResolverError::new(e.to_string()))?;
+        let res = self.client.read(did).await.map_err(|e| {
+            ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::NetworkFailure)
+        })?;
 
         let document = res.into_inner().document;
 
-        if document.is_none() {
-            return Err(ssi::error::ResolverError::new("Document not found"));
+        match document {
+            Some(document) => Ok(serde_json::to_value(document).map_err(|e| {
+                ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::InvalidData)
+            })?),
+            None => Err(ssi::error::ResolverError::new(
+                "Document not found",
+                ssi::error::ErrorKind::NotFound,
+            )),
         }
-
-        let encoded_doc = serde_json::to_value(document.unwrap())
-            .map_err(|e| ssi::error::ResolverError::new(e.to_string()))?;
-
-        return Ok(encoded_doc);
     }
 }
 
@@ -170,7 +170,7 @@ mod tests {
         create_did(),
         Some(Ok(tonic::Response::new(ReadResponse {
             did: create_did(),
-            document: None,
+            document: Some(pbjson_types::Struct::default()),
             metadata: None,
          }))),
         false
