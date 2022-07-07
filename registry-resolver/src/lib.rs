@@ -28,32 +28,32 @@ impl ssi::DIDResolver for RegistryResolver {
         self,
         did: String,
         document: serde_json::Value,
-    ) -> Result<(), ssi::ResolverError> {
-        let document: pbjson_types::Struct =
-            serde_json::from_value(document).map_err(|e| ssi::ResolverError::new(e.to_string()))?;
+    ) -> Result<(), ssi::error::ResolverError> {
+        let document: pbjson_types::Struct = serde_json::from_value(document)
+            .map_err(|e| ssi::error::ResolverError::new(e.to_string()))?;
         self.client
             .create(did, Some(document))
             .await
-            .map_err(|e| ssi::ResolverError::new(e.to_string()))?;
+            .map_err(|e| ssi::error::ResolverError::new(e.to_string()))?;
 
         Ok(())
     }
 
-    async fn read(self, did: String) -> Result<serde_json::Value, ssi::ResolverError> {
+    async fn read(self, did: String) -> Result<serde_json::Value, ssi::error::ResolverError> {
         let res = self
             .client
             .read(did)
             .await
-            .map_err(|e| ssi::ResolverError::new(e.to_string()))?;
+            .map_err(|e| ssi::error::ResolverError::new(e.to_string()))?;
 
         let document = res.into_inner().document;
 
         if document.is_none() {
-            return Err(ssi::ResolverError::new("Document not found"));
+            return Err(ssi::error::ResolverError::new("Document not found"));
         }
 
         let encoded_doc = serde_json::to_value(document.unwrap())
-            .map_err(|e| ssi::ResolverError::new(e.to_string()))?;
+            .map_err(|e| ssi::error::ResolverError::new(e.to_string()))?;
 
         return Ok(encoded_doc);
     }
