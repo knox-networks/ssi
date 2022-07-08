@@ -6,6 +6,7 @@ use credential::*;
 // use serde_json::Result;
 use std::{collections::HashMap, error::Error};
 
+pub mod error;
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
 /// The DIDResolver is responsible for resolving the `verificationMethod` to a key that can be used to verify the proof.
@@ -13,13 +14,20 @@ use std::{collections::HashMap, error::Error};
 pub trait DIDResolver {
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
     /// Return the JSON-LD document representing the DID.
-    async fn read(&self, did: String) -> serde_json::Value;
+    async fn read(self, did: String) -> Result<serde_json::Value, error::ResolverError>;
     /// Given a `did` and the associated DID Document, register the DID Document with the external source used by the DIDResolver.
-    async fn create(
-        &self,
-        did: String,
-        doc: serde_json::Value,
-    ) -> Result<serde_json::Value, Box<dyn std::error::Error>>;
+    async fn create(self, did: String, doc: serde_json::Value) -> Result<(), error::ResolverError>;
+    // Returns the DID Method that the DID Resolver is compatible with. Each resolver can only be compatible with one.
+    fn get_method() -> &'static str;
+    // Given a `did` and `key` it will construct the proper `verificationMethod` to use as part of the data integrity proof creation process.
+    fn create_verification_method(did: String, key_id: String) -> String {
+        return format!(
+            "did:{}:{}#{}",
+            String::from(Self::get_method()),
+            did,
+            key_id
+        );
+    }
 }
 
 pub trait DocumentBuilder {
