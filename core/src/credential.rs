@@ -14,21 +14,12 @@ use crate::HashMap;
 // --- 
 // Default context and Cred types are defaulted but can be redefined 
 
-// type VerificationContext = Vec<String>;
+type VerificationContext = [&'static str; 2];
 
-// pub const CONTEXT_CREDENTIALS:  [&static str; 2] = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
-
-pub const CONTEXT_CREDENTIALS: [&'static str; 2] = ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"];
-
-#[derive(Debug, Serialize, Clone)]
-pub struct VerificationContext([&'static str; 2]);
-
-impl VerificationContext {
-    fn to_vec(&self) -> Vec<String> {
-        self.0.into_iter().map(|ctx| ctx.to_string()).collect()
-    }
-}
-
+pub const CONTEXT_CREDENTIALS: VerificationContext = [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://www.w3.org/2018/credentials/examples/v1",
+];
 
 pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: &'static str = "PermanentResidentCard";
 pub const CRED_TYPE_BANK_CARD: &'static str = "BankCard";
@@ -41,6 +32,7 @@ struct CredentialSubject {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(bound(deserialize = "'de: 'static"))]
 pub struct Credential {
     #[serde(flatten)]
     verifiable_credential:VerifiableCredential,
@@ -48,6 +40,7 @@ pub struct Credential {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(bound(deserialize = "'de: 'static"))]
 pub struct VerifiableCredential {
     #[serde(rename = "@context")]
     context:  VerificationContext,
@@ -77,7 +70,6 @@ impl VerifiableCredential {
         cred_subject: HashMap<String, Value>, 
         property_set: HashMap<String, Value>, id: &str) 
     -> VerifiableCredential {    
-        let context = CONTEXT_CREDENTIALS.map(|x| x.to_string()).collect();
         let vc = VerifiableCredential {
             context: context,
             id: id.to_string(),
@@ -92,14 +84,7 @@ impl VerifiableCredential {
         vc
     }
 
-    const fn get_context(&self) -> VerificationContext {
-        CONTEXT_CREDENTIALS
-    }
-
     pub fn serialize(&self) -> Value {
-        let mut serialized = serde_json::to_value(self).unwrap();
-        let context = self.get_context().to_vec();
-        serialized["@context"] = Value::Array(context);
-        serialized
+        return serde_json::to_value(&self).unwrap();
     }
 }

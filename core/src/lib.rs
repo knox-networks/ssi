@@ -103,7 +103,7 @@ mod tests {
 
     impl TestObj {
         pub fn new() -> Self{
-            TestObj {  }
+            TestObj {}
         }
     }
     impl DocumentBuilder for TestObj {}
@@ -143,26 +143,26 @@ mod tests {
             },
         });
 
-        kv_body.entry("type").insert_entry(Value::Array((["VerifiableCredential", "PermanentResidentCard"])));
-        kv_body.entry("issuer").insert_entry(Value::String(("did:example:28394728934792387")));
-        kv_body.entry("identifier").insert_entry(Value::String(("did:example:28394728934792387")));
-        kv_body.entry("name").insert_entry(Value::String(("Permanent Resident Card")));
-        kv_body.entry("description").insert_entry(Value::String(("Government of Example Permanent Resident Card.")));
-        kv_body.entry("issuanceDate").insert_entry(Value::String(("2019-12-03T12:19:52Z")));
-        kv_body.entry("expirationDate").insert_entry(Value::String(("2029-12-03T12:19:52Z")));
+        // kv_body.entry("type".to_string()).insert_entry(Value::Array((["VerifiableCredential", "PermanentResidentCard"])));
+        kv_body.entry("issuer".to_string()).insert_entry(Value::String(("did:example:28394728934792387".to_string())));
+        kv_body.entry("identifier".to_string()).insert_entry(Value::String(("did:example:28394728934792387".to_string())));
+        kv_body.entry("name".to_string()).insert_entry(Value::String(("Permanent Resident Card".to_string())));
+        kv_body.entry("description".to_string()).insert_entry(Value::String(("Government of Example Permanent Resident Card.".to_string())));
+        kv_body.entry("issuanceDate".to_string()).insert_entry(Value::String(("2019-12-03T12:19:52Z".to_string())));
+        kv_body.entry("expirationDate".to_string()).insert_entry(Value::String(("2029-12-03T12:19:52Z".to_string())));
        
-        kv_subject.entry("id").insert_entry(Value::String(("did:example:b34ca6cd37bbf23")));
-        kv_subject.entry("type").insert_entry(Value::Array((["PermanentResident", "Person"])));
-        kv_subject.entry("givenName").insert_entry(Value::String(("JOHN")));
-        kv_subject.entry("familyName").insert_entry(Value::String(("SMITH")));
-        kv_subject.entry("gender").insert_entry(Value::String(("Male")));
-        kv_subject.entry("image").insert_entry(Value::String(("data:image/png;base64,iVBORw0KGgo...kJggg==")));
-        kv_subject.entry("residentSince").insert_entry(Value::String(("2015-01-01")));
-        kv_subject.entry("lprCategory").insert_entry(Value::String(("C09")));
-        kv_subject.entry("lprNumber").insert_entry(Value::String(("999-999-999")));
-        kv_subject.entry("commuterClassification").insert_entry(Value::String(("C1")));
-        kv_subject.entry("birthCountry").insert_entry(Value::String(("Bahamas")));
-        kv_subject.entry("birthDate").insert_entry(Value::String(("1958-07-17")));
+        kv_subject.entry("id".to_string()).insert_entry(Value::String(("did:example:b34ca6cd37bbf23".to_string())));
+        // kv_subject.entry("type".to_string()).insert_entry(Value::Array((["PermanentResident", "Person"])));
+        kv_subject.entry("givenName".to_string()).insert_entry(Value::String(("JOHN".to_string())));
+        kv_subject.entry("familyName".to_string()).insert_entry(Value::String(("SMITH".to_string())));
+        kv_subject.entry("gender".to_string()).insert_entry(Value::String(("Male".to_string())));
+        kv_subject.entry("image".to_string()).insert_entry(Value::String(("data:image/png;base64,iVBORw0KGgo...kJggg==".to_string())));
+        kv_subject.entry("residentSince".to_string()).insert_entry(Value::String(("2015-01-01".to_string())));
+        kv_subject.entry("lprCategory".to_string()).insert_entry(Value::String(("C09".to_string())));
+        kv_subject.entry("lprNumber".to_string()).insert_entry(Value::String(("999-999-999".to_string())));
+        kv_subject.entry("commuterClassification".to_string()).insert_entry(Value::String(("C1".to_string())));
+        kv_subject.entry("birthCountry".to_string()).insert_entry(Value::String(("Bahamas".to_string())));
+        kv_subject.entry("birthDate".to_string()).insert_entry(Value::String(("1958-07-17".to_string())));
 
         let vc = to.create_credential(
             DocumentBuilder::CRED_TYPE_PERMANENT_RESIDENT_CARD,
