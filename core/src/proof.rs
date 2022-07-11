@@ -83,7 +83,8 @@ mod tests {
             return "Ed25519Signature2018".to_string();
         }
         fn get_verification_method(&self, _relation: signer::VerificationRelation) -> String {
-            return "did:example:123456789abcdefghi#keys-1".to_string();
+            let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+            return format!("did:knox:{}#keys-1", encoded_pk);
         }
 
         fn encode(&self, sig: MockSignature) -> String {
