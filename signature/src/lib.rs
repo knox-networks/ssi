@@ -1,4 +1,3 @@
-use signature::Verifier;
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 
 pub enum VerificationRelation {
@@ -124,13 +123,8 @@ impl DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
         data: String,
         relation: VerificationRelation,
     ) -> Result<(), signature::Error> {
-        match relation {
-            VerificationRelation::AssertionMethod => {
-                let decoded_sig = self.decode(data)?;
-                self.verify(msg, &decoded_sig)
-            }
-            _ => panic!("Unsupported relation"),
-        }
+        let decoded_sig = self.decode(data)?;
+        return self.relational_verify(msg, &decoded_sig, relation);
     }
 
     fn relational_verify(
@@ -139,9 +133,29 @@ impl DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
         sig: &Ed25519Signature,
         relation: VerificationRelation,
     ) -> Result<(), signature::Error> {
+        let sig_bytes: [u8; 64] = sig
+            .0
+            .as_slice()
+            .try_into()
+            .map_err(|_| signature::Error::new())?;
+        let sig = ed25519_zebra::Signature::from(sig_bytes);
         match relation {
-            VerificationRelation::AssertionMethod => self.verify(msg, sig),
-            _ => panic!("Unsupported relation"),
+            VerificationRelation::AssertionMethod => self
+                .public_key
+                .verify(&sig, msg)
+                .map_err(|_| signature::Error::new()),
+            VerificationRelation::Authentication => self
+                .public_key
+                .verify(&sig, msg)
+                .map_err(|_| signature::Error::new()),
+            VerificationRelation::CapabilityInvocation => self
+                .public_key
+                .verify(&sig, msg)
+                .map_err(|_| signature::Error::new()),
+            VerificationRelation::CapabilityDelegation => self
+                .public_key
+                .verify(&sig, msg)
+                .map_err(|_| signature::Error::new()),
         }
     }
 }
