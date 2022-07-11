@@ -19,6 +19,10 @@ where
         let signature = self.sign(data);
         return self.encode(signature);
     }
+    fn try_encoded_sign(&self, data: &[u8]) -> Result<String, Box<dyn std::error::Error>> {
+        let signature = self.try_sign(data)?;
+        return Ok(self.encode(signature));
+    }
     fn encode(&self, sig: S) -> String;
 }
 
