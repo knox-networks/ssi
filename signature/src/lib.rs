@@ -84,8 +84,8 @@ impl signature::Signature for Ed25519Signature {
     }
 }
 
-impl From<Ed25519DidSigner> for Ed25519DidVerifier {
-    fn from(signer: Ed25519DidSigner) -> Self {
+impl From<&Ed25519DidSigner> for Ed25519DidVerifier {
+    fn from(signer: &Ed25519DidSigner) -> Self {
         Self {
             public_key: signer.public_key,
         }
