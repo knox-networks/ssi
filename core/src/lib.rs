@@ -1,4 +1,7 @@
 pub mod error;
+pub mod proof;
+pub mod signer;
+
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
 /// The DIDResolver is responsible for resolving the `verificationMethod` to a key that can be used to verify the proof.
@@ -12,11 +15,11 @@ pub trait DIDResolver {
     // Returns the DID Method that the DID Resolver is compatible with. Each resolver can only be compatible with one.
     fn get_method() -> &'static str;
     // Given a `did` and `key` it will construct the proper `verificationMethod` to use as part of the data integrity proof creation process.
-    fn create_verification_method(did: String, key_id: String) -> String {
+    fn create_verification_method(public_key: String, key_id: String) -> String {
         return format!(
             "did:{}:{}#{}",
             String::from(Self::get_method()),
-            did,
+            public_key,
             key_id
         );
     }
@@ -43,15 +46,6 @@ pub fn create_presentation(
 pub fn create_identity(
     _mnemonic: &str,
     _password: Option<String>,
-) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-    unimplemented!();
-}
-
-/// Given a JSON-LD document, create a data integrity proof for the document.
-/// Currently, only `Ed25519Signature2018` data integrity proofs in the JSON-LD format can be created.
-pub fn create_data_integrity_proof<S: signature::Signature>(
-    _doc: serde_json::Value,
-    _signer: &impl signature::Signer<S>,
 ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     unimplemented!();
 }
