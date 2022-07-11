@@ -59,9 +59,11 @@ mod tests {
                     signer.get_verification_method(relation)
                 );
                 assert_eq!(proof.proof_purpose, relation.to_string());
+
                 let mut hasher = sha2::Sha512::new();
                 hasher.update(crate::proof::normalization::normalize(doc.clone()));
                 let comparison = hasher.finalize();
+
                 assert!(verifier
                     .decoded_relational_verify(&comparison, proof.proof_value, relation)
                     .is_ok());
