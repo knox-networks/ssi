@@ -2,6 +2,7 @@ use sha2::{Digest, Sha512};
 
 mod normalization;
 
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct DataIntegrityProof {
     proof_type: String,
     created: String,
