@@ -104,14 +104,12 @@ mod tests {
         assert!(res.is_ok());
         match res {
             Ok(proof) => {
-                assert_eq!(proof.proof_type, signer.get_verification_method(relation));
-                assert_eq!(proof.created, chrono::Utc::now().to_rfc3339());
+                assert_eq!(proof.proof_type, signer.get_proof_type());
                 assert_eq!(
                     proof.verification_method,
                     signer.get_verification_method(relation)
                 );
                 assert_eq!(proof.proof_purpose, relation.to_string());
-                assert_eq!(proof.proof_value.len(), 64);
             }
             Err(e) => panic!("{:?}", e),
         }
