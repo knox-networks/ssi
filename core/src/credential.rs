@@ -46,8 +46,11 @@ pub struct VerifiableCredential {
     context:  VerificationContext,
     #[serde(rename = "@id")]
     id: String,
+    #[serde(rename = "type")]
     cred_type: String,
+    #[serde(rename = "issuanceDate")]
     issuance_date: SystemTime,
+    #[serde(rename = "credentialSubject")]
     subject: CredentialSubject,
     #[serde(flatten)]
     pub property_set: HashMap<String, Value>,

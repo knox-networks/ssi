@@ -2,9 +2,7 @@ mod credential;
 
 use serde_json::{self, Value};
 use credential::*;
-// use serde::{Deserialize, Serialize};
-// use serde_json::Result;
-use std::{collections::HashMap, error::Error};
+use std::{collections::HashMap};
 
 pub mod error;
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
@@ -60,49 +58,48 @@ pub trait DocumentBuilder {
 }
 
 
-// // ed25519 cryptography key generation & DID Document creation
-// pub fn create_identity(
-//     _mnemonic: &str,
-//     _password: Option<String>,
-// ) -> Result<(), Error> {
-//     unimplemented!();
-// }
+// Commented due to failing cargo check
+// ed25519 cryptography key generation & DID Document creation
+pub fn create_identity(
+    _mnemonic: &str,
+    _password: Option<String>,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    unimplemented!();
+}
 
-// /// Given a JSON-LD document, c
-// /// reate a data integrity proof for the document.
-// /// Currently, only `Ed25519Signature2018` data integrity proofs in the JSON-LD format can be created.
-// pub fn create_data_integrity_proof<S: signature::Signature>(
-//     _doc: serde_json::Value,
-//     _signer: &impl signature::Signer<S>,
-// ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-//     unimplemented!();
-// }
+/// Given a JSON-LD document, c
+/// reate a data integrity proof for the document.
+/// Currently, only `Ed25519Signature2018` data integrity proofs in the JSON-LD format can be created.
+pub fn create_data_integrity_proof<S: signature::Signature>(
+    _doc: serde_json::Value,
+    _signer: &impl signature::Signer<S>,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    unimplemented!();
+}
 
 // /// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the document.
 // /// This will by parsing the `verificationMethod` property of the data integrity proof and resolving it to a key that can be used to verify the proof.
 // /// Currently only `Ed25519Signature2018` is supported for data integrity proof verification.
-// pub fn verify_data_integrity_proof<S: signature::Signature>(
-//     _doc: serde_json::Value,
-//     _resolver: &impl DIDResolver,
-//     _verifier: &impl signature::Verifier<S>,
-// ) -> Result<bool, Box<dyn std::error::Error>> {
-//     unimplemented!();
-// }
+pub fn verify_data_integrity_proof<S: signature::Signature>(
+    _doc: serde_json::Value,
+    _resolver: &impl DIDResolver,
+    _verifier: &impl signature::Verifier<S>,
+) -> Result<bool, Box<dyn std::error::Error>> {
+    unimplemented!();
+}
 
-// /// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the Verifiable Presentation.
-// /// Then each claimed Verifiable Credential must be verified for validity and ownership of the credential by the subject.
-// pub fn verify_presentation<S: signature::Signature>(
-//     _doc: serde_json::Value,
-//     _resolver: &impl DIDResolver,
-//     _verifier: &impl signature::Verifier<S>,
-// ) -> Result<bool, Box<dyn std::error::Error>> {
-//     unimplemented!();
-// }
+/// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the Verifiable Presentation.
+/// Then each claimed Verifiable Credential must be verified for validity and ownership of the credential by the subject.
+pub fn create_presentation(
+    _creds: Vec<serde_json::Value>,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    unimplemented!();
+}
 
 #[cfg(test)]
 mod tests {
     use crate::DocumentBuilder;
-    use std::collections::HashMap;
+    use std::{collections::HashMap, vec};
     use assert_json_diff::{assert_json_eq};
     use crate::serde_json::json;
 
@@ -122,12 +119,12 @@ mod tests {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
         let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
-        let expect = json!({
+        let _expect = json!({
             "@context": [
               "https://www.w3.org/2018/credentials/v1",
-              "https://w3id.org/citizenship/v1"
+              "https://www.w3.org/2018/credentials/examples/v1"
             ],
-            "id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+            "@id": "https://issuer.oidp.uscis.gov/credentials/83627465",
             "type": ["VerifiableCredential", "PermanentResidentCard"],
             "issuer": "did:example:28394728934792387",
             "identifier": "83627465",
@@ -151,19 +148,29 @@ mod tests {
             },
         });
     
-        // kv_body.entry("type".to_string()).insert_entry(Value::Array((["VerifiableCredential", "PermanentResidentCard"])));
+        // let vc = serde_json::to_string("VerifiableCredential").unwrap();
+        let type_rs = serde_json::to_value(["VerifiableCredential".to_string(), "PermanentResidentCard".to_string()]);
+        if type_rs.is_ok() {
+            kv_body.entry("type".to_string()).or_insert(type_rs.unwrap());
+        }
+        
         kv_body.entry("issuer".to_string()).or_insert(Value::String("did:example:28394728934792387".to_string()));
-        kv_body.entry("identifier".to_string()).or_insert(Value::String("did:example:28394728934792387".to_string()));
+        kv_body.entry("identifier".to_string()).or_insert(Value::String("83627465".to_string()));
         kv_body.entry("name".to_string()).or_insert(Value::String("Permanent Resident Card".to_string()));
         kv_body.entry("description".to_string()).or_insert(Value::String("Government of Example Permanent Resident Card.".to_string()));
         kv_body.entry("issuanceDate".to_string()).or_insert(Value::String("2019-12-03T12:19:52Z".to_string()));
         kv_body.entry("expirationDate".to_string()).or_insert(Value::String("2029-12-03T12:19:52Z".to_string()));
        
         kv_subject.entry("id".to_string()).or_insert(Value::String("did:example:b34ca6cd37bbf23".to_string()));
-        // kv_subject.entry("type".to_string()).insert_entry(Value::Array((["PermanentResident", "Person"])));
+
+        let type_rs = serde_json::to_value(["PermanentResident".to_string(), "Person".to_string()]);
+        if type_rs.is_ok() {
+            kv_subject.entry("type".to_string()).or_insert(type_rs.unwrap());
+        }
+
         kv_subject.entry("givenName".to_string()).or_insert(Value::String("JOHN".to_string()));
         kv_subject.entry("familyName".to_string()).or_insert(Value::String("SMITH".to_string()));
-        kv_subject.entry("gender".to_string()).or_insert(Value::String(("Male".to_string())));
+        kv_subject.entry("gender".to_string()).or_insert(Value::String("Male".to_string()));
         kv_subject.entry("image".to_string()).or_insert(Value::String("data:image/png;base64,iVBORw0KGgo...kJggg==".to_string()));
         kv_subject.entry("residentSince".to_string()).or_insert(Value::String("2015-01-01".to_string()));
         kv_subject.entry("lprCategory".to_string()).or_insert(Value::String("C09".to_string()));
@@ -179,7 +186,7 @@ mod tests {
             "https://issuer.oidp.uscis.gov/credentials/83627465",
         );
         assert!(vc.is_ok());
-        // assert_json_eq!(vc, expect);
+        assert_json_eq!(_expect, vc.unwrap());
         Ok(())
     } 
 }
