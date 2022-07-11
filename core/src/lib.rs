@@ -1,6 +1,5 @@
 pub mod error;
 pub mod proof;
-pub mod signer;
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.

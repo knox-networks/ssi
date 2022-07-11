@@ -1,7 +1,7 @@
 use sha2::{Digest, Sha512};
 
-use crate::signer;
 mod normalization;
+mod signer;
 
 pub struct DataIntegrityProof {
     proof_type: String,
@@ -34,8 +34,86 @@ pub fn create_data_integrity_proof<S: signature::Signature>(
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
+    use super::{create_data_integrity_proof, signer};
+    use signer::DidSigner;
+
+    /// A generalized signature that can use a variety of possible backends.
+    #[derive(Debug, PartialEq, Clone)]
+    struct MockSignature(Vec<u8>);
+
+    impl AsRef<[u8]> for MockSignature {
+        fn as_ref(&self) -> &[u8] {
+            self.0.as_ref()
+        }
+    }
+
+    impl signature::Signature for MockSignature {
+        fn from_bytes(bytes: &[u8]) -> Result<Self, signature::Error> {
+            Ok(MockSignature(bytes.to_vec()))
+        }
+    }
+
+    struct Ed25519DidSigner {
+        private_key: ed25519_zebra::SigningKey,
+        public_key: ed25519_zebra::VerificationKey,
+    }
+
+    impl Ed25519DidSigner {
+        fn new() -> Self {
+            let sk = ed25519_zebra::SigningKey::new(rand::thread_rng());
+
+            return Self {
+                private_key: sk,
+                public_key: ed25519_zebra::VerificationKey::from(&sk),
+            };
+        }
+    }
+
+    impl signature::Signer<MockSignature> for Ed25519DidSigner {
+        fn try_sign(&self, data: &[u8]) -> Result<MockSignature, signature::Error> {
+            let res: [u8; 64] = self.private_key.sign(data).into();
+            return Ok(MockSignature(res.to_vec()));
+        }
+    }
+
+    impl signer::DidSigner<MockSignature> for Ed25519DidSigner {
+        fn get_proof_type(&self) -> String {
+            return "Ed25519Signature2018".to_string();
+        }
+        fn get_verification_method(&self, _relation: signer::VerificationRelation) -> String {
+            return "did:example:123456789abcdefghi#keys-1".to_string();
+        }
+
+        fn encode(&self, sig: MockSignature) -> String {
+            multibase::encode(multibase::Base::Base58Btc, sig)
+        }
+    }
 
     #[rstest::rstest]
-    #[case::success()]
-    fn test_create_data_integrity_proof() {}
+    #[case::success(json!("{}"), signer::VerificationRelation::AssertionMethod)]
+    fn test_create_data_integrity_proof(
+        #[case] doc: serde_json::Value,
+        #[case] relation: signer::VerificationRelation,
+    ) {
+        let signer = Ed25519DidSigner::new();
+
+        let res = create_data_integrity_proof(&signer, doc, relation);
+
+        assert!(res.is_ok());
+        match res {
+            Ok(proof) => {
+                assert_eq!(proof.proof_type, signer.get_verification_method(relation));
+                assert_eq!(proof.created, chrono::Utc::now().to_rfc3339());
+                assert_eq!(
+                    proof.verification_method,
+                    signer.get_verification_method(relation)
+                );
+                assert_eq!(proof.proof_purpose, relation.to_string());
+                assert_eq!(proof.proof_value.len(), 64);
+            }
+            Err(e) => panic!("{:?}", e),
+        }
+    }
 }
