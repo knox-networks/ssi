@@ -22,7 +22,7 @@ pub fn create_data_integrity_proof<S: signature::Signature>(
     hasher.update(normalization::normalize(doc));
     let result = hasher.finalize();
 
-    let encoded_sig = signer.encoded_sign(&result); //multibase::encode(multibase::Base::Base58Btc, signer.sign(&result));
+    let encoded_sig = signer.encoded_sign(&result);
     return Ok(DataIntegrityProof {
         proof_type: signer.get_proof_type(),
         created: chrono::Utc::now().to_rfc3339(),

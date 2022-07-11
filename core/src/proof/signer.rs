@@ -15,9 +15,7 @@ where
         let signature = self.sign(data);
         return self.encode(signature);
     }
-    fn encode(&self, sig: S) -> String {
-        multibase::encode(multibase::Base::Base58Btc, sig)
-    }
+    fn encode(&self, sig: S) -> String;
 }
 
 impl std::fmt::Display for VerificationRelation {
