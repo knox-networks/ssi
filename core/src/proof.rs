@@ -22,7 +22,7 @@ pub fn create_data_integrity_proof<S: signature::Signature>(
     hasher.update(normalization::normalize(doc));
     let result = hasher.finalize();
 
-    let encoded_sig = multibase::encode(multibase::Base::Base58Btc, signer.sign(&result));
+    let encoded_sig = signer.encoded_sign(&result); //multibase::encode(multibase::Base::Base58Btc, signer.sign(&result));
     return Ok(DataIntegrityProof {
         proof_type: signer.get_proof_type(),
         created: chrono::Utc::now().to_rfc3339(),
@@ -34,15 +34,8 @@ pub fn create_data_integrity_proof<S: signature::Signature>(
 
 #[cfg(test)]
 mod tests {
-    use super::DataIntegrityProof;
 
     #[rstest::rstest]
-    #[case::success(Some(DataIntegrityProof {
-        proof_type: String::from("Ed25519Signature2018"),
-        created: String::from("2020-01-01T00:00:00Z"),
-        verification_method: String::from(""),
-        proof_purpose: String::from(""),
-        proof_value: String::from(""),
-    }))]
-    fn test_create_data_integrity_proof(#[case] _expected_proof: Option<DataIntegrityProof>) {}
+    #[case::success()]
+    fn test_create_data_integrity_proof() {}
 }

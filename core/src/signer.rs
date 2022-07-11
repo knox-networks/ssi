@@ -11,10 +11,22 @@ where
 {
     fn get_proof_type(&self) -> String;
     fn get_verification_method(&self, relation: VerificationRelation) -> String;
+    fn encoded_sign(&self, data: &[u8]) -> String {
+        let signature = self.sign(data);
+        return self.encode(signature);
+    }
+    fn encode(&self, sig: S) -> String {
+        multibase::encode(multibase::Base::Base58Btc, sig)
+    }
 }
 
 impl std::fmt::Display for VerificationRelation {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        match self {
+            VerificationRelation::AssertionMethod => write!(f, "assertionMethod"),
+            VerificationRelation::Authentication => write!(f, "authentication"),
+            VerificationRelation::CapabilityInvocation => write!(f, "capabilityInvocation"),
+            VerificationRelation::CapabilityDelegation => write!(f, "capabilityDelegation"),
+        }
     }
 }
