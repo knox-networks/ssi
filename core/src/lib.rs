@@ -55,7 +55,7 @@ pub fn create_identity(
 pub fn verify_data_integrity_proof<S: signature::Signature>(
     _doc: serde_json::Value,
     _resolver: &impl DIDResolver,
-    _verifier: &impl signature::DIDVerifier<S>,
+    _verifier: &impl signature::verifier::DIDVerifier<S>,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     unimplemented!();
 }
@@ -65,7 +65,7 @@ pub fn verify_data_integrity_proof<S: signature::Signature>(
 pub fn verify_presentation<S: signature::Signature>(
     _doc: serde_json::Value,
     _resolver: &impl DIDResolver,
-    _verifier: &impl signature::DIDVerifier<S>,
+    _verifier: &impl signature::verifier::DIDVerifier<S>,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     unimplemented!();
 }
