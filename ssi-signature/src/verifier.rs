@@ -46,7 +46,7 @@ impl DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
         let sig_bytes: [u8; 64] = sig.0.as_slice().try_into().unwrap();
         self.public_key
             .verify(&ed25519_zebra::Signature::from(sig_bytes), msg)
-            .map_err(|_| SignatureError::new(ErrorKind::Uncategorized))
+            .map_err(SignatureError::from)
     }
     fn decode(&self, encoded_sig: String) -> Result<Ed25519Signature, SignatureError> {
         let res = multibase::decode(encoded_sig);
@@ -54,8 +54,7 @@ impl DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
         match res {
             Ok(sig) => {
                 let sig_bytes: [u8; 64] = sig.1.as_slice().try_into().unwrap();
-                return Ed25519Signature::from_bytes(&sig_bytes)
-                    .map_err(|_| SignatureError::new(ErrorKind::Uncategorized));
+                return Ed25519Signature::from_bytes(&sig_bytes).map_err(SignatureError::from);
             }
             _ => Err(SignatureError::new(ErrorKind::Uncategorized)),
         }
@@ -82,24 +81,25 @@ impl DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
             .as_slice()
             .try_into()
             .map_err(|_| SignatureError::new(ErrorKind::Uncategorized))?;
+
         let sig = ed25519_zebra::Signature::from(sig_bytes);
         match relation {
             VerificationRelation::AssertionMethod => self
                 .public_key
                 .verify(&sig, msg)
-                .map_err(|_| SignatureError::new(ErrorKind::Uncategorized)),
+                .map_err(SignatureError::from),
             VerificationRelation::Authentication => self
                 .public_key
                 .verify(&sig, msg)
-                .map_err(|_| SignatureError::new(ErrorKind::Uncategorized)),
+                .map_err(SignatureError::from),
             VerificationRelation::CapabilityInvocation => self
                 .public_key
                 .verify(&sig, msg)
-                .map_err(|_| SignatureError::new(ErrorKind::Uncategorized)),
+                .map_err(SignatureError::from),
             VerificationRelation::CapabilityDelegation => self
                 .public_key
                 .verify(&sig, msg)
-                .map_err(|_| SignatureError::new(ErrorKind::Uncategorized)),
+                .map_err(SignatureError::from),
         }
     }
 }

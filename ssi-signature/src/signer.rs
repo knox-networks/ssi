@@ -1,4 +1,4 @@
-use crate::error::{ErrorKind, SignatureError};
+use crate::error::SignatureError;
 use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
 
 pub trait DIDSigner<S>
@@ -42,8 +42,7 @@ impl Ed25519DidSigner {
 impl DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     fn try_sign(&self, data: &[u8]) -> Result<Ed25519Signature, SignatureError> {
         let res: [u8; 64] = self.private_key.sign(data).into();
-        return Ed25519Signature::from_bytes(&res)
-            .map_err(|_| SignatureError::new(ErrorKind::Uncategorized));
+        return Ed25519Signature::from_bytes(&res);
     }
     fn get_proof_type(&self) -> String {
         return crate::suite::PROOF_TYPE.to_string();

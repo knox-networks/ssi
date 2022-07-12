@@ -54,3 +54,13 @@ impl std::error::Error for SignatureError {
             .map(|source| source.as_ref() as &(dyn std::error::Error + 'static));
     }
 }
+
+impl From<ed25519_zebra::Error> for SignatureError {
+    fn from(e: ed25519_zebra::Error) -> Self {
+        SignatureError {
+            message: String::from(e.to_string()),
+            kind: ErrorKind::Uncategorized,
+            source: None,
+        }
+    }
+}
