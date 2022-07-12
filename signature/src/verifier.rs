@@ -1,18 +1,6 @@
 use crate::error::{ErrorKind, SignatureError};
 use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
 
-pub struct Ed25519DidVerifier {
-    public_key: ed25519_zebra::VerificationKey,
-}
-
-impl From<&crate::signer::Ed25519DidSigner> for Ed25519DidVerifier {
-    fn from(signer: &crate::signer::Ed25519DidSigner) -> Self {
-        Self {
-            public_key: signer.public_key,
-        }
-    }
-}
-
 pub trait DIDVerifier<S>
 where
     S: Signature,
@@ -39,6 +27,18 @@ where
     ) -> Result<(), SignatureError>;
 
     fn decode(&self, encoded_sig: String) -> Result<S, SignatureError>;
+}
+
+pub struct Ed25519DidVerifier {
+    public_key: ed25519_zebra::VerificationKey,
+}
+
+impl From<&crate::signer::Ed25519DidSigner> for Ed25519DidVerifier {
+    fn from(signer: &crate::signer::Ed25519DidSigner) -> Self {
+        Self {
+            public_key: signer.public_key,
+        }
+    }
 }
 
 impl DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
