@@ -116,7 +116,7 @@ mod tests {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
         let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
-        let _expect = json!({
+        let expect = json!({
             "@context": [
               "https://www.w3.org/2018/credentials/v1",
               "https://www.w3.org/2018/credentials/examples/v1"
@@ -227,7 +227,7 @@ mod tests {
             "https://issuer.oidp.uscis.gov/credentials/83627465",
         );
         assert!(vc.is_ok());
-        assert_json_eq!(_expect, vc.unwrap());
+        assert_json_eq!(expect, vc.unwrap());
         Ok(())
     }
 }
