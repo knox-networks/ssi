@@ -5,7 +5,9 @@ pub enum VerificationRelation {
     CapabilityInvocation,
     CapabilityDelegation,
 }
-/// A generalized signature that can use a variety of possible backends.
+
+pub const PROOF_TYPE: &str = "Ed25519Signature2018";
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Ed25519Signature(pub Vec<u8>);
 

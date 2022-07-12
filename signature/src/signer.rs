@@ -44,11 +44,11 @@ impl signature::Signer<Ed25519Signature> for Ed25519DidSigner {
 
 impl DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     fn get_proof_type(&self) -> String {
-        return "Ed25519Signature2018".to_string();
+        return crate::suite::PROOF_TYPE.to_string();
     }
     fn get_verification_method(&self, _relation: VerificationRelation) -> String {
         let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
-        return format!("did:knox:{}#keys-1", encoded_pk);
+        return format!("did:knox:{}#{}", encoded_pk, encoded_pk);
     }
 
     fn encode(&self, sig: Ed25519Signature) -> String {
