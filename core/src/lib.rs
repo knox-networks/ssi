@@ -1,3 +1,9 @@
+mod credential;
+
+use credential::*;
+use serde_json::{self, Value};
+use std::collections::HashMap;
+
 pub mod error;
 pub mod proof;
 
@@ -22,23 +28,37 @@ pub trait DIDResolver {
     }
 }
 
-/// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
-/// In order to become a Verifiable Credential, a data integrity proof must be created for the credential and appended to the JSON-LD document.
-pub fn create_credential(
-    _cred_type: &str,
-    _cred_subject: serde_json::Value,
-) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-    unimplemented!();
+pub trait DocumentBuilder {
+    /// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
+    /// In order to become a Verifiable Credential, a data integrity proof must be created for the credential and appended to the JSON-LD document.
+    /// this is the default implementation of the `create` method. The `create` method can be overridden to create a custom credential.
+    fn create_credential(
+        &self,
+        cred_type: String,
+        cred_subject: HashMap<String, Value>,
+        property_set: HashMap<String, Value>,
+        id: &str,
+    ) -> Result<Credential, Box<dyn std::error::Error>> {
+        let vc = Credential::new(
+            CONTEXT_CREDENTIALS,
+            cred_type,
+            cred_subject,
+            property_set,
+            id,
+        );
+        Ok(vc)
+    }
+
+    /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
+    /// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
+    fn create_presentation(
+        _creds: Vec<serde_json::Value>,
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+        unimplemented!();
+    }
 }
 
-/// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
-/// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
-pub fn create_presentation(
-    _creds: Vec<serde_json::Value>,
-) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-    unimplemented!();
-}
-
+// Commented due to failing cargo check
 // ed25519 cryptography key generation & DID Document creation
 pub fn create_identity(
     _mnemonic: &str,
@@ -66,4 +86,148 @@ pub fn verify_presentation<S: signature::Signature>(
     _verifier: &impl signature::verifier::DIDVerifier<S>,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     unimplemented!();
+}
+pub fn create_presentation(
+    _creds: Vec<serde_json::Value>,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    unimplemented!();
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::serde_json::json;
+    use crate::DocumentBuilder;
+    use assert_json_diff::assert_json_eq;
+    use std::{collections::HashMap, vec};
+
+    use serde_json::Value;
+    struct TestObj {}
+
+    impl TestObj {
+        pub fn new() -> Self {
+            TestObj {}
+        }
+    }
+    impl DocumentBuilder for TestObj {}
+
+    #[test]
+    fn test_create_credential() -> Result<(), String> {
+        let to = TestObj::new();
+        let mut kv_body: HashMap<String, Value> = HashMap::new();
+        let mut kv_subject: HashMap<String, Value> = HashMap::new();
+
+        let _expect = json!({
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://www.w3.org/2018/credentials/examples/v1"
+            ],
+            "@id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+            "type": ["VerifiableCredential", "PermanentResidentCard"],
+            "issuer": "did:example:28394728934792387",
+            "identifier": "83627465",
+            "name": "Permanent Resident Card",
+            "description": "Government of Example Permanent Resident Card.",
+            "issuanceDate": "2019-12-03T12:19:52Z",
+            "expirationDate": "2029-12-03T12:19:52Z",
+            "credentialSubject": {
+              "id": "did:example:b34ca6cd37bbf23",
+              "type": ["PermanentResident", "Person"],
+              "givenName": "JOHN",
+              "familyName": "SMITH",
+              "gender": "Male",
+              "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+              "residentSince": "2015-01-01",
+              "lprCategory": "C09",
+              "lprNumber": "999-999-999",
+              "commuterClassification": "C1",
+              "birthCountry": "Bahamas",
+              "birthDate": "1958-07-17"
+            },
+        });
+
+        let type_rs = serde_json::to_value([
+            "VerifiableCredential".to_string(),
+            "PermanentResidentCard".to_string(),
+        ]);
+        if type_rs.is_ok() {
+            kv_body
+                .entry("type".to_string())
+                .or_insert(type_rs.unwrap());
+        }
+
+        kv_body
+            .entry("issuer".to_string())
+            .or_insert(Value::String("did:example:28394728934792387".to_string()));
+        kv_body
+            .entry("identifier".to_string())
+            .or_insert(Value::String("83627465".to_string()));
+        kv_body
+            .entry("name".to_string())
+            .or_insert(Value::String("Permanent Resident Card".to_string()));
+        kv_body
+            .entry("description".to_string())
+            .or_insert(Value::String(
+                "Government of Example Permanent Resident Card.".to_string(),
+            ));
+        kv_body
+            .entry("issuanceDate".to_string())
+            .or_insert(Value::String("2019-12-03T12:19:52Z".to_string()));
+        kv_body
+            .entry("expirationDate".to_string())
+            .or_insert(Value::String("2029-12-03T12:19:52Z".to_string()));
+
+        kv_subject
+            .entry("id".to_string())
+            .or_insert(Value::String("did:example:b34ca6cd37bbf23".to_string()));
+
+        let type_rs = serde_json::to_value(["PermanentResident".to_string(), "Person".to_string()]);
+        if type_rs.is_ok() {
+            kv_subject
+                .entry("type".to_string())
+                .or_insert(type_rs.unwrap());
+        }
+
+        kv_subject
+            .entry("givenName".to_string())
+            .or_insert(Value::String("JOHN".to_string()));
+        kv_subject
+            .entry("familyName".to_string())
+            .or_insert(Value::String("SMITH".to_string()));
+        kv_subject
+            .entry("gender".to_string())
+            .or_insert(Value::String("Male".to_string()));
+        kv_subject
+            .entry("image".to_string())
+            .or_insert(Value::String(
+                "data:image/png;base64,iVBORw0KGgo...kJggg==".to_string(),
+            ));
+        kv_subject
+            .entry("residentSince".to_string())
+            .or_insert(Value::String("2015-01-01".to_string()));
+        kv_subject
+            .entry("lprCategory".to_string())
+            .or_insert(Value::String("C09".to_string()));
+        kv_subject
+            .entry("lprNumber".to_string())
+            .or_insert(Value::String("999-999-999".to_string()));
+        kv_subject
+            .entry("commuterClassification".to_string())
+            .or_insert(Value::String("C1".to_string()));
+        kv_subject
+            .entry("birthCountry".to_string())
+            .or_insert(Value::String("Bahamas".to_string()));
+        kv_subject
+            .entry("birthDate".to_string())
+            .or_insert(Value::String("1958-07-17".to_string()));
+
+        let vc = to.create_credential(
+            crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string(),
+            kv_subject,
+            kv_body,
+            "https://issuer.oidp.uscis.gov/credentials/83627465",
+        );
+        assert!(vc.is_ok());
+        assert_json_eq!(_expect, vc.unwrap());
+        Ok(())
+    }
 }
