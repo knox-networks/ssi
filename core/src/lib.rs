@@ -18,8 +18,6 @@ pub trait DIDResolver {
         return format!(
             "did:{}:{public_key}#{key_id}",
             String::from(Self::get_method()),
-            public_key,
-            key_id
         );
     }
 }
