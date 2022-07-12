@@ -13,7 +13,7 @@ pub struct DataIntegrityProof {
 
 /// Given a JSON-LD document, create a data integrity proof for the document.
 /// Currently, only `Ed25519Signature2018` data integrity proofs in the JSON-LD format can be created.
-pub fn create_data_integrity_proof<S: ssi_signature::Signature>(
+pub fn create_data_integrity_proof<S: ssi_signature::suite::Signature>(
     signer: &impl ssi_signature::signer::DIDSigner<S>,
     doc: serde_json::Value,
     relation: ssi_signature::suite::VerificationRelation,

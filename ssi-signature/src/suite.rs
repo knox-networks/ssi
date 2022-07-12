@@ -1,3 +1,4 @@
+use crate::error::SignatureError;
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum VerificationRelation {
     AssertionMethod,
@@ -17,6 +18,16 @@ impl AsRef<[u8]> for Ed25519Signature {
     }
 }
 
+pub trait Signature: AsRef<[u8]> + core::fmt::Debug + Sized {
+    /// Parse a signature from its byte representation
+    fn from_bytes(bytes: &[u8]) -> Result<Self, SignatureError>;
+
+    /// Borrow a byte slice representing the serialized form of this signature
+    fn as_bytes(&self) -> &[u8] {
+        self.as_ref()
+    }
+}
+
 impl std::fmt::Display for VerificationRelation {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
@@ -28,8 +39,8 @@ impl std::fmt::Display for VerificationRelation {
     }
 }
 
-impl signature::Signature for Ed25519Signature {
-    fn from_bytes(bytes: &[u8]) -> Result<Self, signature::Error> {
+impl Signature for Ed25519Signature {
+    fn from_bytes(bytes: &[u8]) -> Result<Self, SignatureError> {
         Ok(Ed25519Signature(bytes.to_vec()))
     }
 }
