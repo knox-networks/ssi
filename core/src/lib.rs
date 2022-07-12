@@ -38,8 +38,8 @@ pub trait DocumentBuilder {
         cred_subject: HashMap<String, Value>,
         property_set: HashMap<String, Value>,
         id: &str
-    ) -> Result<VerifiableCredential, Box<dyn std::error::Error>> {
-        let vc = VerifiableCredential::new(CONTEXT_CREDENTIALS,
+    ) -> Result<Credential, Box<dyn std::error::Error>> {
+        let vc = Credential::new(CONTEXT_CREDENTIALS,
             cred_type,
             cred_subject,
             property_set,
@@ -148,7 +148,6 @@ mod tests {
             },
         });
     
-        // let vc = serde_json::to_string("VerifiableCredential").unwrap();
         let type_rs = serde_json::to_value(["VerifiableCredential".to_string(), "PermanentResidentCard".to_string()]);
         if type_rs.is_ok() {
             kv_body.entry("type".to_string()).or_insert(type_rs.unwrap());

@@ -33,15 +33,15 @@ struct CredentialSubject {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(bound(deserialize = "'de: 'static"))]
-pub struct Credential {
+pub struct VerifiableCredential {
     #[serde(flatten)]
-    verifiable_credential:VerifiableCredential,
+    credential:Credential,
     proof: IntegrityProof,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(bound(deserialize = "'de: 'static"))]
-pub struct VerifiableCredential {
+pub struct Credential {
     #[serde(rename = "@context")]
     context:  VerificationContext,
     #[serde(rename = "@id")]
@@ -66,14 +66,14 @@ pub struct IntegrityProof {
     proof_value: String,
 }
 
-impl VerifiableCredential {
+impl Credential {
     pub fn new (
         context: VerificationContext,
         cred_type: String, 
         cred_subject: HashMap<String, Value>, 
         property_set: HashMap<String, Value>, id: &str) 
-    -> VerifiableCredential {    
-        let vc = VerifiableCredential {
+    -> Credential {    
+        let vc = Credential {
             context: context,
             id: id.to_string(),
             cred_type: cred_type.to_string(),
