@@ -34,7 +34,6 @@ pub fn create_data_integrity_proof<S: signature::Signature>(
 
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
     use sha2::Digest;
 
     use super::create_data_integrity_proof;
@@ -42,7 +41,10 @@ mod tests {
     use signature::verifier::DIDVerifier;
 
     #[rstest::rstest]
-    #[case::success(json!("{}"), signature::suite::VerificationRelation::AssertionMethod)]
+    #[case::success(
+        serde_json::Value::default(),
+        signature::suite::VerificationRelation::AssertionMethod
+    )]
     fn test_create_data_integrity_proof(
         #[case] doc: serde_json::Value,
         #[case] relation: signature::suite::VerificationRelation,
