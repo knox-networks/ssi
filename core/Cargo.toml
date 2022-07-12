@@ -10,7 +10,7 @@ async-trait = "0.1.53"
 chrono = "0.4.19"
 serde_json = "1.0.81"
 sha2 = "0.10.2"
-ssi-signature = {path = "../ssi-signature"}
+signature = {path = "../signature"}
 serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
