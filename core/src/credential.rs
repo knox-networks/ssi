@@ -35,7 +35,7 @@ struct CredentialSubject {
 #[serde(bound(deserialize = "'de: 'static"))]
 pub struct VerifiableCredential {
     #[serde(flatten)]
-    credential:Credential,
+    credential: Credential,
     proof: IntegrityProof,
 }
 
