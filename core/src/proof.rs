@@ -13,10 +13,10 @@ pub struct DataIntegrityProof {
 
 /// Given a JSON-LD document, create a data integrity proof for the document.
 /// Currently, only `Ed25519Signature2018` data integrity proofs in the JSON-LD format can be created.
-pub fn create_data_integrity_proof<S: signature::Signature>(
-    signer: &impl signature::signer::DIDSigner<S>,
+pub fn create_data_integrity_proof<S: ssi_signature::Signature>(
+    signer: &impl ssi_signature::signer::DIDSigner<S>,
     doc: serde_json::Value,
-    relation: signature::suite::VerificationRelation,
+    relation: ssi_signature::suite::VerificationRelation,
 ) -> Result<DataIntegrityProof, Box<dyn std::error::Error>> {
     let mut hasher = Sha512::new();
     hasher.update(normalization::normalize(doc));
@@ -37,20 +37,20 @@ mod tests {
     use sha2::Digest;
 
     use super::create_data_integrity_proof;
-    use signature::signer::DIDSigner;
-    use signature::verifier::DIDVerifier;
+    use ssi_signature::signer::DIDSigner;
+    use ssi_signature::verifier::DIDVerifier;
 
     #[rstest::rstest]
     #[case::success(
         serde_json::Value::default(),
-        signature::suite::VerificationRelation::AssertionMethod
+        ssi_signature::suite::VerificationRelation::AssertionMethod
     )]
     fn test_create_data_integrity_proof(
         #[case] doc: serde_json::Value,
-        #[case] relation: signature::suite::VerificationRelation,
+        #[case] relation: ssi_signature::suite::VerificationRelation,
     ) {
-        let signer = signature::signer::Ed25519DidSigner::new();
-        let verifier = signature::verifier::Ed25519DidVerifier::from(&signer);
+        let signer = ssi_signature::signer::Ed25519DidSigner::new();
+        let verifier = ssi_signature::verifier::Ed25519DidVerifier::from(&signer);
         let res = create_data_integrity_proof(&signer, doc.clone(), relation);
 
         assert!(res.is_ok());
