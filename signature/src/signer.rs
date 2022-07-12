@@ -48,7 +48,7 @@ impl DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     }
     fn get_verification_method(&self, _relation: VerificationRelation) -> String {
         let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
-        return format!("did:knox:{}#{}", encoded_pk, encoded_pk);
+        return format!("did:knox:{0}#{0}", encoded_pk);
     }
 
     fn encode(&self, sig: Ed25519Signature) -> String {
