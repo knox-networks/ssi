@@ -64,7 +64,9 @@ mod tests {
                 assert_eq!(proof.proof_purpose, relation.to_string());
 
                 let mut hasher = sha2::Sha512::new();
-                hasher.update(crate::proof::normalization::normalize(doc.clone()));
+                let encoded = doc.to_string();
+                let result = encoded.into_bytes();
+                hasher.update(result);
                 let comparison = hasher.finalize();
 
                 assert!(verifier
