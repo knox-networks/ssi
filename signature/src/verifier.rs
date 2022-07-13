@@ -43,7 +43,12 @@ impl From<&crate::signer::Ed25519DidSigner> for Ed25519DidVerifier {
 
 impl DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
     fn verify(&self, msg: &[u8], sig: &Ed25519Signature) -> Result<(), SignatureError> {
-        let sig_bytes: [u8; 64] = sig.0.as_slice().try_into().unwrap();
+        let sig_bytes: [u8; 64] = sig
+            .0
+            .as_slice()
+            .try_into()
+            .map_err(|_| SignatureError::new(ErrorKind::Uncategorized))?;
+
         self.public_key
             .verify(&ed25519_zebra::Signature::from(sig_bytes), msg)
             .map_err(SignatureError::from)
