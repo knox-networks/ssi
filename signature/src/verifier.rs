@@ -5,27 +5,24 @@ pub trait DIDVerifier<S>
 where
     S: Signature,
 {
-    fn verify(&self, msg: &[u8], signature: &S) -> Result<(), SignatureError>;
-
     fn decoded_verify(&self, msg: &[u8], data: String) -> Result<(), SignatureError> {
         let decoded_sig = self.decode(data)?;
         return self.verify(msg, &decoded_sig);
     }
 
+    fn verify(&self, msg: &[u8], signature: &S) -> Result<(), SignatureError>;
     fn decoded_relational_verify(
         &self,
         msg: &[u8],
         data: String,
         relation: VerificationRelation,
     ) -> Result<(), SignatureError>;
-
     fn relational_verify(
         &self,
         msg: &[u8],
         signature: &S,
         relation: VerificationRelation,
     ) -> Result<(), SignatureError>;
-
     fn decode(&self, encoded_sig: String) -> Result<S, SignatureError>;
 }
 
