@@ -1,4 +1,4 @@
-name: SSI Build
+name: SSI Linting
 
 on:
   pull_request:
