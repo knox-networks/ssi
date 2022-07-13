@@ -17,4 +17,4 @@ jobs:
 
       - name: Build
         run: |-
-          cargo fmt --check
+          cargo fmt --check --all
