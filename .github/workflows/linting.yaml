@@ -15,11 +15,8 @@ jobs:
         with:
           rust-version: 1.62
 
-      - uses: bufbuild/buf-setup-action@v1
-
-      - name: Build
-        run: |-
-          cargo build
+      - name: Installing
+        run: rustup component add rustfmt
 
       - name: Linting
         run: |-
