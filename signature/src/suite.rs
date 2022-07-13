@@ -1,4 +1,5 @@
 use crate::error::SignatureError;
+
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum VerificationRelation {
     AssertionMethod,
