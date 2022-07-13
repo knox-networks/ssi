@@ -15,6 +15,12 @@ jobs:
         with:
           rust-version: 1.62
 
+      - uses: bufbuild/buf-setup-action@v1
+
+      - name: Build
+        run: |-
+          cargo build
+
       - name: Build
         run: |-
           cargo fmt --check --all
