@@ -25,7 +25,7 @@ pub const CRED_TYPE_BANK_CARD: &'static str = "BankCard";
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct CredentialSubject {
-    id : String,
+    id: String,
     #[serde(flatten)]
     pub property_set: HashMap<String, Value>,
 }
@@ -54,7 +54,6 @@ pub struct Credential {
     #[serde(flatten)]
     pub property_set: HashMap<String, Value>,
 }
-
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IntegrityProof {
@@ -97,7 +96,6 @@ impl Credential {
     }
 }
 
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(bound(deserialize = "'de: 'static"))]
 pub struct VerifiablePresentation {
@@ -118,10 +116,15 @@ pub struct Presentation {
 }
 
 impl Presentation {
-    pub fn new (
+    pub fn new(
         context: VerificationContext,
-        id: String, 
-        vc: Vec<VerifiableCredential>) -> Presentation {
-            Presentation { context: context, id: id, verifiable_credential: vc }
+        id: String,
+        vc: Vec<VerifiableCredential>,
+    ) -> Presentation {
+        Presentation {
+            context: context,
+            id: id,
+            verifiable_credential: vc,
         }
+    }
 }

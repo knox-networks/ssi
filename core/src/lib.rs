@@ -53,9 +53,8 @@ pub trait DocumentBuilder {
     /// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
     fn create_presentation(
         &self,
-        credentials: Vec<Credential>,
-        id: &str, 
-        _creds: Vec<serde_json::Value>,
+        credentials: Vec<VerifiableCredential>,
+        id: &str,
     ) -> Result<Presentation, Box<dyn std::error::Error>> {
         let pre = Presentation::new(CONTEXT_CREDENTIALS, id.to_string(), credentials);
         Ok(pre)
@@ -228,65 +227,79 @@ mod tests {
         assert!(vc.is_ok());
         assert_json_eq!(expect, vc.unwrap());
         Ok(())
-    } 
-
+    }
 
     #[test]
     fn test_create_presentation() -> Result<(), String> {
-   
-        // let expect = json!({
-        //     "@context": [
-        //       "https://www.w3.org/2018/credentials/v1",
-        //       "https://www.w3.org/2018/credentials/examples/v1"
-        //     ],
-        //     "type": "VerifiablePresentation",
-            
-        //     "verifiableCredential": [{
-        //       "@context": [
-        //         "https://www.w3.org/2018/credentials/v1",
-        //         "https://www.w3.org/2018/credentials/examples/v1"
-        //       ],
-        //       "id": "http://example.edu/credentials/1872",
-        //       "type": ["VerifiableCredential", "AlumniCredential"],
-        //       "issuer": "https://example.edu/issuers/565049",
-        //       "issuanceDate": "2010-01-01T19:23:24Z",
-        //       "credentialSubject": {
-        //         "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
-        //         "alumniOf": {
-        //           "id": "did:example:c276e12ec21ebfeb1f712ebc6f1",
-        //           "name": [{
-        //             "value": "Example University",
-        //             "lang": "en"
-        //           }, {
-        //             "value": "Exemple d'Université",
-        //             "lang": "fr"
-        //           }]
-        //         }
-        //       },
-        //       "proof": {
-        //         "type": "RsaSignature2018",
-        //         "created": "2017-06-18T21:19:10Z",
-        //         "proofPurpose": "assertionMethod",
-        //         "verificationMethod": "https://example.edu/issuers/565049#key-1",
-        //         "jws": "eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..TCYt5X
-        //           sITJX1CxPCT8yAV-TVkIEq_PbChOMqsLfRoPsnsgw5WEuts01mq-pQy7UJiN5mgRxD-WUc
-        //           X16dUEMGlv50aqzpqh4Qktb3rk-BuQy72IFLOqV0G_zS245-kronKb78cPN25DGlcTwLtj
-        //           PAYuNzVBAh4vGHSrQyHUdBBPM"
-        //       }
-        //     }],
-        //     // "proof": {
-        //     //   "type": "RsaSignature2018",
-        //     //   "created": "2018-09-14T21:19:10Z",
-        //     //   "proofPurpose": "authentication",
-        //     //   "verificationMethod": "did:example:ebfeb1f712ebc6f1c276e12ec21#keys-1",
-        //     //   "challenge": "1f44d55f-f161-4938-a659-f8026467f126",
-        //     //   "domain": "4jt78h47fh47",
-        //     //   "jws": "eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5
-        //     //     XsITJX1CxPCT8yAV-TVIw5WEuts01mq-pQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqs
-        //     //     LfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh
-        //     //     4vGHSrQyHUGlcTwLtjPAnKb78"
-        //     // }
-        //   });
+        let expect = json!({
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://www.w3.org/2018/credentials/examples/v1"
+            ],
+            "type": "VerifiablePresentation",
+            "verifiableCredential": 
+            [{
+              "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://www.w3.org/2018/credentials/examples/v1"
+              ],
+              "id": "http://example.edu/credentials/1872",
+              "type": ["VerifiableCredential", "AlumniCredential"],
+              "issuer": "https://example.edu/issuers/565049",
+              "issuanceDate": "2010-01-01T19:23:24Z",
+              "credentialSubject": {
+                "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
+                "alumniOf": {
+                  "id": "did:example:c276e12ec21ebfeb1f712ebc6f1",
+                  "name": [{
+                    "value": "Example University",
+                    "lang": "en"
+                  }, {
+                    "value": "Exemple d'Université",
+                    "lang": "fr"
+                  }]
+                }
+              },
+              "proof": {
+                "type": "RsaSignature2018",
+                "created": "2017-06-18T21:19:10Z",
+                "proofPurpose": "assertionMethod",
+                "verificationMethod": "https://example.edu/issuers/565049#key-1",
+                "jws": "eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..TCYt5X
+                  sITJX1CxPCT8yAV-TVkIEq_PbChOMqsLfRoPsnsgw5WEuts01mq-pQy7UJiN5mgRxD-WUc
+                  X16dUEMGlv50aqzpqh4Qktb3rk-BuQy72IFLOqV0G_zS245-kronKb78cPN25DGlcTwLtj
+                  PAYuNzVBAh4vGHSrQyHUdBBPM"
+              }
+            },
+            {
+                "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://www.w3.org/2018/credentials/examples/v1"
+                ],
+                "@id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+                "type": ["VerifiableCredential", "PermanentResidentCard"],
+                "issuer": "did:example:28394728934792387",
+                "identifier": "83627465",
+                "name": "Permanent Resident Card",
+                "description": "Government of Example Permanent Resident Card.",
+                "issuanceDate": "2019-12-03T12:19:52Z",
+                "expirationDate": "2029-12-03T12:19:52Z",
+                "credentialSubject": {
+                "id": "did:example:b34ca6cd37bbf23",
+                "type": ["PermanentResident", "Person"],
+                "givenName": "JOHN",
+                "familyName": "SMITH",
+                "gender": "Male",
+                "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+                "residentSince": "2015-01-01",
+                "lprCategory": "C09",
+                "lprNumber": "999-999-999",
+                "commuterClassification": "C1",
+                "birthCountry": "Bahamas",
+                "birthDate": "1958-07-17"
+                },
+            }],
+          });
         Ok(())
     }
 }
