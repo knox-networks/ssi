@@ -94,6 +94,14 @@ impl Credential {
     pub fn serialize(&self) -> Value {
         return serde_json::to_value(&self).unwrap();
     }
+
+    pub fn create_verifiable_credentials(&self, integrity_proof: crate::proof::DataIntegrityProof) -> VerifiableCredential {
+        let vc = VerifiableCredential {
+            credential: self.to_owned(),
+            proof: integrity_proof,
+        };
+        return vc;
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -109,8 +117,6 @@ pub struct VerifiablePresentation {
 pub struct Presentation {
     #[serde(rename = "@context")]
     context: VerificationContext,
-    #[serde(rename = "@id")]
-    id: String,
     #[serde(rename = "verifiableCredential")]
     verifiable_credential: Vec<VerifiableCredential>,
 }
@@ -118,13 +124,15 @@ pub struct Presentation {
 impl Presentation {
     pub fn new(
         context: VerificationContext,
-        id: String,
         vc: Vec<VerifiableCredential>,
     ) -> Presentation {
         Presentation {
             context: context,
-            id: id,
             verifiable_credential: vc,
         }
+    }
+
+    pub fn serialize(&self) -> Value {
+        return serde_json::to_value(&self).unwrap();
     }
 }
