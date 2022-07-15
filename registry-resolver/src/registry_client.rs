@@ -1,6 +1,7 @@
 use mockall::*;
 use registry::registry_service_client::RegistryServiceClient;
 
+#[rustfmt::skip]
 #[path = "gen/registry_api.v1.rs"]
 pub mod registry;
 
@@ -8,7 +9,6 @@ pub struct GrpcClient {
     inner: RegistryServiceClient<tonic::transport::Channel>,
 }
 
-#[automock]
 impl GrpcClient {
     pub async fn new(url: String) -> impl RegistryClient + Send + Sync {
         let inner = RegistryServiceClient::connect(url.clone()).await.unwrap();
