@@ -25,7 +25,7 @@ pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: &'static str = "PermanentResidentCa
 pub const CRED_TYPE_BANK_CARD: &'static str = "BankCard";
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-struct CredentialSubject {
+pub struct CredentialSubject {
     id : String,
     #[serde(flatten)]
     pub property_set: HashMap<String, Value>,
@@ -59,10 +59,15 @@ pub struct Credential {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IntegrityProof {
+    #[serde(rename = "type")]
     proof_type: String,
-    created: String,
+    #[serde(rename = "issuanceDate")]
+    issuance_date: SystemTime,
+    #[serde(rename = "verificationMethod")]
     verification_method: String,
+    #[serde(rename = "verificationPurpose")]
     proof_purpose: String,
+    #[serde(rename = "verificationValue")]
     proof_value: String,
 }
 
@@ -90,4 +95,33 @@ impl Credential {
     pub fn serialize(&self) -> Value {
         return serde_json::to_value(&self).unwrap();
     }
+}
+
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(bound(deserialize = "'de: 'static"))]
+pub struct VerifiablePresentation {
+    #[serde(flatten)]
+    presentation: Presentation,
+    proof: IntegrityProof,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(bound(deserialize = "'de: 'static"))]
+pub struct Presentation {
+    #[serde(rename = "@context")]
+    context: VerificationContext,
+    #[serde(rename = "@id")]
+    id: String,
+    #[serde(rename = "verifiableCredential")]
+    verifiable_credential: Vec<VerifiableCredential>,
+}
+
+impl Presentation {
+    pub fn new (
+        context: VerificationContext,
+        id: String, 
+        vc: Vec<VerifiableCredential>) -> Presentation {
+            Presentation { context: context, id: id, verifiable_credential: vc }
+        }
 }

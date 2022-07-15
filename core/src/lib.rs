@@ -51,9 +51,13 @@ pub trait DocumentBuilder {
     /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
     /// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
     fn create_presentation(
+        &self,
+        credentials: Vec<Credential>,
+        id: &str, 
         _creds: Vec<serde_json::Value>,
-    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-        unimplemented!();
+    ) -> Result<Presentation, Box<dyn std::error::Error>> {
+        let pre = Presentation::new(CONTEXT_CREDENTIALS, id.to_string(), credentials);
+        Ok(pre)
     }
 }
 
@@ -85,14 +89,6 @@ pub fn verify_data_integrity_proof<S: signature::Signature>(
     _resolver: &impl DIDResolver,
     _verifier: &impl signature::Verifier<S>,
 ) -> Result<bool, Box<dyn std::error::Error>> {
-    unimplemented!();
-}
-
-/// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the Verifiable Presentation.
-/// Then each claimed Verifiable Credential must be verified for validity and ownership of the credential by the subject.
-pub fn create_presentation(
-    _creds: Vec<serde_json::Value>,
-) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     unimplemented!();
 }
 
@@ -188,4 +184,64 @@ mod tests {
         assert_json_eq!(_expect, vc.unwrap());
         Ok(())
     } 
+
+
+    #[test]
+    fn test_create_presentation() -> Result<(), String> {
+   
+        // let expect = json!({
+        //     "@context": [
+        //       "https://www.w3.org/2018/credentials/v1",
+        //       "https://www.w3.org/2018/credentials/examples/v1"
+        //     ],
+        //     "type": "VerifiablePresentation",
+            
+        //     "verifiableCredential": [{
+        //       "@context": [
+        //         "https://www.w3.org/2018/credentials/v1",
+        //         "https://www.w3.org/2018/credentials/examples/v1"
+        //       ],
+        //       "id": "http://example.edu/credentials/1872",
+        //       "type": ["VerifiableCredential", "AlumniCredential"],
+        //       "issuer": "https://example.edu/issuers/565049",
+        //       "issuanceDate": "2010-01-01T19:23:24Z",
+        //       "credentialSubject": {
+        //         "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
+        //         "alumniOf": {
+        //           "id": "did:example:c276e12ec21ebfeb1f712ebc6f1",
+        //           "name": [{
+        //             "value": "Example University",
+        //             "lang": "en"
+        //           }, {
+        //             "value": "Exemple d'Université",
+        //             "lang": "fr"
+        //           }]
+        //         }
+        //       },
+        //       "proof": {
+        //         "type": "RsaSignature2018",
+        //         "created": "2017-06-18T21:19:10Z",
+        //         "proofPurpose": "assertionMethod",
+        //         "verificationMethod": "https://example.edu/issuers/565049#key-1",
+        //         "jws": "eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..TCYt5X
+        //           sITJX1CxPCT8yAV-TVkIEq_PbChOMqsLfRoPsnsgw5WEuts01mq-pQy7UJiN5mgRxD-WUc
+        //           X16dUEMGlv50aqzpqh4Qktb3rk-BuQy72IFLOqV0G_zS245-kronKb78cPN25DGlcTwLtj
+        //           PAYuNzVBAh4vGHSrQyHUdBBPM"
+        //       }
+        //     }],
+        //     // "proof": {
+        //     //   "type": "RsaSignature2018",
+        //     //   "created": "2018-09-14T21:19:10Z",
+        //     //   "proofPurpose": "authentication",
+        //     //   "verificationMethod": "did:example:ebfeb1f712ebc6f1c276e12ec21#keys-1",
+        //     //   "challenge": "1f44d55f-f161-4938-a659-f8026467f126",
+        //     //   "domain": "4jt78h47fh47",
+        //     //   "jws": "eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5
+        //     //     XsITJX1CxPCT8yAV-TVIw5WEuts01mq-pQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqs
+        //     //     LfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh
+        //     //     4vGHSrQyHUGlcTwLtjPAnKb78"
+        //     // }
+        //   });
+        Ok(())
+    }
 }
