@@ -222,33 +222,38 @@ mod tests {
         });
 
         let expect_presentation = json!({
-            "@context": [
-              "https://www.w3.org/2018/credentials/v1",
-              "https://www.w3.org/2018/credentials/examples/v1"
-            ],
-            "@id": "https://issuer.oidp.uscis.gov/credentials/83627465",
-            "type": ["VerifiableCredential", "PermanentResidentCard"],
-            "issuer": "did:example:28394728934792387",
-            "identifier": "83627465",
-            "name": "Permanent Resident Card",
-            "description": "Government of Example Permanent Resident Card.",
-            "issuanceDate": "2019-12-03T12:19:52Z",
-            "expirationDate": "2029-12-03T12:19:52Z",
-            "credentialSubject": {
-              "id": "did:example:b34ca6cd37bbf23",
-              "type": ["PermanentResident", "Person"],
-              "givenName": "JOHN",
-              "familyName": "SMITH",
-              "gender": "Male",
-              "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-              "residentSince": "2015-01-01",
-              "lprCategory": "C09",
-              "lprNumber": "999-999-999",
-              "commuterClassification": "C1",
-              "birthCountry": "Bahamas",
-              "birthDate": "1958-07-17"
-            },
-        });
+            "@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+            "verifiableCredential":[
+                {"@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+                "@id":"https://issuer.oidp.uscis.gov/credentials/83627465",
+                "credentialSubject":{
+                    "birthCountry":"Bahamas",
+                    "birthDate":"1958-07-17",
+                    "commuterClassification":"C1",
+                    "familyName":"SMITH",
+                    "gender":"Male",
+                    "givenName":"JOHN",
+                    "id":"did:example:b34ca6cd37bbf23",
+                    "image":"data:image/png;base64,iVBORw0KGgo...kJggg==",
+                    "lprCategory":"C09",
+                    "lprNumber":"999-999-999",
+                    "residentSince":"2015-01-01",
+                    "type":["PermanentResident","Person"]
+                },
+                "description":"Government of Example Permanent Resident Card.",
+                "expirationDate":"2029-12-03T12:19:52Z",
+                "identifier":"83627465",
+                "issuanceDate":"2019-12-03T12:19:52Z",
+                "issuer":"did:example:28394728934792387",
+                "name":"Permanent Resident Card",
+                "type":["VerifiableCredential","PermanentResidentCard"]}],
+                "proof":{
+                    "created":"2022-07-15T23:50:30.186251+00:00",
+                    "proof_purpose":"assertionMethod",
+                    "proof_type":"Ed25519Signature2018",
+                    "proof_value":"z4oPXaa4Mwkd7baT3zfFF5ydJ8f5bAMGEYQgFAbNeRU1o3KeBwCVayeLXnyzVpLneh2hr8T1HzcP2P3KUdRXdf7Uh",
+                    "verification_method":"did:knox:zHhLibixt7UJzHPFFaKBjwaQJqjv25zFgEsqiHfiECdxR#zHhLibixt7UJzHPFFaKBjwaQJqjv25zFgEsqiHfiECdxR"
+                }});
 
         let (kv_body, kv_subject) = get_body_subject();
 
@@ -262,9 +267,7 @@ mod tests {
         let credential = vc.unwrap();
         assert_json_eq!(expect_credential, credential.serialize());
 
-        // let relation = signature::suite::VerificationRelation::AssertionMethod;
         let signer = signature::signer::Ed25519DidSigner::new();
-        // let verifier = signature::verifier::Ed25519DidVerifier::from(&signer);
         let proof = create_data_integrity_proof(
             &signer, 
             credential.serialize(), 
@@ -279,7 +282,6 @@ mod tests {
         assert!(pre.is_ok());
 
         let presentation_json = pre.unwrap().serialize();
-        println!("presentation_json: \n {}", presentation_json);
         assert_json_eq!(expect_presentation, presentation_json);
 
         Ok(())
