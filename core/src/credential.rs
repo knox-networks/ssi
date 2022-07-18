@@ -35,7 +35,7 @@ pub struct CredentialSubject {
 pub struct VerifiableCredential {
     #[serde(flatten)]
     credential: Credential,
-    proof: crate::proof::DataIntegrityProof,
+    pub proof: crate::proof::DataIntegrityProof,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -116,9 +116,9 @@ pub struct VerifiablePresentation {
 #[serde(bound(deserialize = "'de: 'static"))]
 pub struct Presentation {
     #[serde(rename = "@context")]
-    context: VerificationContext,
+    pub context: VerificationContext,
     #[serde(rename = "verifiableCredential")]
-    verifiable_credential: Vec<VerifiableCredential>,
+    pub verifiable_credential: Vec<VerifiableCredential>,
 }
 
 impl Presentation {
