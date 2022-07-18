@@ -95,7 +95,10 @@ impl Credential {
         return serde_json::to_value(&self).unwrap();
     }
 
-    pub fn create_verifiable_credentials(&self, integrity_proof: crate::proof::DataIntegrityProof) -> VerifiableCredential {
+    pub fn create_verifiable_credentials(
+        &self,
+        integrity_proof: crate::proof::DataIntegrityProof,
+    ) -> VerifiableCredential {
         let vc = VerifiableCredential {
             credential: self.to_owned(),
             proof: integrity_proof,
@@ -122,10 +125,7 @@ pub struct Presentation {
 }
 
 impl Presentation {
-    pub fn new(
-        context: VerificationContext,
-        vc: Vec<VerifiableCredential>,
-    ) -> Presentation {
+    pub fn new(context: VerificationContext, vc: Vec<VerifiableCredential>) -> Presentation {
         Presentation {
             context: context,
             verifiable_credential: vc,

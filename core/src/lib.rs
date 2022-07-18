@@ -53,7 +53,7 @@ pub trait DocumentBuilder {
     /// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
     fn create_presentation(
         &self,
-        credentials: Vec<VerifiableCredential>
+        credentials: Vec<VerifiableCredential>,
     ) -> Result<Presentation, Box<dyn std::error::Error>> {
         let pre = Presentation::new(CONTEXT_CREDENTIALS, credentials);
         Ok(pre)
@@ -92,11 +92,11 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 
 #[cfg(test)]
 mod tests {
-    use crate::{serde_json::json};
-    use crate::DocumentBuilder;
-    use assert_json_diff::{assert_json_eq};
-    use std::{collections::HashMap, vec};
     use crate::proof::create_data_integrity_proof;
+    use crate::serde_json::json;
+    use crate::DocumentBuilder;
+    use assert_json_diff::assert_json_eq;
+    use std::{collections::HashMap, vec};
 
     use serde_json::Value;
     struct TestObj {}
@@ -260,27 +260,58 @@ mod tests {
 
         let signer = signature::signer::Ed25519DidSigner::new();
         let proof = create_data_integrity_proof(
-            &signer, 
-            credential.serialize(), 
-            signature::suite::VerificationRelation::AssertionMethod);
+            &signer,
+            credential.serialize(),
+            signature::suite::VerificationRelation::AssertionMethod,
+        );
 
         assert!(proof.is_ok());
 
         let verifiable_credential = credential.create_verifiable_credentials(proof.unwrap());
-        let credentials = vec!(verifiable_credential);
+        let credentials = vec![verifiable_credential];
         let pre = to.create_presentation(credentials);
 
         assert!(pre.is_ok());
 
         let interim_presentation = pre.unwrap();
 
-        assert!(interim_presentation.verifiable_credential[0].proof.verification_method.len() >= 90);
-        assert!(interim_presentation.verifiable_credential[0].proof.proof_value.len() >= 89);
+        assert!(
+            interim_presentation.verifiable_credential[0]
+                .proof
+                .verification_method
+                .len()
+                >= 90
+        );
+        assert!(
+            interim_presentation.verifiable_credential[0]
+                .proof
+                .proof_value
+                .len()
+                >= 89
+        );
 
-        expect_presentation["verifiableCredential"][0]["proof"]["verification_method"] = serde_json::Value::String(interim_presentation.verifiable_credential[0].proof.verification_method.clone()); 
-        expect_presentation["verifiableCredential"][0]["proof"]["proof_value"] = serde_json::Value::String(interim_presentation.verifiable_credential[0].proof.proof_value.clone()); 
-        expect_presentation["verifiableCredential"][0]["proof"]["created"] = serde_json::Value::String(interim_presentation.verifiable_credential[0].proof.created.clone()); 
-        
+        expect_presentation["verifiableCredential"][0]["proof"]["verification_method"] =
+            serde_json::Value::String(
+                interim_presentation.verifiable_credential[0]
+                    .proof
+                    .verification_method
+                    .clone(),
+            );
+        expect_presentation["verifiableCredential"][0]["proof"]["proof_value"] =
+            serde_json::Value::String(
+                interim_presentation.verifiable_credential[0]
+                    .proof
+                    .proof_value
+                    .clone(),
+            );
+        expect_presentation["verifiableCredential"][0]["proof"]["created"] =
+            serde_json::Value::String(
+                interim_presentation.verifiable_credential[0]
+                    .proof
+                    .created
+                    .clone(),
+            );
+
         let presentation_json = interim_presentation.serialize();
 
         assert_json_eq!(expect_presentation, presentation_json);
