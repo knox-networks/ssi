@@ -103,7 +103,7 @@ impl Credential {
         let cred = Credential{
             context: CONTEXT_CREDENTIALS,
             id: deserialized.id,
-            cred_type: "PermanentResidentCard".to_string(),
+            cred_type: serde_json::to_string(&deserialized.cred_type).unwrap(),
             issuance_date: SystemTime::from(idate),
             subject: deserialized.subject,
             property_set: deserialized.property_set,
@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn test_create_credential_from_string() -> Result<(), String> {
         let expect = json!({
-            "@context": ["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],"@id": "https://issuer.oidp.uscis.gov/credentials/83627465","type": ["VerifiableCredential", "PermanentResidentCard"],
+            "@context": ["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],"@id":"https://issuer.oidp.uscis.gov/credentials/83627465","type": ["VerifiableCredential", "PermanentResidentCard"],
             "issuer": "did:example:28394728934792387",
             "identifier": "83627465",
             "name": "Permanent Resident Card",
