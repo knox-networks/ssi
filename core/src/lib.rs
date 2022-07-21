@@ -39,6 +39,7 @@ pub trait DocumentBuilder {
         property_set: HashMap<String, Value>,
         id: &str,
     ) -> Result<Credential, Box<dyn std::error::Error>> {
+        println!("\nCreating credential {}", cred_type);
         let vc = Credential::new(
             CONTEXT_CREDENTIALS,
             cred_type,
@@ -116,6 +117,16 @@ mod tests {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
         let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
+        let type_rs = serde_json::to_value([
+            "VerifiableCredential".to_string(),
+            "PermanentResidentCard".to_string(),
+        ]);
+        if type_rs.is_ok() {
+            kv_body
+                .entry("type".to_string())
+                .or_insert(type_rs.unwrap());
+        }
+
         let expect = json!({
             "@context": [
               "https://www.w3.org/2018/credentials/v1",
@@ -144,16 +155,6 @@ mod tests {
               "birthDate": "1958-07-17"
             },
         });
-
-        let type_rs = serde_json::to_value([
-            "VerifiableCredential".to_string(),
-            "PermanentResidentCard".to_string(),
-        ]);
-        if type_rs.is_ok() {
-            kv_body
-                .entry("type".to_string())
-                .or_insert(type_rs.unwrap());
-        }
 
         kv_body
             .entry("issuer".to_string())
