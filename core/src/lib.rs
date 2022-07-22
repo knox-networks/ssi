@@ -117,10 +117,7 @@ mod tests {
         let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
         let type_rs = json!(["VerifiableCredential", "PermanentResidentCard"]);
-        kv_body
-                .entry("type".to_string())
-                .or_insert(type_rs);
-        
+        kv_body.entry("type".to_string()).or_insert(type_rs);
 
         let expect = json!({
             "@context": [
@@ -217,7 +214,7 @@ mod tests {
             .or_insert(Value::String("1958-07-17".to_string()));
 
         let vc = to.create_credential(
-            vec!(crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string()),
+            vec![crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string()],
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",

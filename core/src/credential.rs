@@ -52,7 +52,7 @@ pub struct Credential {
     #[serde(rename = "issuanceDate")]
     #[serde(with = "formatter_credential_date")]
     issuance_date: SystemTime,
-    
+
     #[serde(rename = "credentialSubject")]
     subject: CredentialSubject,
     #[serde(flatten)]
@@ -84,8 +84,8 @@ impl Credential {
     pub fn serialize(&self) -> Value {
         return serde_json::to_value(&self).unwrap();
     }
-    
-    pub fn deserialize (contents: String) -> Result<Credential, serde_json::Error> {
+
+    pub fn deserialize(contents: String) -> Result<Credential, serde_json::Error> {
         let cred = serde_json::from_str(&contents);
         if cred.is_ok() {
             return Ok(cred.unwrap());
@@ -95,12 +95,11 @@ impl Credential {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
     use crate::Credential;
     use assert_json_diff::assert_json_eq;
+    use serde_json::json;
 
     #[test]
     fn test_create_credential_from_string() -> Result<(), String> {
@@ -126,9 +125,9 @@ mod tests {
             "birthDate": "1958-07-17"
             },
         });
-        
+
         let ds = Credential::deserialize(expect.to_string());
-        if ds.is_ok(){
+        if ds.is_ok() {
             let vc = ds.unwrap().serialize();
             assert_json_eq!(expect, vc);
         } else {
@@ -139,48 +138,43 @@ mod tests {
 }
 
 mod formatter_context {
-    use serde::{self, Deserialize, Serializer, Deserializer};
+    use serde::{self, Deserialize, Deserializer, Serializer};
     use std::string::String;
 
-    pub fn serialize<S>(
-        ctx: &Vec<String>,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(ctx: &Vec<String>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        let ctx_vec = crate::CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string());
+        let ctx_vec = crate::CONTEXT_CREDENTIALS
+            .into_iter()
+            .map(|s| s.to_string());
         serializer.collect_seq(ctx_vec)
     }
 
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<Vec<String>, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
     where
         D: Deserializer<'de>,
     {
         let s = Vec::<String>::deserialize(deserializer)?;
-        let s = crate::CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string()).collect();
+        let s = crate::CONTEXT_CREDENTIALS
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect();
         Ok(s)
     }
 }
 
 mod formatter_credential_type {
-    use serde::{self, Deserialize, Serializer, Deserializer};
+    use serde::{self, Deserialize, Deserializer, Serializer};
 
-    pub fn serialize<S>(
-        cr_type: &String,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(cr_type: &String, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         serializer.collect_seq(cr_type.split(","))
     }
 
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<String, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<String, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -191,16 +185,13 @@ mod formatter_credential_type {
 
 mod formatter_credential_date {
     use chrono::{DateTime, Utc};
-    use serde::{self, Deserialize, Serializer, Deserializer};
-    use std::time::SystemTime;
+    use serde::{self, Deserialize, Deserializer, Serializer};
     use std::string::String;
+    use std::time::SystemTime;
 
     const FORMAT: &'static str = "%Y-%m-%dT%H:%M:%SZ";
 
-    pub fn serialize<S>(
-        date: &SystemTime,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(date: &SystemTime, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -210,9 +201,7 @@ mod formatter_credential_date {
         serializer.serialize_str(&s)
     }
 
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<SystemTime, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<SystemTime, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -222,7 +211,7 @@ mod formatter_credential_date {
             let sys_time = SystemTime::from(idate.unwrap());
             return Ok(sys_time.clone());
         } else {
-            return Err(serde::de::Error::custom(idate.unwrap_err()))
+            return Err(serde::de::Error::custom(idate.unwrap_err()));
         }
     }
 }
