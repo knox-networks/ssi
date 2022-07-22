@@ -31,7 +31,6 @@ struct CredentialSubject {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(bound(deserialize = "'de: 'static"))]
 pub struct VerifiableCredential {
     #[serde(flatten)]
     credential: Credential,
@@ -39,7 +38,6 @@ pub struct VerifiableCredential {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-// #[serde(bound(deserialize = "'de: 'static"))]
 pub struct Credential {
     #[serde(rename = "@context")]
     #[serde(with = "formatter_context")]
