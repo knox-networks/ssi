@@ -44,18 +44,17 @@ pub struct VerifiableCredential {
 // #[serde(bound(deserialize = "'de: 'static"))]
 pub struct Credential {
     #[serde(rename = "@context")]
-    #[serde(with = "context_formatter")]
+    #[serde(with = "formatter_context")]
     context: Vec<String>,
 
     #[serde(rename = "@id")]
     id: String,
 
     #[serde(rename = "type")]
-    #[serde(with = "credential_type_formatter")]
-    cred_type: String,
+    cred_type: Vec<String>,
 
     #[serde(rename = "issuanceDate")]
-    #[serde(with = "credential_date_formatter")]
+    #[serde(with = "formatter_credential_date")]
     issuance_date: SystemTime,
     
     #[serde(rename = "credentialSubject")]
@@ -64,140 +63,10 @@ pub struct Credential {
     pub property_set: HashMap<String, Value>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct CredentialRequest {
-
-    #[serde(rename = "@context")]
-    #[serde(with = "context_formatter")]
-    context: Vec<String>,
-
-    #[serde(rename = "@id")]
-    id: String,
-    // #[serde(rename = "type")]
-    // cred_type: Vec<String>,
-
-    #[serde(rename = "type")]
-    #[serde(with = "credential_type_formatter")]
-    cred_type: String,
-
-    #[serde(rename = "issuanceDate")]
-    #[serde(with = "credential_date_formatter")]
-    issuance_date: SystemTime,
-    // issuance_date: String,
-
-    #[serde(rename = "credentialSubject")]
-    subject: CredentialSubject,
-
-    #[serde(flatten)]
-    pub property_set: HashMap<String, Value>,
-}
-
-
-mod credential_type_formatter {
-    use serde::{self, Deserialize, Serializer, Deserializer};
-
-    pub fn serialize<S>(
-        cr_type: &String,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        // serializer.serialize_str(cr_type.split(",").collect::<Vec<&str>>().join(" "))
-        serializer.serialize_str("default_string")
-        // serde_json::to_string(cred_type).unwrap()
-    }
-
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<String, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        // let s = crate::CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string()).collect();
-        // let s = String::deserialize(deserializer)?;
-        // println!("{}", s);
-        let s = Vec::<String>::deserialize(deserializer)?.join(",");
-        // println!("{}", s);
-        Ok(s)
-    }
-}
-
-mod context_formatter {
-    use std::time::SystemTime;
-    use crate::Credential;
-    use serde::{self, Deserialize, Serializer, Deserializer};
-    use std::string::String;
-    use super::*;
-
-    pub fn serialize<S>(
-        ctx: &Vec<String>,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        // let str_str = crate::CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string()).collect().join(",");
-        // serializer.serialize_str(str_str)
-        serializer.serialize_str("default_string")
-    }
-
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<Vec<String>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = Vec::<String>::deserialize(deserializer)?;
-        let s = crate::CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string()).collect();
-        Ok(s)
-    }
-}
-
-mod credential_date_formatter {
-    use chrono::{DateTime, Utc, TimeZone};
-    use serde::{self, Deserialize, Serializer, Deserializer};
-    use std::time::SystemTime;
-    use std::string::String;
-
-    const FORMAT: &'static str = "%Y-%m-%dT%H:%M:%SZ";
-
-    pub fn serialize<S>(
-        // date: &DateTime<Utc>,
-        date: &SystemTime,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let formatted = DateTime::<Utc>::from(*date).format(FORMAT);
-        let s = formatted.to_string();
-        let s = format!("{}", &s);
-        serializer.serialize_str(&s)
-    }
-
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<SystemTime, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        let idate = DateTime::parse_from_rfc3339(&s);
-        if idate.is_ok() {
-            let sys_time = SystemTime::from(idate.unwrap());
-            return Ok(sys_time.clone());
-        } else {
-            println!("error: {}", idate.unwrap_err());
-            return Err(serde::de::Error::custom("Invalid date"))
-        }
-    }
-}
-
 impl Credential {
     pub fn new(
         context: VerificationContext,
-        cred_type: String,
+        cred_type: Vec<String>,
         cred_subject: HashMap<String, Value>,
         property_set: HashMap<String, Value>,
         id: &str,
@@ -220,36 +89,13 @@ impl Credential {
         return serde_json::to_value(&self).unwrap();
     }
     
-    pub fn deserialize (contents: String) -> Result<Credential, String> {
-        // let dd  = serde_json::from_str(&contents);
-        // if dd.is_err() {
-        //     let error = dd.unwrap_err();
-        //     println!("error: {}", error.to_string());
-        //     return Err("error just".to_string());
-        // } else {
-        //     let deserialized: Credential = dd.unwrap();
-        //     return Ok(deserialized);
-        // }
-        // return cred;
-        
-        // WORKS!
-        // let deserialized: CredentialRequest  = serde_json::from_str(&contents).unwrap();
-        // // let idate = DateTime::parse_from_rfc3339(deserialized.issuance_date.as_str()).unwrap();
-        // let mut cred = Credential{
-        //     // context: CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string()).collect(),
-        //     context: deserialized.context,
-        //     id: deserialized.id,
-        //     cred_type: serde_json::to_string(&deserialized.cred_type).unwrap(),
-        //     // issuance_date: SystemTime::from(idate),
-        //     issuance_date: deserialized.issuance_date,
-        //     subject: deserialized.subject,
-        //     property_set: deserialized.property_set,
-        // };
-        // //EOF WORKS!
-
-        let cred: Credential = serde_json::from_str(&contents).unwrap();
-        
-        return Ok(cred);
+    pub fn deserialize (contents: String) -> Result<Credential, serde_json::Error> {
+        let cred = serde_json::from_str(&contents);
+        if cred.is_ok() {
+            return Ok(cred.unwrap());
+        } else {
+            return Err(cred.unwrap_err());
+        }
     }
 }
 
@@ -290,9 +136,99 @@ mod tests {
             let vc = ds.unwrap().serialize();
             assert_json_eq!(expect, vc);
         }
-        
-        // println!("cred type {}", ds.id);
-        // println!("cred type {}", ds.context[0]);
         Ok(())
+    }
+}
+
+mod formatter_context {
+    use std::time::SystemTime;
+    use crate::Credential;
+    use serde::{self, Deserialize, Serializer, Deserializer};
+    use std::string::String;
+    use super::*;
+
+    pub fn serialize<S>(
+        ctx: &Vec<String>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let ctx_vec = crate::CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string());
+        serializer.collect_seq(ctx_vec)
+    }
+
+    pub fn deserialize<'de, D>(
+        deserializer: D,
+    ) -> Result<Vec<String>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = Vec::<String>::deserialize(deserializer)?;
+        let s = crate::CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string()).collect();
+        Ok(s)
+    }
+}
+
+mod formatter_credential_type {
+    use serde::{self, Deserialize, Serializer, Deserializer};
+
+    pub fn serialize<S>(
+        cr_type: &String,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.collect_seq(cr_type.split(","))
+    }
+
+    pub fn deserialize<'de, D>(
+        deserializer: D,
+    ) -> Result<String, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = Vec::<String>::deserialize(deserializer)?.join(",");
+        Ok(s)
+    }
+}
+
+mod formatter_credential_date {
+    use chrono::{DateTime, Utc, TimeZone};
+    use serde::{self, Deserialize, Serializer, Deserializer};
+    use std::time::SystemTime;
+    use std::string::String;
+
+    const FORMAT: &'static str = "%Y-%m-%dT%H:%M:%SZ";
+
+    pub fn serialize<S>(
+        date: &SystemTime,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let formatted = DateTime::<Utc>::from(*date).format(FORMAT);
+        let s = formatted.to_string();
+        let s = format!("{}", &s);
+        serializer.serialize_str(&s)
+    }
+
+    pub fn deserialize<'de, D>(
+        deserializer: D,
+    ) -> Result<SystemTime, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        let idate = DateTime::parse_from_rfc3339(&s);
+        if idate.is_ok() {
+            let sys_time = SystemTime::from(idate.unwrap());
+            return Ok(sys_time.clone());
+        } else {
+            println!("error: {}", idate.unwrap_err());
+            return Err(serde::de::Error::custom("Invalid date"))
+        }
     }
 }
