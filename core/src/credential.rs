@@ -3,10 +3,8 @@
 use std::time::SystemTime;
 
 use crate::HashMap;
-use chrono::DateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use serde_json::Error;
 
 // cred_subject is a generic that implements trait X
 // trait X allows us to encode that object into JSON-LD
@@ -135,17 +133,16 @@ mod tests {
         if ds.is_ok(){
             let vc = ds.unwrap().serialize();
             assert_json_eq!(expect, vc);
+        } else {
+            assert!(false);
         }
         Ok(())
     }
 }
 
 mod formatter_context {
-    use std::time::SystemTime;
-    use crate::Credential;
     use serde::{self, Deserialize, Serializer, Deserializer};
     use std::string::String;
-    use super::*;
 
     pub fn serialize<S>(
         ctx: &Vec<String>,
@@ -195,7 +192,7 @@ mod formatter_credential_type {
 }
 
 mod formatter_credential_date {
-    use chrono::{DateTime, Utc, TimeZone};
+    use chrono::{DateTime, Utc};
     use serde::{self, Deserialize, Serializer, Deserializer};
     use std::time::SystemTime;
     use std::string::String;
@@ -227,8 +224,7 @@ mod formatter_credential_date {
             let sys_time = SystemTime::from(idate.unwrap());
             return Ok(sys_time.clone());
         } else {
-            println!("error: {}", idate.unwrap_err());
-            return Err(serde::de::Error::custom("Invalid date"))
+            return Err(serde::de::Error::custom(idate.unwrap_err()))
         }
     }
 }
