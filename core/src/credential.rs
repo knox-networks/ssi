@@ -44,16 +44,20 @@ pub struct VerifiableCredential {
 // #[serde(bound(deserialize = "'de: 'static"))]
 pub struct Credential {
     #[serde(rename = "@context")]
-    // #[serde(with = "context_formatter")]
+    #[serde(with = "context_formatter")]
     context: Vec<String>,
+
     #[serde(rename = "@id")]
     id: String,
+
     #[serde(rename = "type")]
-    // #[serde(with = "credential_type_formatter")]
+    #[serde(with = "credential_type_formatter")]
     cred_type: String,
+
     #[serde(rename = "issuanceDate")]
     #[serde(with = "credential_date_formatter")]
     issuance_date: SystemTime,
+    
     #[serde(rename = "credentialSubject")]
     subject: CredentialSubject,
     #[serde(flatten)]
@@ -83,7 +87,7 @@ struct CredentialRequest {
 
     #[serde(rename = "credentialSubject")]
     subject: CredentialSubject,
-    
+
     #[serde(flatten)]
     pub property_set: HashMap<String, Value>,
 }
@@ -146,8 +150,6 @@ mod context_formatter {
     {
         let s = Vec::<String>::deserialize(deserializer)?;
         let s = crate::CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string()).collect();
-        // deserializer.deserialize_seq(s);
-
         Ok(s)
     }
 }
@@ -230,17 +232,22 @@ impl Credential {
         // }
         // return cred;
         
-        let deserialized: CredentialRequest  = serde_json::from_str(&contents).unwrap();
-        // let idate = DateTime::parse_from_rfc3339(deserialized.issuance_date.as_str()).unwrap();
-        let cred = Credential{
-            context: CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string()).collect(),
-            id: deserialized.id,
-            cred_type: serde_json::to_string(&deserialized.cred_type).unwrap(),
-            // issuance_date: SystemTime::from(idate),
-            issuance_date: deserialized.issuance_date,
-            subject: deserialized.subject,
-            property_set: deserialized.property_set,
-        };
+        // WORKS!
+        // let deserialized: CredentialRequest  = serde_json::from_str(&contents).unwrap();
+        // // let idate = DateTime::parse_from_rfc3339(deserialized.issuance_date.as_str()).unwrap();
+        // let mut cred = Credential{
+        //     // context: CONTEXT_CREDENTIALS.into_iter().map(|s| s.to_string()).collect(),
+        //     context: deserialized.context,
+        //     id: deserialized.id,
+        //     cred_type: serde_json::to_string(&deserialized.cred_type).unwrap(),
+        //     // issuance_date: SystemTime::from(idate),
+        //     issuance_date: deserialized.issuance_date,
+        //     subject: deserialized.subject,
+        //     property_set: deserialized.property_set,
+        // };
+        // //EOF WORKS!
+
+        let cred: Credential = serde_json::from_str(&contents).unwrap();
         
         return Ok(cred);
     }

@@ -118,11 +118,10 @@ mod tests {
         let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
         let type_rs = json!(["VerifiableCredential", "PermanentResidentCard"]);
-        if type_rs.is_ok() {
-            kv_body
+        kv_body
                 .entry("type".to_string())
-                .or_insert(type_rs.unwrap());
-        }
+                .or_insert(type_rs);
+        
 
         let expect = json!({
             "@context": [
