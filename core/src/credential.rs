@@ -191,9 +191,7 @@ mod formatter_credential_date {
         S: Serializer,
     {
         let formatted = DateTime::<Utc>::from(*date).format(FORMAT);
-        let s = formatted.to_string();
-        let s = format!("{}", &s);
-        serializer.serialize_str(&s)
+        serializer.serialize_str(&formatted.to_string())
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<SystemTime, D::Error>
