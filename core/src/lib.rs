@@ -39,7 +39,7 @@ pub trait DocumentBuilder {
         property_set: HashMap<String, Value>,
         id: &str,
     ) -> Result<Credential, Box<dyn std::error::Error>> {
-        println!("\nCreating credential {}", cred_type);
+        println!("\nCreating credential {cred_type}");
         let vc = Credential::new(
             CONTEXT_CREDENTIALS,
             cred_type,
