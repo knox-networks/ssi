@@ -96,11 +96,11 @@ impl Credential {
     }
 
     pub fn create_verifiable_credentials(
-        &self,
+        self,
         integrity_proof: crate::proof::DataIntegrityProof,
     ) -> VerifiableCredential {
         let vc = VerifiableCredential {
-            credential: self.to_owned(),
+            credential: self,
             proof: integrity_proof,
         };
         return vc;
