@@ -117,10 +117,7 @@ mod tests {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
         let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
-        let type_rs = serde_json::to_value([
-            "VerifiableCredential".to_string(),
-            "PermanentResidentCard".to_string(),
-        ]);
+        let type_rs = json!(["VerifiableCredential", "PermanentResidentCard"]);
         if type_rs.is_ok() {
             kv_body
                 .entry("type".to_string())
