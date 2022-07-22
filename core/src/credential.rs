@@ -86,7 +86,12 @@ impl Credential {
     }
 
     pub fn deserialize(contents: String) -> Result<Credential, serde_json::Error> {
-        let cred = serde_json::from_str(&contents)?;
+        let cred = serde_json::from_str(&contents);
+        if cred.is_ok() {
+            return Ok(cred.unwrap());
+        } else {
+            return Err(cred.unwrap_err());
+        }
     }
 }
 
