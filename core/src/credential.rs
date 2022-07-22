@@ -125,10 +125,10 @@ pub struct Presentation {
 }
 
 impl Presentation {
-    pub fn new(context: VerificationContext, vc: Vec<VerifiableCredential>) -> Presentation {
+    pub fn new(context: VerificationContext, verifiable_credential: Vec<VerifiableCredential>) -> Presentation {
         Presentation {
-            context: context,
-            verifiable_credential: vc,
+            context,
+            verifiable_credential,
         }
     }
 
