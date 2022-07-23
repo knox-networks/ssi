@@ -116,6 +116,9 @@ mod tests {
             "VerifiableCredential".to_string(),
             "PermanentResidentCard".to_string(),
         ]);
+
+        
+
         if type_rs.is_ok() {
             kv_body
                 .entry("type".to_string())
@@ -142,49 +145,30 @@ mod tests {
             .entry("expirationDate".to_string())
             .or_insert(Value::String("2029-12-03T12:19:52Z".to_string()));
 
+        let type_rs = vec!["PermanentResident".to_string(), "Person".to_string()];
+        
         kv_subject
-            .entry("id".to_string())
-            .or_insert(Value::String("did:example:b34ca6cd37bbf23".to_string()));
-
-        let type_rs = serde_json::to_value(["PermanentResident".to_string(), "Person".to_string()]);
-        if type_rs.is_ok() {
-            kv_subject
                 .entry("type".to_string())
-                .or_insert(type_rs.unwrap());
-        }
+                .or_insert(vec!["PermanentResident".to_string(), "Person".to_string()]);
+        
 
-        kv_subject
-            .entry("givenName".to_string())
-            .or_insert(Value::String("JOHN".to_string()));
-        kv_subject
-            .entry("familyName".to_string())
-            .or_insert(Value::String("SMITH".to_string()));
-        kv_subject
-            .entry("gender".to_string())
-            .or_insert(Value::String("Male".to_string()));
-        kv_subject
-            .entry("image".to_string())
-            .or_insert(Value::String(
-                "data:image/png;base64,iVBORw0KGgo...kJggg==".to_string(),
-            ));
-        kv_subject
-            .entry("residentSince".to_string())
-            .or_insert(Value::String("2015-01-01".to_string()));
-        kv_subject
-            .entry("lprCategory".to_string())
-            .or_insert(Value::String("C09".to_string()));
-        kv_subject
-            .entry("lprNumber".to_string())
-            .or_insert(Value::String("999-999-999".to_string()));
-        kv_subject
-            .entry("commuterClassification".to_string())
-            .or_insert(Value::String("C1".to_string()));
-        kv_subject
-            .entry("birthCountry".to_string())
-            .or_insert(Value::String("Bahamas".to_string()));
-        kv_subject
-            .entry("birthDate".to_string())
-            .or_insert(Value::String("1958-07-17".to_string()));
+        kv_subject = HashMap::from([
+            ("type", vec!["PermanentResident".to_string(), "Person".to_string()]),
+            ("id", "did:example:b34ca6cd37bbf23"),
+            ("givenName", "JOHN"),
+            ("familyName", "SMITH"),
+            ("gender", "Male"),
+            ("image", "data:image/png;base64,iVBORw0KGgo...kJggg=="),
+            ("residentSince", "2015-01-01"),
+            ("lprCategory", "C09"),
+            ("lprNumber", "999-999-999"),
+            ("commuterClassification", "C1"),
+            ("birthCountry", "Bahamas"),
+            ("birthDate", "1958-07-17"),
+        ])
+        .into_iter()
+        .map(|(k, v)| (k.into(), v.into()))
+        .collect();
 
         return (kv_body, kv_subject);
     }
