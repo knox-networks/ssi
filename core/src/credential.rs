@@ -96,11 +96,11 @@ impl Credential {
     }
 
     pub fn create_verifiable_credentials(
-        &self,
+        self,
         integrity_proof: crate::proof::DataIntegrityProof,
     ) -> VerifiableCredential {
         let vc = VerifiableCredential {
-            credential: self.to_owned(),
+            credential: self,
             proof: integrity_proof,
         };
         return vc;
@@ -125,10 +125,10 @@ pub struct Presentation {
 }
 
 impl Presentation {
-    pub fn new(context: VerificationContext, vc: Vec<VerifiableCredential>) -> Presentation {
+    pub fn new(context: VerificationContext, verifiable_credential: Vec<VerifiableCredential>) -> Presentation {
         Presentation {
-            context: context,
-            verifiable_credential: vc,
+            context,
+            verifiable_credential,
         }
     }
 
