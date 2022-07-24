@@ -111,23 +111,26 @@ mod tests {
     fn get_body_subject() -> (HashMap<String, Value>, HashMap<String, Value>) {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
         let mut kv_subject: HashMap<String, Value> = HashMap::new();
-    
+
         kv_body = HashMap::from([
-                ("issuer", "did:example:28394728934792387"),
-                ("identifier", "83627465"),
-                ("name", "Permanent Resident Card"),
-                ("description", "Government of Example Permanent Resident Card."),
-                ("issuanceDate", "2019-12-03T12:19:52Z"),
-                ("expirationDate", "2029-12-03T12:19:52Z"),
-            ])
-            .into_iter()
-            .map(|(k, v)| (k.into(), v.into()))
-            .collect();
+            ("issuer", "did:example:28394728934792387"),
+            ("identifier", "83627465"),
+            ("name", "Permanent Resident Card"),
+            (
+                "description",
+                "Government of Example Permanent Resident Card.",
+            ),
+            ("issuanceDate", "2019-12-03T12:19:52Z"),
+            ("expirationDate", "2029-12-03T12:19:52Z"),
+        ])
+        .into_iter()
+        .map(|(k, v)| (k.into(), v.into()))
+        .collect();
 
         kv_body
             .entry("type".to_string())
             .or_insert(json!(["VerifiableCredential", "PermanentResidentCard"]));
-    
+
         kv_subject = HashMap::from([
             ("id", "did:example:b34ca6cd37bbf23"),
             ("givenName", "JOHN"),
@@ -146,8 +149,8 @@ mod tests {
         .collect();
 
         kv_subject
-                .entry("type".to_string())
-                .or_insert(json!(["PermanentResident", "Person"]));
+            .entry("type".to_string())
+            .or_insert(json!(["PermanentResident", "Person"]));
 
         return (kv_body, kv_subject);
     }
