@@ -194,17 +194,14 @@ pub fn serialize<S>(date: &SystemTime, serializer: S) -> Result<S::Ok, S::Error>
         serializer.serialize_str(&format!("{utc}"))
     }
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<SystemTime, D::Error>
+pub fn deserialize<'de, D>(deserializer: D) -> Result<SystemTime, D::Error>
     where
         D: Deserializer<'de>,
     {
-        let s = String::deserialize(deserializer)?;
-        let idate = DateTime::parse_from_rfc3339(&s);
-        if idate.is_ok() {
-            let sys_time = SystemTime::from(idate.unwrap());
-            return Ok(sys_time.clone());
-        } else {
-            return Err(serde::de::Error::custom(idate.unwrap_err()));
-        }
+        use serde::de::Error;
+
+        String::deserialize(deserializer) // -> Result<String, _>
+            .and_then(|s: String| DateTime::parse_from_rfc3339(&s).map_err(Error::custom))
+            .map(SystemTime::from)
     }
 }
