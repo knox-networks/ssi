@@ -186,7 +186,7 @@ mod formatter_credential_date {
 
     const FORMAT: &'static str = "%Y-%m-%dT%H:%M:%SZ";
 
-pub fn serialize<S>(date: &SystemTime, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(date: &SystemTime, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -194,7 +194,7 @@ pub fn serialize<S>(date: &SystemTime, serializer: S) -> Result<S::Ok, S::Error>
         serializer.serialize_str(&format!("{utc}"))
     }
 
-pub fn deserialize<'de, D>(deserializer: D) -> Result<SystemTime, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<SystemTime, D::Error>
     where
         D: Deserializer<'de>,
     {
