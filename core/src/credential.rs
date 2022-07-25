@@ -55,20 +55,6 @@ pub struct Credential {
     pub property_set: HashMap<String, Value>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct IntegrityProof {
-    #[serde(rename = "type")]
-    proof_type: String,
-    #[serde(rename = "issuanceDate")]
-    issuance_date: SystemTime,
-    #[serde(rename = "verificationMethod")]
-    verification_method: String,
-    #[serde(rename = "verificationPurpose")]
-    proof_purpose: String,
-    #[serde(rename = "verificationValue")]
-    proof_value: String,
-}
-
 impl Credential {
     pub fn new(
         context: VerificationContext,
@@ -112,7 +98,7 @@ impl Credential {
 pub struct VerifiablePresentation {
     #[serde(flatten)]
     presentation: Presentation,
-    proof: IntegrityProof,
+    proof: crate::proof::DataIntegrityProof,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
