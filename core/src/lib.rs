@@ -55,8 +55,7 @@ pub trait DocumentBuilder {
         &self,
         credentials: Vec<VerifiableCredential>,
     ) -> Result<Presentation, Box<dyn std::error::Error>> {
-        let pre = Presentation::new(CONTEXT_CREDENTIALS, credentials);
-        Ok(pre)
+        Ok(Presentation::new(CONTEXT_CREDENTIALS, credentials))
     }
 }
 
