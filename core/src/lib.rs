@@ -127,7 +127,10 @@ mod tests {
         .map(|(k, v)| (k.into(), v.into()))
         .collect();
 
-        kv_body.insert("type".to_string(), json!(["VerifiableCredential", "PermanentResidentCard"]));
+        kv_body.insert(
+            "type".to_string(),
+            json!(["VerifiableCredential", "PermanentResidentCard"]),
+        );
 
         kv_subject = HashMap::from([
             ("id", "did:example:b34ca6cd37bbf23"),
@@ -231,16 +234,14 @@ mod tests {
 
         let verifiable_credential = credential.create_verifiable_credentials(proof.unwrap());
         let credentials = vec![verifiable_credential];
-        let pre = to.create_presentation(credentials);
-
-        assert!(pre.is_ok());
-
-        let interim_presentation = pre.unwrap();
+        let interim_presentation = to
+            .create_presentation(credentials)
+            .expect("unable to create presentation from credentials");
 
         let interim_proof = &interim_presentation.verifiable_credential[0].proof;
         let interim_proof = serde_json::to_value(interim_proof).unwrap();
         expect_presentation["verifiableCredential"][0]["proof"] = interim_proof;
-        
+
         let presentation_json = interim_presentation.serialize();
 
         assert_json_eq!(expect_presentation, presentation_json);
