@@ -127,9 +127,7 @@ mod tests {
         .map(|(k, v)| (k.into(), v.into()))
         .collect();
 
-        kv_body
-            .entry("type".to_string())
-            .or_insert(json!(["VerifiableCredential", "PermanentResidentCard"]));
+        kv_body.insert("type".to_string(), json!(["VerifiableCredential", "PermanentResidentCard"]));
 
         kv_subject = HashMap::from([
             ("id", "did:example:b34ca6cd37bbf23"),
@@ -148,9 +146,7 @@ mod tests {
         .map(|(k, v)| (k.into(), v.into()))
         .collect();
 
-        kv_subject
-            .entry("type".to_string())
-            .or_insert(json!(["PermanentResident", "Person"]));
+        kv_subject.insert("type".to_string(), json!(["PermanentResident", "Person"]));
 
         return (kv_body, kv_subject);
     }
