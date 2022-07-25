@@ -238,31 +238,9 @@ mod tests {
         let interim_presentation = pre.unwrap();
 
         let interim_proof = &interim_presentation.verifiable_credential[0].proof;
-        assert!(!interim_proof.verification_method.is_empty());
-        assert!(!interim_proof.proof_value.is_empty());
-
-        expect_presentation["verifiableCredential"][0]["proof"]["verification_method"] =
-            serde_json::Value::String(
-                interim_presentation.verifiable_credential[0]
-                    .proof
-                    .verification_method
-                    .clone(),
-            );
-        expect_presentation["verifiableCredential"][0]["proof"]["proof_value"] =
-            serde_json::Value::String(
-                interim_presentation.verifiable_credential[0]
-                    .proof
-                    .proof_value
-                    .clone(),
-            );
-        expect_presentation["verifiableCredential"][0]["proof"]["created"] =
-            serde_json::Value::String(
-                interim_presentation.verifiable_credential[0]
-                    .proof
-                    .created
-                    .clone(),
-            );
-
+        let interim_proof = serde_json::to_value(interim_proof).unwrap();
+        expect_presentation["verifiableCredential"][0]["proof"] = interim_proof;
+        
         let presentation_json = interim_presentation.serialize();
 
         assert_json_eq!(expect_presentation, presentation_json);
