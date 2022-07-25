@@ -155,7 +155,7 @@ mod tests {
     }
 
     #[test]
-    fn test_create_credential() -> Result<(), String> {
+    fn test_create_credential_and_presentation() -> Result<(), String> {
         let to = TestObj::new();
         let expect_credential = json!({
             "@context": [
@@ -186,6 +186,23 @@ mod tests {
             },
         });
 
+        let (kv_body, kv_subject) = get_body_subject();
+
+        let vc = to.create_credential(
+            crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string(),
+            kv_subject,
+            kv_body,
+            "https://issuer.oidp.uscis.gov/credentials/83627465",
+        );
+
+        assert!(vc.is_ok());
+        let credential = vc.unwrap();
+        assert_json_eq!(expect_credential, credential.serialize());
+
+        test_create_presentation(to, credential)
+    }
+
+    fn test_create_presentation(to: TestObj, credential: crate::Credential) -> Result<(), String> {
         let mut expect_presentation = json!({
             "@context" : ["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
             "verifiableCredential":[{"@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],"@id":"https://issuer.oidp.uscis.gov/credentials/83627465","credentialSubject":{"birthCountry":"Bahamas","birthDate":"1958-07-17","commuterClassification":"C1",
@@ -209,20 +226,7 @@ mod tests {
                 "proof_value":"z5MWmCHvVpgXSiBN5SKbCNErLN2ncGR2mUMVrUJQaAd41t4CVjk57zBqnwZyH6eCc7HypD9BqbHnWrT4MikoW11Kf",
                 "verification_method":"did:knox:zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU#zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU"},
                 "type":["VerifiableCredential","PermanentResidentCard"]}]});
-
-        let (kv_body, kv_subject) = get_body_subject();
-
-        let vc = to.create_credential(
-            crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string(),
-            kv_subject,
-            kv_body,
-            "https://issuer.oidp.uscis.gov/credentials/83627465",
-        );
-
-        assert!(vc.is_ok());
-        let credential = vc.unwrap();
-        assert_json_eq!(expect_credential, credential.serialize());
-
+        // here we test the presentation
         let signer = signature::signer::Ed25519DidSigner::new();
         let proof = create_data_integrity_proof(
             &signer,
@@ -245,7 +249,6 @@ mod tests {
         let presentation_json = interim_presentation.serialize();
 
         assert_json_eq!(expect_presentation, presentation_json);
-
         Ok(())
     }
 }
