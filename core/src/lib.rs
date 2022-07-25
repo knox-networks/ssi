@@ -241,20 +241,9 @@ mod tests {
 
         let interim_presentation = pre.unwrap();
 
-        assert!(
-            interim_presentation.verifiable_credential[0]
-                .proof
-                .verification_method
-                .len()
-                > 0
-        );
-        assert!(
-            interim_presentation.verifiable_credential[0]
-                .proof
-                .proof_value
-                .len()
-                > 0
-        );
+        let interim_proof = &interim_presentation.verifiable_credential[0].proof;
+        assert!(!interim_proof.verification_method.is_empty());
+        assert!(!interim_proof.proof_value.is_empty());
 
         expect_presentation["verifiableCredential"][0]["proof"]["verification_method"] =
             serde_json::Value::String(
