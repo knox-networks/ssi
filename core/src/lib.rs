@@ -235,11 +235,7 @@ mod tests {
 
         let verifiable_credential = credential.create_verifiable_credentials(proof.unwrap());
         let credentials = vec![verifiable_credential];
-        let pre = to.create_presentation(credentials);
-
-        assert!(pre.is_ok());
-
-        let interim_presentation = pre.unwrap();
+        let interim_presentation = to.create_presentation(credentials).expect("unable to create presentation from credentials");
 
         let interim_proof = &interim_presentation.verifiable_credential[0].proof;
         assert!(!interim_proof.verification_method.is_empty());
