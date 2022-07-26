@@ -111,39 +111,38 @@ mod tests {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
         let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
-// <<<<<<< HEAD
         let type_rs = json!(["VerifiableCredential", "PermanentResidentCard"]);
         kv_body.entry("type".to_string()).or_insert(type_rs);
 
         let expect = json!({
-          "@context": [
-            "https://www.w3.org/2018/credentials/v1",
-            "https://www.w3.org/2018/credentials/examples/v1"
-          ],
-          "@id": "https://issuer.oidp.uscis.gov/credentials/83627465",
-          "type": ["VerifiableCredential", "PermanentResidentCard"],
-          "issuer": "did:example:28394728934792387",
-          "identifier": "83627465",
-          "name": "Permanent Resident Card",
-          "description": "Government of Example Permanent Resident Card.",
-          "issuanceDate": "2019-12-03T12:19:52Z",
-          "expirationDate": "2029-12-03T12:19:52Z",
-          "credentialSubject": {
-            "id": "did:example:b34ca6cd37bbf23",
-            "type": ["PermanentResident", "Person"],
-            "givenName": "JOHN",
-            "familyName": "SMITH",
-            "gender": "Male",
-            "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-            "residentSince": "2015-01-01",
-            "lprCategory": "C09",
-            "lprNumber": "999-999-999",
-            "commuterClassification": "C1",
-            "birthCountry": "Bahamas",
-            "birthDate": "1958-07-17"
-          },
-      });
-// ======
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://www.w3.org/2018/credentials/examples/v1"
+            ],
+            "@id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+            "type": ["VerifiableCredential", "PermanentResidentCard"],
+            "issuer": "did:example:28394728934792387",
+            "identifier": "83627465",
+            "name": "Permanent Resident Card",
+            "description": "Government of Example Permanent Resident Card.",
+            "issuanceDate": "2019-12-03T12:19:52Z",
+            "expirationDate": "2029-12-03T12:19:52Z",
+            "credentialSubject": {
+              "id": "did:example:b34ca6cd37bbf23",
+              "type": ["PermanentResident", "Person"],
+              "givenName": "JOHN",
+              "familyName": "SMITH",
+              "gender": "Male",
+              "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+              "residentSince": "2015-01-01",
+              "lprCategory": "C09",
+              "lprNumber": "999-999-999",
+              "commuterClassification": "C1",
+              "birthCountry": "Bahamas",
+              "birthDate": "1958-07-17"
+            },
+        });
+
         kv_body = HashMap::from([
             ("issuer", "did:example:28394728934792387"),
             ("identifier", "83627465"),
@@ -216,51 +215,15 @@ mod tests {
             "birthCountry": "Bahamas",
             "birthDate": "1958-07-17"
           },});
-// >>>>>>> main
-            
 
-// <<<<<<< HEAD
-//         kv_body
-//             .entry("issuer".to_string())
-//             .or_insert(Value::String("did:example:28394728934792387".to_string()));
-//         kv_body
-//             .entry("identifier".to_string())
-//             .or_insert(Value::String("83627465".to_string()));
-//         kv_body
-//             .entry("name".to_string())
-//             .or_insert(Value::String("Permanent Resident Card".to_string()));
-//         kv_body
-//             .entry("description".to_string())
-//             .or_insert(Value::String(
-//                 "Government of Example Permanent Resident Card.".to_string(),
-//             ));
-//         kv_body
-//             .entry("issuanceDate".to_string())
-//             .or_insert(Value::String("2019-12-03T12:19:52Z".to_string()));
-//         kv_body
-//             .entry("expirationDate".to_string())
-//             .or_insert(Value::String("2029-12-03T12:19:52Z".to_string()));
-
-//         kv_subject
-//             .entry("id".to_string())
-//             .or_insert(Value::String("did:example:b34ca6cd37bbf23".to_string()));
-
-//         let type_rs = serde_json::to_value(["PermanentResident".to_string(), "Person".to_string()]);
-//         if type_rs.is_ok() {
-//             kv_subject
-//                 .entry("type".to_string())
-//                 .or_insert(type_rs.unwrap());
-//         }
-// =======
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
-            vec!(crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string()),
+            vec![crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string()],
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
         );
-// >>>>>>> main
 
         assert!(vc.is_ok());
         let credential = vc.unwrap();
