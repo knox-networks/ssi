@@ -28,7 +28,7 @@ pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: &'static str = "PermanentResidentCa
 pub const CRED_TYPE_BANK_CARD: &'static str = "BankCard";
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-struct CredentialSubject {
+pub struct CredentialSubject {
     id: String,
     #[serde(flatten)]
     pub property_set: HashMap<String, Value>,
@@ -38,7 +38,7 @@ struct CredentialSubject {
 pub struct VerifiableCredential {
     #[serde(flatten)]
     credential: Credential,
-    proof: crate::proof::DataIntegrityProof,
+    pub proof: crate::proof::DataIntegrityProof,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -89,8 +89,20 @@ impl Credential {
         return serde_json::to_value(&self).unwrap();
     }
 
+// <<<<<<< HEAD
     pub fn deserialize(contents: String) -> Result<Credential, serde_json::Error> {
         serde_json::from_str(&contents)
+    }
+
+    pub fn create_verifiable_credentials(
+        self,
+        integrity_proof: crate::proof::DataIntegrityProof,
+    ) -> VerifiableCredential {
+        let vc = VerifiableCredential {
+            credential: self,
+            proof: integrity_proof,
+        };
+        return vc;
     }
 }
 
@@ -133,5 +145,40 @@ mod tests {
             assert!(false);
         }
         Ok(())
+    }
+}
+// =======
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(bound(deserialize = "'de: 'static"))]
+pub struct VerifiablePresentation {
+    #[serde(flatten)]
+    presentation: Presentation,
+    proof: crate::proof::DataIntegrityProof,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(bound(deserialize = "'de: 'static"))]
+pub struct Presentation {
+    #[serde(rename = "@context")]
+    pub context: VerificationContext,
+    #[serde(rename = "verifiableCredential")]
+    pub verifiable_credential: Vec<VerifiableCredential>,
+}
+
+impl Presentation {
+    pub fn new(
+        context: VerificationContext,
+        verifiable_credential: Vec<VerifiableCredential>,
+    ) -> Presentation {
+        Presentation {
+            context,
+            verifiable_credential,
+        }
+    }
+
+    pub fn serialize(&self) -> Value {
+        return serde_json::to_value(&self).unwrap();
+// >>>>>>> main
     }
 }
