@@ -6,6 +6,10 @@ use crate::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+mod formatter_context;
+mod formatter_credential_date;
+mod formatter_credential_type;
+
 // cred_subject is a generic that implements trait X
 // trait X allows us to encode that object into JSON-LD
 // We provide types that implement trait X for the cred types that we support
@@ -129,79 +133,5 @@ mod tests {
             assert!(false);
         }
         Ok(())
-    }
-}
-
-mod formatter_context {
-    use serde::{self, Deserialize, Deserializer, Serializer};
-    use std::string::String;
-
-    pub fn serialize<S>(ctx: &Vec<String>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let ctx_vec = crate::CONTEXT_CREDENTIALS
-            .into_iter()
-            .map(|s| s.to_string());
-        serializer.collect_seq(ctx_vec)
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = Vec::<String>::deserialize(deserializer)?;
-        let s = crate::CONTEXT_CREDENTIALS
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect();
-        Ok(s)
-    }
-}
-
-mod formatter_credential_type {
-    use serde::{self, Deserialize, Deserializer, Serializer};
-
-    pub fn serialize<S>(cr_type: &String, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.collect_seq(cr_type.split(","))
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<String, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = Vec::<String>::deserialize(deserializer)?.join(",");
-        Ok(s)
-    }
-}
-
-mod formatter_credential_date {
-    use chrono::{DateTime, Utc};
-    use serde::{self, Deserialize, Deserializer, Serializer};
-    use std::string::String;
-    use std::time::SystemTime;
-
-    const FORMAT: &'static str = "%Y-%m-%dT%H:%M:%SZ";
-
-    pub fn serialize<S>(date: &SystemTime, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let utc = DateTime::<Utc>::from(*date).format(FORMAT);
-        serializer.serialize_str(&format!("{utc}"))
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<SystemTime, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        use serde::de::Error;
-
-        String::deserialize(deserializer) // -> Result<String, _>
-            .and_then(|s: String| DateTime::parse_from_rfc3339(&s).map_err(Error::custom))
-            .map(SystemTime::from)
     }
 }
