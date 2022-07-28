@@ -1,9 +1,10 @@
 use crate::error::SignatureError;
 use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
 
-pub trait DIDSigner<S>
+pub trait DIDSigner<S, T>
 where
     S: Signature,
+    T: crate::keypair::KeyPair,
 {
     fn sign(&self, msg: &[u8]) -> S {
         self.try_sign(msg).expect("signature operation failed")
@@ -23,6 +24,7 @@ where
     fn get_proof_type(&self) -> String;
     fn get_verification_method(&self, relation: VerificationRelation) -> String;
     fn encode(&self, sig: S) -> String;
+    fn from (kp: T) -> Self;
 }
 
 pub struct Ed25519DidSigner {
@@ -41,7 +43,8 @@ impl Ed25519DidSigner {
     }
 }
 
-impl DIDSigner<Ed25519Signature> for Ed25519DidSigner {
+impl DIDSigner<Ed25519Signature, dyn crate::keypair::KeyPair> for Ed25519DidSigner {
+
     fn try_sign(&self, data: &[u8]) -> Result<Ed25519Signature, SignatureError> {
         let res: [u8; 64] = self.private_key.sign(data).into();
         return Ed25519Signature::from_bytes(&res);
@@ -58,5 +61,13 @@ impl DIDSigner<Ed25519Signature> for Ed25519DidSigner {
 
     fn encode(&self, sig: Ed25519Signature) -> String {
         multibase::encode(multibase::Base::Base58Btc, sig)
+    }
+
+    /// converts SSIKeyPair -> Signer for instance Ed25519DidSigner() 
+    fn from (kp: dyn crate::keypair::KeyPair) -> Self {
+        return Self {
+            private_key: kp.get_private_key(),
+            public_key: kp.get_public_key(),
+        };
     }
 }

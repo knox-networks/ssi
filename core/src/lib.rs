@@ -57,6 +57,14 @@ pub trait DocumentBuilder {
     ) -> Result<Presentation, Box<dyn std::error::Error>> {
         Ok(Presentation::new(CONTEXT_CREDENTIALS, credentials))
     }
+
+    fn restore_identity(
+        alias: String,
+        _mnemonic: String,
+        _password: Option<String>,
+    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+        unimplemented!();
+    }
 }
 
 // Commented due to failing cargo check
