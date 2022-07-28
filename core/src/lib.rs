@@ -59,7 +59,6 @@ pub trait DocumentBuilder {
     }
 
     fn restore_identity(
-        alias: String,
         _mnemonic: String,
         _password: Option<String>,
     ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
