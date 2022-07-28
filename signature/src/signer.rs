@@ -43,7 +43,7 @@ impl Ed25519DidSigner {
     }
 }
 
-impl DIDSigner<Ed25519Signature, dyn crate::keypair::KeyPair> for Ed25519DidSigner {
+impl DIDSigner<Ed25519Signature, crate::keypair::SSIKeyPair> for Ed25519DidSigner {
 
     fn try_sign(&self, data: &[u8]) -> Result<Ed25519Signature, SignatureError> {
         let res: [u8; 64] = self.private_key.sign(data).into();
@@ -64,10 +64,10 @@ impl DIDSigner<Ed25519Signature, dyn crate::keypair::KeyPair> for Ed25519DidSign
     }
 
     /// converts SSIKeyPair -> Signer for instance Ed25519DidSigner() 
-    fn from (kp: dyn crate::keypair::KeyPair) -> Self {
+    fn from (kp: crate::keypair::SSIKeyPair) -> Self {
         return Self {
-            private_key: kp.get_private_key(),
-            public_key: kp.get_public_key(),
+            private_key: kp.private_key,
+            public_key: kp.public_key,
         };
     }
 }
