@@ -1,5 +1,15 @@
 use crate::error::SignatureError;
 use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
+use std::convert::From;
+
+impl From<crate::keypair::SSIKeyPair> for Ed25519DidSigner {
+    fn from(item: crate::keypair::SSIKeyPair) -> Self {
+        Ed25519DidSigner {
+            private_key: item.private_key,
+            public_key: item.public_key,
+        }
+    }
+}
 
 pub trait DIDSigner<S, T>
 where
@@ -24,7 +34,6 @@ where
     fn get_proof_type(&self) -> String;
     fn get_verification_method(&self, relation: VerificationRelation) -> String;
     fn encode(&self, sig: S) -> String;
-    fn from(kp: T) -> Self;
 }
 
 pub struct Ed25519DidSigner {
@@ -60,13 +69,5 @@ impl DIDSigner<Ed25519Signature, crate::keypair::SSIKeyPair> for Ed25519DidSigne
 
     fn encode(&self, sig: Ed25519Signature) -> String {
         multibase::encode(multibase::Base::Base58Btc, sig)
-    }
-
-    /// converts SSIKeyPair -> Signer for instance Ed25519DidSigner()
-    fn from(kp: crate::keypair::SSIKeyPair) -> Self {
-        return Self {
-            private_key: kp.private_key,
-            public_key: kp.public_key,
-        };
     }
 }
