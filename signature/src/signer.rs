@@ -53,7 +53,7 @@ pub struct Ed25519DidSigner {
     // pub(crate) key_pair: crate::keypair::SSIKeyPair<T>,
 }
 
-impl <T: Copy +AsRef<[u8]>> Ed25519DidSigner <T> {
+impl <T: Copy +AsRef<[u8]>> Ed25519DidSigner {
     pub fn new() -> Self {
         let sk = ed25519_zebra::SigningKey::new(rand::thread_rng());
 

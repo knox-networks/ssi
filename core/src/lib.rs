@@ -172,7 +172,6 @@ pub trait IdentityBuilder {
     // 11:27
     // Without a struct, how would we achieve that?
     
-    
     // Sergey Kudryashov
     //   11:27 AM
     // yes this is a good point in terms of key generation
@@ -185,15 +184,12 @@ pub trait IdentityBuilder {
     // Yes
     // In a way inaccessible to the end user
 
-
 //     The question is - who generates the keypair? In case of Ed25519DidSigner its constructor generates, in case of SSIKeyPair, again, 
 // constructor does that. So applying the trait KeyPair doesn't change anything here, whether it is applied to Ed25519DidSigner or SSIKeyPair
 
 // Okay so I think the Signers should not handle generation at all
 // Instead we should implement a function called new for the KeyPair struct (not the trait ofc)
 // And then the Signer can be created from the KeyPair similarly to how I create the verifier from the signer
-
-
 
 /// ___________________________________________________________ ///
 // And when we're applying from trait from std library, i assume that at this point KeyPair may get the 
@@ -205,9 +201,7 @@ pub trait IdentityBuilder {
 // What do you think?
 // Let me just have my lunch really quick and i think it through in the meantime
 // Yeah sounds good no rush
-
         unimplemented!();
-
     }
 
     fn restore_identity(
