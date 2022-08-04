@@ -2,25 +2,15 @@ use crate::error::SignatureError;
 use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
 use std::convert::From;
 
-// impl <T:Copy> From<Ed25519DidSigner> for crate::keypair::SSIKeyPair<T> {
-//     fn from(signer: Ed25519DidSigner) -> crate::keypair::SSIKeyPair<T> {
-//         crate::keypair::SSIKeyPair::new(signer)
-//     }
-// }
-
-// impl From<&crate::signer::Ed25519DidSigner> for Ed25519DidVerifier {
-//     fn from(signer: &crate::signer::Ed25519DidSigner) -> Self {
-//         Self {
-//             public_key: signer.public_key,
-//         }
-//     }
-// }
-
-impl From<&crate::signer::Ed25519DidSigner> for crate::keypair::SSIKeyPair {
-    fn from(signer: &crate::signer::Ed25519DidSigner) -> Self {
-        let key_pair = crate::keypair::SSIKeyPair::new(signer);
+impl From (crate::keypair::SSIKeyPair) for crate::signer::Ed25519DidSigner {
+    fn from(key_pair: crate::keypair::SSIKeyPair) -> Self {
+        Self {
+            public_key: key_pair.public_key,
+            private_key: key_pair.private_key,
+        }
     }
 }
+
 
 pub trait DIDSigner<S>
 where

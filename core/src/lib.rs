@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 pub mod error;
 pub mod proof;
+pub mod identity;
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
@@ -62,145 +63,19 @@ pub trait DocumentBuilder {
 }
 
 pub trait IdentityBuilder {
-    fn create_identity(
-        _mnemonic: &str,
-        _password: Option<String>,
+    pub fn new(resolver: crate::registry::RegistryResolver) -> Self;
+
+    pub fn create_identity(
+        password: Option<String>,
     ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
 
-        // GenerateMnemonic -> crypto manager -> mnemonic ? 
-        // GenerateKeyPair -> crypto manager  - > key pair is generated 
-        // CreateDidDocument  - > key pair
-        // -> did doc has to be signed with a key pair
-        // let id = Identity::new();
+
+        let idn = crate::identity::Identity::new(crate::registry::Registry::new(crate::registry::RegistryResolver::new()));
+        idn.generate(document::IdentityType::User).unwrap();
         let kp = SSIKeyPair::new();
+        let signer = 
+        idn.create_did_document(signer);
         
-        //////////////////// discussion ////////////////////////
-        // keypair = create_keypair()
-        // store_keypair(keypair)
-        // create_vc(Ed25519DidSigner::from(keypair))
-
-        //         That's roughly how I imagine it
-        // 11:52
-        // So the signer can source its keys from a keypair but it will not expose access to them to its consumers
-        // 11:52
-        // So you can share signing functionality (or verifying functionality) without increasing the exposure of 
-        // the cryptographic keys themselves
-        // 11:52
-        // You are roughly right that the KeyPair doesn't really care about or know about the Signer
-        // 11:53
-        // its the Signer that cares about the KeyPair
-        // 11:53
-        // As that's its information source
-
-        // My thinking is that different consumers will need to integrate at different layers and by separating the 
-        // information source 
-        // from the operational module (the signer and verifier) we can have a cleaner layer of abstraction and more flexibility
-
-        // Theoretically we just need the Signer/Verifier to add support for new algorithms
-        //The layers is so that lower level applications that need the crypto information can still use us
-
-        //This won't change the core library, just the signature library
-
-        //Well actually core will change but only the identity creation stuff 
-
-    //         That as well and for current need
-    // For instance in the custodial wallet, the DynamicKeypair has the same issue that ours does
-    // 12:01
-    // So I ended up having to hack around things in order to get it to work
-    // 12:01
-    // Because for the custodial wallet I want to be able to generate keypairs, store them, and then 
-    // create signers/verifiers on demand from that keypair information
-
-    //     Okay dope, lmk if you disagree or think there's a better way or something. This is just 
-    // something that I felt was really missing while working on custodial wallet (edited) 
-    // 12:04
-    // And I think it'll come up for other people consuming SSI
-
-
-    // and for didSigner we replace Ed25519Signature by crate::keypair::SSIKeyPair right? So the idea is to operate via 
-    // SSIKeyPair to essentially be flexible and to be able to use other algorithms than Ed25519Signature
-
-
-    // Luis Osta
-    //   10:56 AM
-    // Yes ideally
-    // 10:56
-    // Ideally the trait can be implemented by various signatures
-    // white_check_mark
-    // eyes
-    // raised_hands
-    
-
-    // 10:57
-    // I don't know if we should replace the signature by the SSIKeyPair or if its possible
-    // 10:57
-    // What do you think?
-    
-    
-    // I'm wondering why do we need in this case SSIKeyPair struct. Maybe we need only the KeyPair trait ? It can be applied to Ed25519DidSigner
-
-
-    // Luis Osta
-    //   11:25 AM
-    // So I have a question, how would you want key generation to work for the end user?
-    
-    
-    // Sergey Kudryashov
-    //   11:25 AM
-    // basically signer will consume this generic trait
-    
-    
-    // Luis Osta
-    //   11:25 AM
-    // We'd want our library to abstract the whole process right? (the signature)
-    
-    
-    // Sergey Kudryashov
-    //   11:26 AM
-    // Yes
-    
-    
-    // Luis Osta
-    //   11:26 AM
-    // From key generation, to creating signers, to all of the "higher" level SSI stuff
-    // 11:26
-    // I agree that we should definitely use traits
-    // 11:26
-    // But I think we should have a struct because we want to have some reasonable default that users can utilize to create keys
-    // 11:26
-    // In a manner in which they can control
-    // 11:27
-    // Without a struct, how would we achieve that?
-    
-    // Sergey Kudryashov
-    //   11:27 AM
-    // yes this is a good point in terms of key generation
-    // 11:27
-    // let me think
-    // 11:28
-    // currently Ed25519DidSigner generates key pair right?
-    
- // Luis Osta
-    // Yes
-    // In a way inaccessible to the end user
-
-//     The question is - who generates the keypair? In case of Ed25519DidSigner its constructor generates, in case of SSIKeyPair, again, 
-// constructor does that. So applying the trait KeyPair doesn't change anything here, whether it is applied to Ed25519DidSigner or SSIKeyPair
-
-// Okay so I think the Signers should not handle generation at all
-// Instead we should implement a function called new for the KeyPair struct (not the trait ofc)
-// And then the Signer can be created from the KeyPair similarly to how I create the verifier from the signer
-
-/// ___________________________________________________________ ///
-// And when we're applying from trait from std library, i assume that at this point KeyPair may get the 
-// information about algorithms, based on algorithms keys have to be generated, is it like you see it?
-// I think you are correct in this
-// So we'd have to implement a from function for the Signer
-// And yes that would have the cryptographic information ofc
-// The signer could just store the KeyPair struct internally and use its functions to do the signing and verifying
-// What do you think?
-// Let me just have my lunch really quick and i think it through in the meantime
-// Yeah sounds good no rush
         unimplemented!();
     }
 

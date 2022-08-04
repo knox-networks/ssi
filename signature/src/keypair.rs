@@ -29,7 +29,7 @@ pub trait KeyPair <T: Copy +AsRef<[u8]>>: core::fmt::Debug + Sized {
 }
 
 #[derive(Debug)]
-pub struct SSIKeyPair <T: Copy +AsRef<[u8]>> {
+pub struct SSIKeyPair {
     pub (crate) relation: crate::suite::VerificationRelation,
 
     pub(crate) private_key: ed25519_zebra::SigningKey,
@@ -59,7 +59,7 @@ pub struct SSIKeyMaterial{
     master_public_key:  String,
 }
 
-impl <T> SSIKeyPair <T> where T: Copy +AsRef<[u8]> {
+impl SSIKeyPair{
     pub(crate) fn get_verification_method(self, relation: crate::suite::VerificationRelation) -> String {
         match relation {
             crate::suite::VerificationRelation::AssertionMethod => {
@@ -98,39 +98,6 @@ impl <T> SSIKeyPair <T> where T: Copy +AsRef<[u8]> {
         format!("{}{}", DID_PREFIX, self.master_public_key)
     }
 
-}
-
-impl<T: Copy> SSIKeyPair<T>{
-    pub fn new(signing: T) -> Self {
-        match type_of(signing) {
-            "signer::Ed25519DidSigner" => {
-                let sk = ed25519_zebra::SigningKey::new(rand::thread_rng());
-                let vk = ed25519_zebra::VerificationKey::from(&sk);
-                return Self {
-                    // default verification relation chosen
-                    relation: crate::suite::VerificationRelation::AssertionMethod,
-
-                    private_key: &sk,
-                    public_key: &vk,
-
-                    master_public_key: &vk,
-                    master_private_key: &sk,
-                
-                    authetication_public_key: &vk,
-                    authetication_private_key: &sk,
-                
-                    capability_invocation_public_key: &vk,
-                    capability_invocation_private_key: &sk,
-                
-                    capability_delegation_public_key: &vk,
-                    capability_delegation_private_key: &sk,
-                
-                    assertion_method_public_key: &vk,
-                    assertion_method_private_key: &sk,
-                };
-            }
-        }
-    }
 }
 
 impl<T: Copy + core::fmt::Debug+AsRef<[u8]>> KeyPair<T> for SSIKeyPair<T> {
