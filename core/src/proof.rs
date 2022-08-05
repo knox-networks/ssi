@@ -20,9 +20,9 @@ pub struct DataIntegrityProof {
 /// Currently, only `Ed25519Signature2018` data integrity proofs in the JSON-LD format can be created.
 pub fn create_data_integrity_proof<
     S: signature::suite::Signature,
-    T: signature::keypair::KeyPair,
+    // T: signature::keypair::Ed25519SSIKeyPair,
 >(
-    signer: &impl signature::signer::DIDSigner<S, T>,
+    signer: &impl signature::signer::DIDSigner<S>,
     doc: serde_json::Value,
     relation: signature::suite::VerificationRelation,
 ) -> Result<DataIntegrityProof, Box<dyn std::error::Error>> {

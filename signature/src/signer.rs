@@ -1,16 +1,6 @@
 use crate::error::SignatureError;
 use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
-use std::convert::From;
-
-impl From (crate::keypair::SSIKeyPair) for crate::signer::Ed25519DidSigner {
-    fn from(key_pair: crate::keypair::SSIKeyPair) -> Self {
-        Self {
-            public_key: key_pair.public_key,
-            private_key: key_pair.private_key,
-        }
-    }
-}
-
+// use std::convert::From;
 
 pub trait DIDSigner<S>
 where
@@ -18,7 +8,7 @@ where
     // T: crate::keypair::KeyPair<dyn Copy>,
 {
     fn sign(&self, msg: &[u8]) -> S {
-        self.try_sign(msg).expect("signature operation failed")
+       self.try_sign(msg).expect("signature operation failed")
     }
 
     fn encoded_sign(&self, data: &[u8]) -> String {
@@ -38,12 +28,11 @@ where
 }
 
 pub struct Ed25519DidSigner {
-    private_key: ed25519_zebra::SigningKey,
+    pub(crate) private_key: ed25519_zebra::SigningKey,
     pub(crate) public_key: ed25519_zebra::VerificationKey,
-    // pub(crate) key_pair: crate::keypair::SSIKeyPair<T>,
 }
 
-impl <T: Copy +AsRef<[u8]>> Ed25519DidSigner {
+impl Ed25519DidSigner {
     pub fn new() -> Self {
         let sk = ed25519_zebra::SigningKey::new(rand::thread_rng());
 

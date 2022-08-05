@@ -29,14 +29,15 @@ where
 pub struct Ed25519DidVerifier {
     public_key: ed25519_zebra::VerificationKey,
 }
-// Generic version of the signer
-// impl <T> From<&crate::signer::Ed25519DidSigner<T>> for Ed25519DidVerifier {
-//     fn from(signer: &crate::signer::Ed25519DidSigner<T>) -> Self {
-//         Self {
-//             public_key: signer.public_key,
-//         }
-//     }
-// }
+
+impl From <&crate::keypair::Ed25519SSIKeyPair> for crate::signer::Ed25519DidSigner {
+    fn from(key_pair: &crate::keypair::Ed25519SSIKeyPair) -> Self {
+        Self {
+            public_key: key_pair.public_key,
+            private_key: key_pair.private_key,
+        }
+    }
+}
 
 impl From<&crate::signer::Ed25519DidSigner> for Ed25519DidVerifier {
     fn from(signer: &crate::signer::Ed25519DidSigner) -> Self {

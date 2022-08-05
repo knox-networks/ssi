@@ -2,7 +2,7 @@ mod credential;
 
 use credential::*;
 use serde_json::{self, Value};
-use signature::keypair::SSIKeyPair;
+use signature::keypair::Ed25519SSIKeyPair;
 use std::collections::HashMap;
 
 pub mod error;
@@ -63,20 +63,16 @@ pub trait DocumentBuilder {
 }
 
 pub trait IdentityBuilder {
-    pub fn new(resolver: crate::registry::RegistryResolver) -> Self;
+    pub fn new_identity_builder(resolver: crate::registry::RegistryResolver) -> Self;
 
     pub fn create_identity(
         password: Option<String>,
     ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-
-
-        let idn = crate::identity::Identity::new(crate::registry::Registry::new(crate::registry::RegistryResolver::new()));
+        let idn = crate::identity::Identity::new(crate::registry::Registry::new());
         idn.generate(document::IdentityType::User).unwrap();
-        let kp = SSIKeyPair::new();
-        let signer = 
-        idn.create_did_document(signer);
-        
-        unimplemented!();
+        let kp = Ed25519SSIKeyPair::new();
+        let doc = idn.create_did_document(kp);
+        serde_json::to_value(doc).unwrap()
     }
 
     fn restore_identity(
@@ -110,21 +106,34 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 
 #[cfg(test)]
 mod tests {
-    use crate::proof::create_data_integrity_proof;
+    use crate::{proof::create_data_integrity_proof, IdentityBuilder};
     use crate::serde_json::json;
     use crate::DocumentBuilder;
     use assert_json_diff::assert_json_eq;
     use std::{collections::HashMap, vec};
 
+    use crate::{
+        registry_client::{registry::CreateResponse, registry::ReadResponse, MockRegistryClient},
+        RegistryResolver,
+    };
     use serde_json::Value;
     struct TestObj {}
 
     impl TestObj {
         pub fn new() -> Self {
-            TestObj {}
+            Self {}
         }
     }
+
+    impl IdentityUser {
+        pub fn new() -> Self {
+            Self {}
+        }
+    }
+
     impl DocumentBuilder for TestObj {}
+
+    impl IdentityBuilder for IdentityUser {}
 
     fn get_body_subject() -> (HashMap<String, Value>, HashMap<String, Value>) {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
@@ -202,6 +211,15 @@ mod tests {
         kv_subject.insert("type".to_string(), json!(["PermanentResident", "Person"]));
 
         return (kv_body, kv_subject);
+    }
+
+
+    #[test]
+    fn test_create_identity() -> Result<(), String> {
+        let iu = IdentityUser::new();
+        let builder = iu.new_identity_builder(crate::registry::RegistryResolver);
+        let identity = builder.create_identity();
+        Ok(())
     }
 
     #[test]

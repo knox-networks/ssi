@@ -1,8 +1,9 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
+use serde_json;
 
 struct Identity {
-    resolver: crate::registry::resolver::RegistryResolver,
+    resolver: crate::registry::RegistryResolver,
 }
 
 impl Identity {
@@ -16,44 +17,48 @@ impl Identity {
     pub fn generate(&mut self, doc: serde_json::Value) -> serde_json::Value {
         let signer = signature::signer::Ed25519DidSigner::new();
         let signed_doc = self.create_did_document(&signer);
-        self.resolver.create(did, signed_doc);
-        serde_json.to_value(signed_doc)
+        self.resolver.create(signed_doc);
+
+        serde_json.to_value(signed_doc).unwrap()
     }
 
-    pub fn create_did_document(signer: crate::signer::Ed25519DidSigner) -> DidDocument {
+    pub fn create_did_document(self, kp: crate::signature::keypair::Ed25519SSIKeyPair) -> DidDocument {
         // let mut did_doc: DidDocument = serde_json::try_from(doc).unwrap();
         let did_doc = DidDocument{
-            context: vec!(["default".to_string()]),
-            id:"default".to_string(),
+        context: vec!("default".to_string()),
+        id:"default".to_string(),
         authentication: vec![
-            crate::keypair::SSIKeyMaterial{
-                id: did_doc.get_verification_method(crate::suite::VerificationRelation.Authentication),
-                proof_type: did_doc.get_proof_type(),
-                controller: did_doc.get_controller(),
-                public_key_multibase: did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.Authentication),
-            },],
+                crate::keypair::SSIKeyMaterial{
+                    id: did_doc.get_verification_method(crate::suite::VerificationRelation.Authentication),
+                    proof_type: did_doc.get_proof_type(),
+                    controller: did_doc.get_controller(),
+                    public_key_multibase: did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.Authentication),
+                },
+            ],
         capability_invocation: vec![
-            crate::keypair::SSIKeyMaterial{
-                id: did_doc.get_verification_method(crate::suite::VerificationRelation.CapabilityInvocation),
-                proof_type: did_doc.get_proof_type(),
-                controller: did_doc.get_controller(),
-                public_key_multibase: did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.CapabilityInvocation),
-            },],
+                crate::keypair::SSIKeyMaterial{
+                    id: did_doc.get_verification_method(crate::suite::VerificationRelation.CapabilityInvocation),
+                    proof_type: did_doc.get_proof_type(),
+                    controller: did_doc.get_controller(),
+                    public_key_multibase: did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.CapabilityInvocation),
+                },
+            ],
         capability_delegation: vec![
-            crate::keypair::SSIKeyMaterial{
-                id: did_doc.get_verification_method(crate::suite::VerificationRelation.CapabilityDelegation),
-                proof_type: did_doc.get_proof_type(),
-                controller: did_doc.get_controller(),
-                public_key_multibase:  did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.CapabilityDelegation),
-            },],
+                crate::keypair::SSIKeyMaterial{
+                    id: did_doc.get_verification_method(crate::suite::VerificationRelation.CapabilityDelegation),
+                    proof_type: did_doc.get_proof_type(),
+                    controller: did_doc.get_controller(),
+                    public_key_multibase:  did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.CapabilityDelegation),
+                },
+            ],
         assertion_method: vec![
-            crate::keypair::SSIKeyMaterial{
-                id: did_doc.get_verification_method(crate::suite::VerificationRelation.AssertionMethod),
-                proof_type: did_doc.get_proof_type(),
-                controller: did_doc.get_controller(),
-                public_key_multibase: did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.AssertionMethod),
-            },
-        ],
+                crate::keypair::SSIKeyMaterial{
+                    id: did_doc.get_verification_method(crate::suite::VerificationRelation.AssertionMethod),
+                    proof_type: did_doc.get_proof_type(),
+                    controller: did_doc.get_controller(),
+                    public_key_multibase: did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.AssertionMethod),
+                },
+            ],
         };
         
         return did_doc;
