@@ -1,9 +1,14 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
-use serde_json;
+use serde::{Deserialize, Serialize};
+use signature::keypair::SSIKeyMaterial;
+use registry_resolver::RegistryResolver;
+use signature::signer::DIDSigner;
+use signature::keypair::Ed25519SSIKeyPair;
+// extern crate registry-resolver as registry_resolver;
 
-struct Identity {
-    resolver: crate::registry::RegistryResolver,
+pub struct Identity {
+    resolver: RegistryResolver,
 }
 
 impl Identity {
@@ -14,81 +19,64 @@ impl Identity {
     }
 
     // here Ed25519DidSigner has to be replaced by SSIKeyPair
-    pub fn generate(&mut self, doc: serde_json::Value) -> serde_json::Value {
-        let signer = signature::signer::Ed25519DidSigner::new();
-        let signed_doc = self.create_did_document(&signer);
+    pub fn generate(&mut self, key_pair: Ed25519SSIKeyPair) -> DidDocument {
+        // let signer = signature::s::new();
+        let signed_doc = self.create_did_document(key_pair);
         self.resolver.create(signed_doc);
-
-        serde_json.to_value(signed_doc).unwrap()
+        return signed_doc;
     }
 
-    pub fn create_did_document(self, kp: crate::signature::keypair::Ed25519SSIKeyPair) -> DidDocument {
-        // let mut did_doc: DidDocument = serde_json::try_from(doc).unwrap();
-        let did_doc = DidDocument{
+    pub fn create_did_document(self, key_pair: signature::keypair::Ed25519SSIKeyPair, signer: signature::signer::Ed25519DidSigner) -> DidDocument {
+        let did_doc = DidDocument {
         context: vec!("default".to_string()),
-        id:"default".to_string(),
+        id: "default".to_string(),
         authentication: vec![
-                crate::keypair::SSIKeyMaterial{
-                    id: did_doc.get_verification_method(crate::suite::VerificationRelation.Authentication),
-                    proof_type: did_doc.get_proof_type(),
-                    controller: did_doc.get_controller(),
-                    public_key_multibase: did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.Authentication),
+                SSIKeyMaterial{
+                    master_public_key:key_pair.get_master_public_key_encoded(),
+                    id: key_pair.get_verification_method(signature::suite::VerificationRelation::Authentication),
+                    proof_type: signer.get_proof_type(),
+                    controller: key_pair.get_controller(signature::suite::VerificationRelation::Authentication),
+                    public_key_multibase: signature::suite::VerificationRelation::Authentication,
                 },
             ],
         capability_invocation: vec![
-                crate::keypair::SSIKeyMaterial{
-                    id: did_doc.get_verification_method(crate::suite::VerificationRelation.CapabilityInvocation),
-                    proof_type: did_doc.get_proof_type(),
-                    controller: did_doc.get_controller(),
-                    public_key_multibase: did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.CapabilityInvocation),
+                SSIKeyMaterial{
+                    master_public_key:key_pair.get_master_public_key_encoded(),
+                    id: key_pair.get_verification_method(signature::suite::VerificationRelation::CapabilityInvocation),
+                    proof_type: signer.get_proof_type(),
+                    controller: key_pair.get_controller(signature::suite::VerificationRelation::CapabilityInvocation),
+                    public_key_multibase: signature::suite::VerificationRelation::CapabilityInvocation,
                 },
             ],
         capability_delegation: vec![
-                crate::keypair::SSIKeyMaterial{
-                    id: did_doc.get_verification_method(crate::suite::VerificationRelation.CapabilityDelegation),
-                    proof_type: did_doc.get_proof_type(),
-                    controller: did_doc.get_controller(),
-                    public_key_multibase:  did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.CapabilityDelegation),
+            SSIKeyMaterial{
+                    master_public_key:key_pair.get_master_public_key_encoded(),
+                    id: key_pair.get_verification_method(signature::suite::VerificationRelation::CapabilityDelegation),
+                    proof_type: signer.get_proof_type(),
+                    controller: key_pair.get_controller(signature::suite::VerificationRelation::CapabilityDelegation),
+                    public_key_multibase:  signature::suite::VerificationRelation::CapabilityDelegation,
                 },
             ],
         assertion_method: vec![
-                crate::keypair::SSIKeyMaterial{
-                    id: did_doc.get_verification_method(crate::suite::VerificationRelation.AssertionMethod),
-                    proof_type: did_doc.get_proof_type(),
-                    controller: did_doc.get_controller(),
-                    public_key_multibase: did_doc.get_public_key_by_relation(crate::suite::VerificationRelation.AssertionMethod),
-                },
-            ],
+            SSIKeyMaterial{
+                master_public_key:key_pair.get_master_public_key_encoded(),
+                id: key_pair.get_verification_method(signature::suite::VerificationRelation::AssertionMethod),
+                proof_type: signer.get_proof_type(),
+                controller: key_pair.get_controller(signature::suite::VerificationRelation::AssertionMethod),
+                public_key_multibase: signature::suite::VerificationRelation::AssertionMethod,
+            },]
         };
         
         return did_doc;
     }
 }
 
-struct DidDocument {
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct DidDocument {
     context: Vec<String>,
     id: String,
-    authentication: Vec<crate::signature::SSIKeyMaterial>,
-    capability_invocation: Vec<crate::signature::SSIKeyMaterial>,
-    capability_delegation: Vec<crate::signature::SSIKeyMaterial>,
-    assertion_method: Vec<crate::signature::SSIKeyMaterial>,
-}
-
-
-#[cfg(test)]
-mod tests {
-    use crate::Credential;
-    use assert_json_diff::assert_json_eq;
-    use serde_json::json;
-
-    #[test]
-    fn test_create_identity() -> Result<(), String> {
-        if ds.is_ok() {
-            let vc = ds.unwrap().serialize();
-            assert_json_eq!(expect, vc);
-        } else {
-            assert!(false);
-        }
-        Ok(())
-    }
+    authentication: Vec<SSIKeyMaterial>,
+    capability_invocation: Vec<SSIKeyMaterial>,
+    capability_delegation: Vec<SSIKeyMaterial>,
+    assertion_method: Vec<SSIKeyMaterial>,
 }

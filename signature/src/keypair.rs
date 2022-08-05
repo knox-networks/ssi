@@ -1,5 +1,8 @@
-use std::any::type_name;
+#![allow(unused_variables)]
+#![allow(dead_code)]
 
+use std::any::type_name;
+use serde::{Deserialize, Serialize};
 use ed25519_zebra::VerificationKey;
 
 // use ed25519_zebra::VerificationKey;
@@ -50,7 +53,7 @@ impl KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25
     }
 }
 
-
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SSIKeyMaterial{
     id:                 String,
     proof_type:         String,
@@ -110,7 +113,15 @@ impl Ed25519SSIKeyPair{
         };
     }
 
-    pub(crate) fn get_verification_method(self, relation: crate::suite::VerificationRelation) -> String {
+    pub fn get_public_key_encoded(&self) -> String {
+        multibase::encode(multibase::Base::Base58Btc, self.public_key)
+    }
+
+    pub fn get_master_public_key_encoded(&self) -> String {
+        multibase::encode(multibase::Base::Base58Btc, self.master_public_key)
+    }
+
+    pub fn get_verification_method(self, relation: crate::suite::VerificationRelation) -> String {
         match relation {
             crate::suite::VerificationRelation::AssertionMethod => {
                 format!("{}{}#{}", DID_PREFIX.to_string(), 
@@ -136,7 +147,7 @@ impl Ed25519SSIKeyPair{
         }
     }
 
-    pub(crate) fn get_public_key_by_relation(&self, relation: crate::suite::VerificationRelation) -> ed25519_zebra::VerificationKey {
+    pub fn get_public_key_by_relation(&self, relation: crate::suite::VerificationRelation) -> ed25519_zebra::VerificationKey {
         match relation {
             crate::suite::VerificationRelation::AssertionMethod => {
                 self.assertion_method_public_key
@@ -153,7 +164,7 @@ impl Ed25519SSIKeyPair{
         }
     }
 
-    pub(crate) fn get_controller(&self, relation: crate::suite::VerificationRelation) -> String {
+    pub fn get_controller(&self, relation: crate::suite::VerificationRelation) -> String {
         format!("{}{}", DID_PREFIX, multibase::encode(multibase::Base::Base58Btc,self.master_public_key))
     }
 

@@ -1,9 +1,12 @@
+#![allow(unused_variables)]
+#![allow(dead_code)]
 mod credential;
 
 use credential::*;
 use serde_json::{self, Value};
 use signature::keypair::Ed25519SSIKeyPair;
 use std::collections::HashMap;
+use registry_resolver::RegistryResolver;
 
 pub mod error;
 pub mod proof;
@@ -63,16 +66,16 @@ pub trait DocumentBuilder {
 }
 
 pub trait IdentityBuilder {
-    pub fn new_identity_builder(resolver: crate::registry::RegistryResolver) -> Self;
+    fn new_identity_builder(resolver: RegistryResolver) -> Self;
 
-    pub fn create_identity(
+    fn create_identity(
         password: Option<String>,
     ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-        let idn = crate::identity::Identity::new(crate::registry::Registry::new());
-        idn.generate(document::IdentityType::User).unwrap();
+        let idn = crate::identity::Identity::new(RegistryResolver::new());
         let kp = Ed25519SSIKeyPair::new();
-        let doc = idn.create_did_document(kp);
-        serde_json::to_value(doc).unwrap()
+        let signed_doc = idn.generate(kp);
+        let val = serde_json::to_value(signed_doc).unwrap();
+        Ok(val)
     }
 
     fn restore_identity(
