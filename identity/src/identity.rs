@@ -2,10 +2,9 @@
 #![allow(dead_code)]
 use serde::{Deserialize, Serialize};
 use signature::keypair::SSIKeyMaterial;
-use registry_resolver::RegistryResolver;
+use crate::registry_resolver::RegistryResolver;
 use signature::signer::DIDSigner;
 use signature::keypair::Ed25519SSIKeyPair;
-// extern crate registry-resolver as registry_resolver;
 
 pub struct Identity {
     resolver: RegistryResolver,
@@ -20,8 +19,8 @@ impl Identity {
 
     // here Ed25519DidSigner has to be replaced by SSIKeyPair
     pub fn generate(&mut self, key_pair: Ed25519SSIKeyPair) -> DidDocument {
-        // let signer = signature::s::new();
-        let signed_doc = self.create_did_document(key_pair);
+        let signer = signature::signer::Ed25519DidSigner::from(&key_pair);
+        let signed_doc = self.create_did_document(key_pair, signer);
         self.resolver.create(signed_doc);
         return signed_doc;
     }
@@ -79,4 +78,25 @@ pub struct DidDocument {
     capability_invocation: Vec<SSIKeyMaterial>,
     capability_delegation: Vec<SSIKeyMaterial>,
     assertion_method: Vec<SSIKeyMaterial>,
+}
+
+#[cfg(test)]
+mod tests {
+    impl IdentityUser {
+        pub fn new() -> Self {
+            Self {}
+        }
+    }
+
+    impl DocumentBuilder for TestObj {}
+
+    impl IdentityBuilder for IdentityUser {}
+
+    #[test]
+    fn test_create_identity() -> Result<(), String> {
+        let iu = IdentityUser::new();
+        let builder = iu.new_identity_builder(registry::RegistryResolver);
+        let identity = builder.create_identity();
+        Ok(())
+    }
 }

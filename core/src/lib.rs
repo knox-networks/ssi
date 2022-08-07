@@ -6,11 +6,12 @@ use credential::*;
 use serde_json::{self, Value};
 use signature::keypair::Ed25519SSIKeyPair;
 use std::collections::HashMap;
-use registry_resolver::RegistryResolver;
+// use registry_resolver::RegistryResolver;
 
 pub mod error;
 pub mod proof;
-pub mod identity;
+// pub mod identity;
+// pub mod resolver;
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
@@ -65,26 +66,7 @@ pub trait DocumentBuilder {
     }
 }
 
-pub trait IdentityBuilder {
-    fn new_identity_builder(resolver: RegistryResolver) -> Self;
 
-    fn create_identity(
-        password: Option<String>,
-    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-        let idn = crate::identity::Identity::new(RegistryResolver::new());
-        let kp = Ed25519SSIKeyPair::new();
-        let signed_doc = idn.generate(kp);
-        let val = serde_json::to_value(signed_doc).unwrap();
-        Ok(val)
-    }
-
-    fn restore_identity(
-        _mnemonic: String,
-        _password: Option<String>,
-    ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-        unimplemented!();
-    }
-}
 
 /// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the document.
 /// This will by parsing the `verificationMethod` property of the data integrity proof and resolving it to a key that can be used to verify the proof.
@@ -109,16 +91,12 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 
 #[cfg(test)]
 mod tests {
-    use crate::{proof::create_data_integrity_proof, IdentityBuilder};
+    use crate::{proof::create_data_integrity_proof};
     use crate::serde_json::json;
     use crate::DocumentBuilder;
     use assert_json_diff::assert_json_eq;
     use std::{collections::HashMap, vec};
 
-    use crate::{
-        registry_client::{registry::CreateResponse, registry::ReadResponse, MockRegistryClient},
-        RegistryResolver,
-    };
     use serde_json::Value;
     struct TestObj {}
 
@@ -128,15 +106,7 @@ mod tests {
         }
     }
 
-    impl IdentityUser {
-        pub fn new() -> Self {
-            Self {}
-        }
-    }
-
     impl DocumentBuilder for TestObj {}
-
-    impl IdentityBuilder for IdentityUser {}
 
     fn get_body_subject() -> (HashMap<String, Value>, HashMap<String, Value>) {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
@@ -214,15 +184,6 @@ mod tests {
         kv_subject.insert("type".to_string(), json!(["PermanentResident", "Person"]));
 
         return (kv_body, kv_subject);
-    }
-
-
-    #[test]
-    fn test_create_identity() -> Result<(), String> {
-        let iu = IdentityUser::new();
-        let builder = iu.new_identity_builder(crate::registry::RegistryResolver);
-        let identity = builder.create_identity();
-        Ok(())
     }
 
     #[test]
