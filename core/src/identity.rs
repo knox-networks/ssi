@@ -1,38 +1,35 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
-use mockall::*;
+
 use serde::{Deserialize, Serialize};
 use signature::keypair::SSIKeyMaterial;
 
-use registry_resolver::RegistryResolver;
+// use registry_resolver::RegistryResolver;
 use signature::signer::DIDSigner;
 use signature::keypair::Ed25519SSIKeyPair;
-use crate::DIDResolver;
 
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct Identity {
-    resolver: <dyn DIDResolver>,
+#[derive(Clone, Debug, Copy)]
+pub struct Identity<T>{
+    resolver: T,
 }
 
-impl Identity {
-    pub fn new(resolver: DIDResolver) -> Identity {
+impl <T: crate::DIDResolver> Identity<T>{
+    pub fn new(resolver: T) -> Identity<T> {
         Identity{
             resolver:resolver,
         }
     }
     // here Ed25519DidSigner has to be replaced by SSIKeyPair
-    pub async fn generate(&mut self, key_pair: Ed25519SSIKeyPair) -> Result<DidDocument, ssi::error::ResolverError> {
+    pub async fn generate(self, key_pair: Ed25519SSIKeyPair) -> Result<DidDocument, crate::error::ResolverError> {
         let signer = signature::signer::Ed25519DidSigner::from(&key_pair);
-        let signed_doc = self.create_did_document(key_pair, signer);
-        let signed_doc_json = serde_json::to_value(signed_doc).unwrap();
-        let did = String::from("did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh");
-        let res = self.resolver.create(did, signed_doc_json);
-        res.await?;
+        let signed_doc = self.create_did_document(&key_pair, signer);
+        let signed_doc_json = serde_json::to_value(signed_doc.clone()).unwrap();
+        let did = key_pair.get_master_public_key_encoded();
+        let res = self.resolver.create(did, signed_doc_json).await?;
         Ok(signed_doc)
     }
 
-    pub fn create_did_document(self, key_pair: signature::keypair::Ed25519SSIKeyPair, signer: signature::signer::Ed25519DidSigner) -> DidDocument {
+    pub fn create_did_document(self, key_pair: &signature::keypair::Ed25519SSIKeyPair, signer: signature::signer::Ed25519DidSigner) -> DidDocument {
         let did_doc = DidDocument {
         context: vec!("default".to_string()),
         id: "default".to_string(),
@@ -89,32 +86,21 @@ pub struct DidDocument {
 
 #[cfg(test)]
 mod tests {
-    use registry_resolver::{
-        registry_client::{MockRegistryClient},
-        RegistryResolver,
-    };
-
-    impl IdentityUser {
-        pub fn new() -> Self {
-            Self {}
-        }
+    use crate::MockDIDResolver;
+    use crate::identity::Identity;
+   
+    macro_rules! aw {
+        ($e:expr) => {
+            tokio_test::block_on($e)
+        };
     }
-
-    impl DocumentBuilder for TestObj {}
-
-    impl IdentityBuilder for IdentityUser {}
 
     #[test]
     fn test_create_identity() -> Result<(), String> {
-        let mut mock_client = MockRegistryClient::default();
-
-        let resolver = RegistryResolver {
-            client: Box::new(mock_client),
-        };
-        let iu = IdentityUser::new(resolver);
-        let builder = iu.new_identity_builder(registry::RegistryResolver);
-
-        let identity = builder.create_identity();
+        let mut resolver = MockDIDResolver::default();
+        let iu = Identity::new(resolver);
+        let kp = signature::keypair::Ed25519SSIKeyPair::new();
+        let identity = iu.generate(kp);
         Ok(())
     }
 }

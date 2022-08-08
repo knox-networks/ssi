@@ -1,8 +1,6 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 mod credential;
-mod identity;
-
 use credential::*;
 use serde_json::{self, Value};
 use signature::keypair::Ed25519SSIKeyPair;
@@ -11,12 +9,14 @@ use std::collections::HashMap;
 
 pub mod error;
 pub mod proof;
-// pub mod identity;
-// pub mod resolver;
+use mockall::*;
+pub mod identity;
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
 /// The DIDResolver is responsible for resolving the `verificationMethod` to a key that can be used to verify the proof.
+
+#[automock]
 #[async_trait::async_trait]
 pub trait DIDResolver {
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
