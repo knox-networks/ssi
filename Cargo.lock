@@ -602,18 +602,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "identity"
-version = "0.1.0"
-dependencies = [
- "mockall",
- "registry_resolver",
- "serde",
- "serde_json",
- "signature",
- "ssi",
-]
-
-[[package]]
 name = "indexmap"
 version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

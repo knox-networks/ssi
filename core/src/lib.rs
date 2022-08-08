@@ -1,6 +1,7 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 mod credential;
+mod identity;
 
 use credential::*;
 use serde_json::{self, Value};

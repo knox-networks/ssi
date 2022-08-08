@@ -7,16 +7,16 @@ use signature::keypair::SSIKeyMaterial;
 use registry_resolver::RegistryResolver;
 use signature::signer::DIDSigner;
 use signature::keypair::Ed25519SSIKeyPair;
-use ssi::DIDResolver;
+use crate::DIDResolver;
 
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Identity {
-    resolver: Box<dyn RegistryResolver>,
+    resolver: <dyn DIDResolver>,
 }
 
 impl Identity {
-    pub fn new(resolver: RegistryResolver) -> Identity {
+    pub fn new(resolver: DIDResolver) -> Identity {
         Identity{
             resolver:resolver,
         }
@@ -94,28 +94,19 @@ mod tests {
         RegistryResolver,
     };
 
-    // impl IdentityUser {
-    //     pub fn new() -> Self {
-    //         Self {}
-    //     }
-    // }
+    impl IdentityUser {
+        pub fn new() -> Self {
+            Self {}
+        }
+    }
 
-    // impl DocumentBuilder for TestObj {}
+    impl DocumentBuilder for TestObj {}
 
-    // impl IdentityBuilder for IdentityUser {}
+    impl IdentityBuilder for IdentityUser {}
 
     #[test]
     fn test_create_identity() -> Result<(), String> {
         let mut mock_client = MockRegistryClient::default();
-        if mock_create_response.is_some() {
-            mock_client
-                .expect_create()
-                .with(
-                    mockall::predicate::eq(did.clone()),
-                    mockall::predicate::eq(Some(create_did_struct(doc.clone()))),
-                )
-                .return_once(|_, _| (mock_create_response.unwrap()));
-        }
 
         let resolver = RegistryResolver {
             client: Box::new(mock_client),
