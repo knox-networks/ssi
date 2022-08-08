@@ -30,7 +30,7 @@ pub struct Ed25519DidVerifier {
     public_key: ed25519_zebra::VerificationKey,
 }
 
-impl From <&crate::keypair::Ed25519SSIKeyPair> for crate::signer::Ed25519DidSigner {
+impl From<&crate::keypair::Ed25519SSIKeyPair> for crate::signer::Ed25519DidSigner {
     fn from(key_pair: &crate::keypair::Ed25519SSIKeyPair) -> Self {
         Self {
             public_key: key_pair.public_key,

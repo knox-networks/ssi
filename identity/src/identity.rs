@@ -11,7 +11,7 @@ pub struct Identity {
 }
 
 impl Identity {
-    pub fn new(resolver: RegistryResolver) -> Identity {
+    pub fn new() -> Identity {
         Identity{
             resolver:resolver,
         }

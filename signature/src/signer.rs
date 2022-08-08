@@ -5,10 +5,9 @@ use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
 pub trait DIDSigner<S>
 where
     S: Signature,
-    // T: crate::keypair::KeyPair<dyn Copy>,
 {
     fn sign(&self, msg: &[u8]) -> S {
-       self.try_sign(msg).expect("signature operation failed")
+        self.try_sign(msg).expect("signature operation failed")
     }
 
     fn encoded_sign(&self, data: &[u8]) -> String {

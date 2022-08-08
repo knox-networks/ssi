@@ -56,7 +56,7 @@ pub trait DocumentBuilder {
     }
 
     /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
-    /// In order to become a Verifiable Presentation, a data integrity proof must be created for the 
+    /// In order to become a Verifiable Presentation, a data integrity proof must be created for the
     /// presentation and appended to the JSON-LD document.
     fn create_presentation(
         &self,
@@ -65,8 +65,6 @@ pub trait DocumentBuilder {
         Ok(Presentation::new(CONTEXT_CREDENTIALS, credentials))
     }
 }
-
-
 
 /// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the document.
 /// This will by parsing the `verificationMethod` property of the data integrity proof and resolving it to a key that can be used to verify the proof.
@@ -91,7 +89,7 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 
 #[cfg(test)]
 mod tests {
-    use crate::{proof::create_data_integrity_proof};
+    use crate::proof::create_data_integrity_proof;
     use crate::serde_json::json;
     use crate::DocumentBuilder;
     use assert_json_diff::assert_json_eq;
