@@ -1,12 +1,11 @@
 [package]
-name = "registry-resolver"
+name = "registry_resolver"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "regiatry_resolver"
-crate-type = ["cdylib", "staticlib"]
+name = "registry_resolver"
 
 [dependencies]
 prost = "0.10.1"
@@ -18,6 +17,7 @@ pbjson = "0.3"
 pbjson-types = "0.3"
 async-trait = "0.1.53"
 mockall = "0.11.1"
+serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
 rstest = "0.15.0"
