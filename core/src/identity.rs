@@ -5,22 +5,23 @@ use serde::{Deserialize, Serialize};
 use signature::keypair::SSIKeyMaterial;
 
 // use registry_resolver::RegistryResolver;
-use signature::signer::DIDSigner;
 use signature::keypair::Ed25519SSIKeyPair;
+use signature::signer::DIDSigner;
 
 #[derive(Clone, Debug, Copy)]
-pub struct Identity<T>{
+pub struct Identity<T> {
     resolver: T,
 }
 
-impl <T: crate::DIDResolver> Identity<T>{
+impl<T: crate::DIDResolver> Identity<T> {
     pub fn new(resolver: T) -> Identity<T> {
-        Identity{
-            resolver:resolver,
-        }
+        Identity { resolver: resolver }
     }
     // here Ed25519DidSigner has to be replaced by SSIKeyPair
-    pub async fn generate(self, key_pair: Ed25519SSIKeyPair) -> Result<DidDocument, crate::error::ResolverError> {
+    pub async fn generate(
+        self,
+        key_pair: Ed25519SSIKeyPair,
+    ) -> Result<DidDocument, crate::error::ResolverError> {
         let signer = signature::signer::Ed25519DidSigner::from(&key_pair);
         let signed_doc = self.create_did_document(&key_pair, signer);
         let signed_doc_json = serde_json::to_value(signed_doc.clone()).unwrap();
@@ -29,47 +30,56 @@ impl <T: crate::DIDResolver> Identity<T>{
         Ok(signed_doc)
     }
 
-    pub fn create_did_document(self, key_pair: &signature::keypair::Ed25519SSIKeyPair, signer: signature::signer::Ed25519DidSigner) -> DidDocument {
+    pub fn create_did_document(
+        &self,
+        key_pair: &signature::keypair::Ed25519SSIKeyPair,
+        signer: signature::signer::Ed25519DidSigner,
+    ) -> DidDocument {
         let did_doc = DidDocument {
-        context: vec!("default".to_string()),
-        id: "default".to_string(),
-        authentication: vec![
-                SSIKeyMaterial{
-                    master_public_key:key_pair.get_master_public_key_encoded(),
-                    id: key_pair.get_verification_method(signature::suite::VerificationRelation::Authentication),
-                    proof_type: signer.get_proof_type(),
-                    controller: key_pair.get_controller(signature::suite::VerificationRelation::Authentication),
-                    public_key_multibase: signature::suite::VerificationRelation::Authentication,
-                },
-            ],
-        capability_invocation: vec![
-                SSIKeyMaterial{
-                    master_public_key:key_pair.get_master_public_key_encoded(),
-                    id: key_pair.get_verification_method(signature::suite::VerificationRelation::CapabilityInvocation),
-                    proof_type: signer.get_proof_type(),
-                    controller: key_pair.get_controller(signature::suite::VerificationRelation::CapabilityInvocation),
-                    public_key_multibase: signature::suite::VerificationRelation::CapabilityInvocation,
-                },
-            ],
-        capability_delegation: vec![
-            SSIKeyMaterial{
-                    master_public_key:key_pair.get_master_public_key_encoded(),
-                    id: key_pair.get_verification_method(signature::suite::VerificationRelation::CapabilityDelegation),
-                    proof_type: signer.get_proof_type(),
-                    controller: key_pair.get_controller(signature::suite::VerificationRelation::CapabilityDelegation),
-                    public_key_multibase:  signature::suite::VerificationRelation::CapabilityDelegation,
-                },
-            ],
-        assertion_method: vec![
-            SSIKeyMaterial{
-                master_public_key:key_pair.get_master_public_key_encoded(),
-                id: key_pair.get_verification_method(signature::suite::VerificationRelation::AssertionMethod),
+            context: vec!["default".to_string()],
+            id: "default".to_string(),
+            authentication: vec![SSIKeyMaterial {
+                master_public_key: key_pair.get_master_public_key_encoded(),
+                id: key_pair.get_verification_method(
+                    signature::suite::VerificationRelation::Authentication,
+                ),
                 proof_type: signer.get_proof_type(),
-                controller: key_pair.get_controller(signature::suite::VerificationRelation::AssertionMethod),
+                controller: key_pair
+                    .get_controller(signature::suite::VerificationRelation::Authentication),
+                public_key_multibase: signature::suite::VerificationRelation::Authentication,
+            }],
+            capability_invocation: vec![SSIKeyMaterial {
+                master_public_key: key_pair.get_master_public_key_encoded(),
+                id: key_pair.get_verification_method(
+                    signature::suite::VerificationRelation::CapabilityInvocation,
+                ),
+                proof_type: signer.get_proof_type(),
+                controller: key_pair
+                    .get_controller(signature::suite::VerificationRelation::CapabilityInvocation),
+                public_key_multibase: signature::suite::VerificationRelation::CapabilityInvocation,
+            }],
+            capability_delegation: vec![SSIKeyMaterial {
+                master_public_key: key_pair.get_master_public_key_encoded(),
+                id: key_pair.get_verification_method(
+                    signature::suite::VerificationRelation::CapabilityDelegation,
+                ),
+                proof_type: signer.get_proof_type(),
+                controller: key_pair
+                    .get_controller(signature::suite::VerificationRelation::CapabilityDelegation),
+                public_key_multibase: signature::suite::VerificationRelation::CapabilityDelegation,
+            }],
+            assertion_method: vec![SSIKeyMaterial {
+                master_public_key: key_pair.get_master_public_key_encoded(),
+                id: key_pair.get_verification_method(
+                    signature::suite::VerificationRelation::AssertionMethod,
+                ),
+                proof_type: signer.get_proof_type(),
+                controller: key_pair
+                    .get_controller(signature::suite::VerificationRelation::AssertionMethod),
                 public_key_multibase: signature::suite::VerificationRelation::AssertionMethod,
-            },]
+            }],
         };
-        
+
         return did_doc;
     }
 }
@@ -86,9 +96,9 @@ pub struct DidDocument {
 
 #[cfg(test)]
 mod tests {
-    use crate::MockDIDResolver;
     use crate::identity::Identity;
-   
+    use crate::MockDIDResolver;
+
     macro_rules! aw {
         ($e:expr) => {
             tokio_test::block_on($e)

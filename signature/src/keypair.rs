@@ -54,14 +54,14 @@ impl KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SSIKeyMaterial {
-    id: String,
-    proof_type: String,
-    controller: String,
-    public_key_multibase: crate::suite::VerificationRelation,
-    master_public_key: String,
+    pub id: String,
+    pub proof_type: String,
+    pub controller: String,
+    pub public_key_multibase: crate::suite::VerificationRelation,
+    pub master_public_key: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Ed25519SSIKeyPair {
     pub(crate) relation: crate::suite::VerificationRelation,
 
