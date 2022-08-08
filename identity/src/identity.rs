@@ -12,7 +12,7 @@ use ssi::DIDResolver;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Identity {
-    resolver: RegistryResolver,
+    resolver: Box<dyn RegistryResolver>,
 }
 
 impl Identity {
@@ -94,15 +94,15 @@ mod tests {
         RegistryResolver,
     };
 
-    impl IdentityUser {
-        pub fn new() -> Self {
-            Self {}
-        }
-    }
+    // impl IdentityUser {
+    //     pub fn new() -> Self {
+    //         Self {}
+    //     }
+    // }
 
-    impl DocumentBuilder for TestObj {}
+    // impl DocumentBuilder for TestObj {}
 
-    impl IdentityBuilder for IdentityUser {}
+    // impl IdentityBuilder for IdentityUser {}
 
     #[test]
     fn test_create_identity() -> Result<(), String> {
