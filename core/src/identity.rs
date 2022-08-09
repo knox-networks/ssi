@@ -17,7 +17,6 @@ impl<T: crate::DIDResolver> Identity<T> {
     pub fn new(resolver: T) -> Identity<T> {
         Identity { resolver: resolver }
     }
-    // here Ed25519DidSigner has to be replaced by SSIKeyPair
     pub async fn generate(
         self,
         key_pair: Ed25519SSIKeyPair,
@@ -96,20 +95,42 @@ pub struct DidDocument {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use crate::identity::Identity;
     use crate::MockDIDResolver;
 
-    macro_rules! aw {
-        ($e:expr) => {
-            tokio_test::block_on($e)
-        };
-    }
+    #[rstest::rstest]
+    #[case::created_successfully(
+        Some(Ok(())),
+        true
+    )]
+    #[case::created_error(
+        Some(Err(crate::error::ResolverError{
+            message: "testErr".to_string(), 
+            kind: crate::error::ErrorKind::NetworkFailure})),
+        false
+    )]
+    fn test_create_identity(
+        #[case] mock_create_response: Option<Result<(), crate::error::ResolverError>>,
+        #[case] expect_ok: bool,
+    ) -> Result<(), String> {
+        let mut resolver_mock = MockDIDResolver::default();
 
-    #[test]
-    fn test_create_identity() -> Result<(), String> {
-        let mut resolver = MockDIDResolver::default();
-        let iu = Identity::new(resolver);
-        let kp = signature::keypair::Ed25519SSIKeyPair::new();
+        let json_input_mock = json!({"hey": "ho"});
+        let serde_json_value = serde_json::to_value(json_input_mock).unwrap();
+
+        resolver_mock
+        .expect_create()
+        .with(
+            mockall::predicate::eq(String::from("jjjj")),
+            mockall::predicate::eq(serde_json_value),
+        )
+        .return_once(|_, _| (mock_create_response.unwrap()));
+
+        let iu = Identity::new(resolver_mock);
+        let kp = signature::keypair::Ed25519SSIKeyPair::new(); 
+
         let identity = iu.generate(kp);
         Ok(())
     }
