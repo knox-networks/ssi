@@ -25,8 +25,16 @@ impl<T: crate::DIDResolver> Identity<T> {
         let signed_doc = self.create_did_document(&key_pair, signer);
         let signed_doc_json = serde_json::to_value(signed_doc.clone()).unwrap();
         let did = key_pair.get_master_public_key_encoded();
-        let res = self.resolver.create(did, signed_doc_json).await?;
-        Ok(signed_doc)
+
+        match self.resolver.create(did, signed_doc_json).await {
+            Ok(()) => {
+                return Ok(signed_doc);
+            }
+            Err(_) => Err(crate::error::ResolverError::new(
+                "Failed to create DID document",
+                crate::error::ErrorKind::InvalidData,
+            )),
+        }
     }
 
     pub fn create_did_document(
@@ -100,38 +108,103 @@ mod tests {
     use crate::identity::Identity;
     use crate::MockDIDResolver;
 
+    macro_rules! aw {
+        ($e:expr) => {
+            tokio_test::block_on($e)
+        };
+    }
+
+    fn get_json_input_mock() -> serde_json::Value {
+        json!({
+            "context": ["default"],
+            "id": "default",
+            "authentication": [
+                {
+                    "master_public_key": "did:example:123#key-1",
+                    "id": "did:example:123#key-1",
+                    "proof_type": "Ed25519Signature2018",
+                    "controller": "did:example:123",
+                    "public_key_multibase": "Ed25519VerificationKey2018"
+                }
+            ],
+            "capability_invocation": [
+                {
+                    "master_public_key": "did:example:123#key-1",
+                    "id": "did:example:123#key-1",
+                    "proof_type": "Ed25519Signature2018",
+                    "controller": "did:example:123",
+                    "public_key_multibase": "Ed25519VerificationKey2018"
+                }
+            ],
+            "capability_delegation": [
+                {
+                    "master_public_key": "did:example:123#key-1",
+                    "id": "did:example:123#key-1",
+                    "proof_type": "Ed25519Signature2018",
+                    "controller": "did:example:123",
+                    "public_key_multibase": "Ed25519VerificationKey2018"
+                }
+            ],
+            "assertion_method": [
+                {
+                    "master_public_key": "did:example:123#key-1",
+                    "id": "did:example:123#key-1",
+                    "proof_type": "Ed25519Signature2018",
+                    "controller": "did:example:123",
+                    "public_key_multibase": "Ed25519VerificationKey2018"
+                }
+            ]
+        })
+    }
+
     #[rstest::rstest]
     #[case::created_successfully(
         Some(Ok(())),
+        get_json_input_mock(),
         true
     )]
     #[case::created_error(
         Some(Err(crate::error::ResolverError{
             message: "testErr".to_string(), 
             kind: crate::error::ErrorKind::NetworkFailure})),
+        get_json_input_mock(),
         false
     )]
     fn test_create_identity(
         #[case] mock_create_response: Option<Result<(), crate::error::ResolverError>>,
+        #[case] serde_json_value: serde_json::Value,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
 
-        let json_input_mock = json!({"hey": "ho"});
-        let serde_json_value = serde_json::to_value(json_input_mock).unwrap();
-
         resolver_mock
-        .expect_create()
-        .with(
-            mockall::predicate::eq(String::from("jjjj")),
-            mockall::predicate::eq(serde_json_value),
-        )
-        .return_once(|_, _| (mock_create_response.unwrap()));
+            .expect_create()
+            .with(
+                mockall::predicate::eq(String::from("jjjj")),
+                mockall::predicate::eq(serde_json_value),
+            )
+            .return_once(|_, _| (mock_create_response.unwrap()));
 
         let iu = Identity::new(resolver_mock);
-        let kp = signature::keypair::Ed25519SSIKeyPair::new(); 
+        let kp = signature::keypair::Ed25519SSIKeyPair::new();
 
-        let identity = iu.generate(kp);
-        Ok(())
+        let identity = aw!(iu.generate(kp));
+
+        match identity {
+            Ok(DidDocument) => {
+                if expect_ok {
+                    Ok(())
+                } else {
+                    Err("Expected error".to_string())
+                }
+            }
+            Err(_) => {
+                if expect_ok {
+                    Err("Expected success".to_string())
+                } else {
+                    Ok(())
+                }
+            }
+        }
     }
 }
