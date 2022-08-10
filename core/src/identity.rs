@@ -33,6 +33,12 @@ impl<T: crate::DIDResolver> Identity<T> {
         }
     }
 
+    pub async fn recover(self, did:String, key_pair: Ed25519SSIKeyPair) -> Result<serde_json::Value, crate::error::ResolverError> {
+        let did = key_pair.get_master_public_key_encoded();
+        let rsp = self.resolver.read(did).await?;
+        Ok(rsp)
+    }
+
     pub fn create_did_document(
         &self,
         key_pair: &signature::keypair::Ed25519SSIKeyPair,
@@ -157,6 +163,45 @@ mod tests {
     }
 
     #[rstest::rstest]
+    #[case::restored_successfully(
+        get_did(),
+        get_json_input_mock(),
+        true
+    )]
+    fn test_restore_identity(
+        #[case] did: String,
+        #[case] restore_response: serde_json::Value,
+        #[case] expect_ok: bool,
+    ) -> Result<(), String> {
+        let mut resolver_mock = MockDIDResolver::default();
+        resolver_mock
+            .expect_read()
+            .return_once(|_, _| (restore_response));
+
+        let iu = Identity::new(resolver_mock);
+        let kp = signature::keypair::Ed25519SSIKeyPair::new();
+        let gn = iu.recover(did, kp);
+        let restored_identity = aw!(gn);
+
+        match restored_identity {
+            Ok(DidDocument) => {
+                if expect_ok {
+                    Ok(())
+                } else {
+                    Err("Expected error".to_string())
+                }
+            }
+            Err(_) => {
+                if expect_ok {
+                    Err("Expected success".to_string())
+                } else {
+                    Ok(())
+                }
+            }
+        }
+    }
+
+    #[rstest::rstest]
     #[case::created_successfully(
         Some(Ok(())),
         get_did(),
@@ -181,10 +226,6 @@ mod tests {
 
         resolver_mock
             .expect_create()
-            // .with(
-            //     mockall::predicate::eq(did_doc),
-            //     mockall::predicate::eq(serde_json_value),
-            // )
             .return_once(|_, _| (mock_create_response.unwrap()));
 
         let iu = Identity::new(resolver_mock);
