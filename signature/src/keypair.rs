@@ -119,7 +119,7 @@ impl Ed25519SSIKeyPair {
         multibase::encode(multibase::Base::Base58Btc, self.master_public_key)
     }
 
-pub fn get_verification_method(self, relation: crate::suite::VerificationRelation) -> String {
+    pub fn get_verification_method(self, relation: crate::suite::VerificationRelation) -> String {
         let verification_key = match relation {
             crate::suite::VerificationRelation::AssertionMethod => self.assertion_method_public_key,
             crate::suite::VerificationRelation::Authentication => self.authetication_public_key,
