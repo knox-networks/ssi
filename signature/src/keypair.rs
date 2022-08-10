@@ -119,47 +119,22 @@ impl Ed25519SSIKeyPair {
         multibase::encode(multibase::Base::Base58Btc, self.master_public_key)
     }
 
-    pub fn get_verification_method(self, relation: crate::suite::VerificationRelation) -> String {
-        match relation {
-            crate::suite::VerificationRelation::AssertionMethod => {
-                format!(
-                    "{}{}#{}",
-                    DID_PREFIX.to_string(),
-                    multibase::encode(multibase::Base::Base58Btc, self.master_public_key),
-                    multibase::encode(multibase::Base::Base58Btc, self.assertion_method_public_key)
-                )
-            }
-            crate::suite::VerificationRelation::Authentication => {
-                format!(
-                    "{}{}#{}",
-                    DID_PREFIX.to_string(),
-                    multibase::encode(multibase::Base::Base58Btc, self.master_public_key),
-                    multibase::encode(multibase::Base::Base58Btc, self.authetication_public_key)
-                )
-            }
+pub fn get_verification_method(self, relation: crate::suite::VerificationRelation) -> String {
+        let verification_key = match relation {
+            crate::suite::VerificationRelation::AssertionMethod => self.assertion_method_public_key,
+            crate::suite::VerificationRelation::Authentication => self.authetication_public_key,
             crate::suite::VerificationRelation::CapabilityInvocation => {
-                format!(
-                    "{}{}#{}",
-                    DID_PREFIX.to_string(),
-                    multibase::encode(multibase::Base::Base58Btc, self.master_public_key),
-                    multibase::encode(
-                        multibase::Base::Base58Btc,
-                        self.capability_invocation_public_key
-                    )
-                )
+                self.capability_invocation_public_key
             }
             crate::suite::VerificationRelation::CapabilityDelegation => {
-                format!(
-                    "{}{}#{}",
-                    DID_PREFIX,
-                    multibase::encode(multibase::Base::Base58Btc, self.master_public_key),
-                    multibase::encode(
-                        multibase::Base::Base58Btc,
-                        self.capability_delegation_public_key
-                    )
-                )
+                self.capability_delegation_public_key
             }
-        }
+        };
+        format!(
+            "{DID_PREFIX}{}#{}",
+            multibase::encode(multibase::Base::Base58Btc, self.master_public_key),
+            multibase::encode(multibase::Base::Base58Btc, verification_key)
+        )
     }
 
     pub fn get_public_key_by_relation(
