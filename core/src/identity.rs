@@ -99,9 +99,9 @@ pub struct DidDocument {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
     use crate::identity::Identity;
     use crate::MockDIDResolver;
+    use serde_json::json;
 
     macro_rules! aw {
         ($e:expr) => {
