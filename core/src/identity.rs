@@ -115,6 +115,10 @@ mod tests {
         };
     }
 
+    fn get_json_restore_mock_ok() -> Result<serde_json::Value, crate::error::ResolverError> {
+        Ok(get_json_input_mock())
+    }
+
     fn get_json_input_mock() -> serde_json::Value {
         json!({
             "context": ["default"],
@@ -165,18 +169,18 @@ mod tests {
     #[rstest::rstest]
     #[case::restored_successfully(
         get_did(),
-        get_json_input_mock(),
+        get_json_restore_mock_ok(),
         true
     )]
     fn test_restore_identity(
         #[case] did: String,
-        #[case] restore_response: serde_json::Value,
+        #[case] restore_response: Result<serde_json::Value, crate::error::ResolverError>,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
         resolver_mock
             .expect_read()
-            .return_once(|_, _| (restore_response));
+            .return_once(|_| (restore_response));
 
         let iu = Identity::new(resolver_mock);
         let kp = signature::keypair::Ed25519SSIKeyPair::new();
