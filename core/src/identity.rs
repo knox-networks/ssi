@@ -188,7 +188,7 @@ mod tests {
         let restored_identity = aw!(gn);
 
         match restored_identity {
-            Ok(DidDocument) => {
+            Ok(did_document) => {
                 if expect_ok {
                     Ok(())
                 } else {
@@ -238,7 +238,7 @@ mod tests {
         let identity = aw!(gn);
 
         match identity {
-            Ok(DidDocument) => {
+            Ok(did_document) => {
                 if expect_ok {
                     Ok(())
                 } else {
