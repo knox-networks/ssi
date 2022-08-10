@@ -1,10 +1,6 @@
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use serde::{Deserialize, Serialize};
 use signature::keypair::SSIKeyMaterial;
 
-// use registry_resolver::RegistryResolver;
 use signature::keypair::Ed25519SSIKeyPair;
 use signature::signer::DIDSigner;
 
@@ -104,7 +100,6 @@ pub struct DidDocument {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-
     use crate::identity::Identity;
     use crate::MockDIDResolver;
 
@@ -157,9 +152,14 @@ mod tests {
         })
     }
 
+    fn get_did() -> String {
+        String::from("jjjj")
+    }
+
     #[rstest::rstest]
     #[case::created_successfully(
         Some(Ok(())),
+        get_did(),
         get_json_input_mock(),
         true
     )]
@@ -167,11 +167,13 @@ mod tests {
         Some(Err(crate::error::ResolverError{
             message: "testErr".to_string(), 
             kind: crate::error::ErrorKind::NetworkFailure})),
+        get_did(),
         get_json_input_mock(),
         false
     )]
     fn test_create_identity(
         #[case] mock_create_response: Option<Result<(), crate::error::ResolverError>>,
+        #[case] did_doc: String,
         #[case] serde_json_value: serde_json::Value,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
@@ -179,16 +181,16 @@ mod tests {
 
         resolver_mock
             .expect_create()
-            .with(
-                mockall::predicate::eq(String::from("jjjj")),
-                mockall::predicate::eq(serde_json_value),
-            )
+            // .with(
+            //     mockall::predicate::eq(did_doc),
+            //     mockall::predicate::eq(serde_json_value),
+            // )
             .return_once(|_, _| (mock_create_response.unwrap()));
 
         let iu = Identity::new(resolver_mock);
         let kp = signature::keypair::Ed25519SSIKeyPair::new();
-
-        let identity = aw!(iu.generate(kp));
+        let gn = iu.generate(kp);
+        let identity = aw!(gn);
 
         match identity {
             Ok(DidDocument) => {
