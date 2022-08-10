@@ -33,7 +33,11 @@ impl<T: crate::DIDResolver> Identity<T> {
         }
     }
 
-    pub async fn recover(self, did:String, key_pair: Ed25519SSIKeyPair) -> Result<serde_json::Value, crate::error::ResolverError> {
+    pub async fn recover(
+        self,
+        did: String,
+        key_pair: Ed25519SSIKeyPair,
+    ) -> Result<serde_json::Value, crate::error::ResolverError> {
         let did = key_pair.get_master_public_key_encoded();
         let rsp = self.resolver.read(did).await?;
         Ok(rsp)
@@ -105,9 +109,9 @@ pub struct DidDocument {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
     use crate::identity::Identity;
     use crate::MockDIDResolver;
+    use serde_json::json;
 
     macro_rules! aw {
         ($e:expr) => {
@@ -167,11 +171,7 @@ mod tests {
     }
 
     #[rstest::rstest]
-    #[case::restored_successfully(
-        get_did(),
-        get_json_restore_mock_ok(),
-        true
-    )]
+    #[case::restored_successfully(get_did(), get_json_restore_mock_ok(), true)]
     fn test_restore_identity(
         #[case] did: String,
         #[case] restore_response: Result<serde_json::Value, crate::error::ResolverError>,
