@@ -98,11 +98,11 @@ pub struct DidDocument {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::identity::Identity;
     use crate::MockDIDResolver;
     use serde_json::json;
     use sha2::digest::typenum::Len;
-    use super::*;
 
     macro_rules! aw {
         ($e:expr) => {
@@ -112,38 +112,38 @@ mod tests {
 
     fn get_json_input_mock() -> serde_json::Value {
         json!({
-            "assertion_method":[
+        "assertion_method":[
+            {
+                "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
+                "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
+                "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
+                "proof_type":"Ed25519Signature2018",
+                "public_key_multibase":"AssertionMethod"
+            }],
+            "authentication":[
                 {
                     "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
                     "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
                     "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                    "proof_type":"Ed25519Signature2018",
-                    "public_key_multibase":"AssertionMethod"
+                    "proof_type":"Ed25519Signature2018","public_key_multibase":"Authentication"
                 }],
-                "authentication":[
-                    {
-                        "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                        "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                        "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                        "proof_type":"Ed25519Signature2018","public_key_multibase":"Authentication"
-                    }],
-                    "capability_delegation":[{
-                        "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                        "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                        "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                        "proof_type":"Ed25519Signature2018",
-                        "public_key_multibase":"CapabilityDelegation"
-                    }],
-                    "capability_invocation":[{
-                        "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                        "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                        "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                        "proof_type":"Ed25519Signature2018",
-                        "public_key_multibase":"CapabilityInvocation"
-                    }],
-                    "context":["default"],
-                    "id":"default"
-                })
+                "capability_delegation":[{
+                    "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
+                    "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
+                    "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
+                    "proof_type":"Ed25519Signature2018",
+                    "public_key_multibase":"CapabilityDelegation"
+                }],
+                "capability_invocation":[{
+                    "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
+                    "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
+                    "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
+                    "proof_type":"Ed25519Signature2018",
+                    "public_key_multibase":"CapabilityInvocation"
+                }],
+                "context":["default"],
+                "id":"default"
+            })
     }
 
     fn get_did() -> String {
@@ -180,9 +180,11 @@ mod tests {
                 mockall::predicate::function(|did_doc: &String| -> bool {
                     did_doc.clone().len() > 0
                 }),
-                mockall::predicate::function(move |doc_input: &serde_json::Value|->bool {
-                    let did_doc_input: DidDocument = serde_json::from_value(doc_input.clone()).unwrap();
-                    let did_doc_mock: DidDocument = serde_json::from_value(did_document_input_mock.clone()).unwrap();
+                mockall::predicate::function(move |doc_input: &serde_json::Value| -> bool {
+                    let did_doc_input: DidDocument =
+                        serde_json::from_value(doc_input.clone()).unwrap();
+                    let did_doc_mock: DidDocument =
+                        serde_json::from_value(did_document_input_mock.clone()).unwrap();
 
                     if did_doc_input.id != did_doc_mock.id {
                         return false;
@@ -190,7 +192,9 @@ mod tests {
                     if did_doc_input.context != did_doc_mock.context {
                         return false;
                     }
-                    if did_doc_input.assertion_method[0].public_key_multibase != did_doc_mock.assertion_method[0].public_key_multibase {
+                    if did_doc_input.assertion_method[0].public_key_multibase
+                        != did_doc_mock.assertion_method[0].public_key_multibase
+                    {
                         return false;
                     }
                     return true;
