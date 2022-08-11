@@ -1,18 +1,6 @@
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
-use ed25519_zebra::VerificationKey;
 use serde::{Deserialize, Serialize};
-use std::any::type_name;
-
-// use ed25519_zebra::VerificationKey;
-
-fn type_of<T>(_: T) -> &'static str {
-    type_name::<T>()
-}
 
 const DID_PREFIX: &str = "did:knox:";
-const DEFAULT_VERIFICATION_METHOD: &str = "Ed25519Signature2018";
 
 pub trait PrivateKey: Copy + Clone {}
 

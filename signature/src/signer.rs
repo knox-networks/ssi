@@ -1,6 +1,15 @@
 use crate::error::SignatureError;
 use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
-// use std::convert::From;
+use std::convert::From;
+
+impl From<&crate::keypair::Ed25519SSIKeyPair> for crate::signer::Ed25519DidSigner {
+    fn from(key_pair: &crate::keypair::Ed25519SSIKeyPair) -> Self {
+        Self {
+            public_key: key_pair.public_key,
+            private_key: key_pair.private_key,
+        }
+    }
+}
 
 pub trait DIDSigner<S>
 where
@@ -27,7 +36,7 @@ where
 }
 
 pub struct Ed25519DidSigner {
-    pub(crate) private_key: ed25519_zebra::SigningKey,
+    private_key: ed25519_zebra::SigningKey,
     pub(crate) public_key: ed25519_zebra::VerificationKey,
 }
 
