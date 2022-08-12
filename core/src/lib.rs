@@ -1,12 +1,12 @@
-use credential::*;
-use mockall::*;
-use serde_json::{self, Value};
-use std::collections::HashMap;
-
 mod credential;
 pub mod error;
 pub mod identity;
 pub mod proof;
+
+use credential::*;
+use mockall::*;
+use serde_json::{self, Value};
+use std::collections::HashMap;
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.

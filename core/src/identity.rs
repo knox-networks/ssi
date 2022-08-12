@@ -102,7 +102,6 @@ mod tests {
     use crate::identity::Identity;
     use crate::MockDIDResolver;
     use serde_json::json;
-    use sha2::digest::typenum::Len;
 
     macro_rules! aw {
         ($e:expr) => {
