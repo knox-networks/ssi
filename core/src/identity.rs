@@ -112,7 +112,6 @@ mod tests {
     use crate::identity::Identity;
     use crate::MockDIDResolver;
     use serde_json::json;
-    use sha2::digest::typenum::Len;
 
     macro_rules! aw {
         ($e:expr) => {
@@ -174,6 +173,11 @@ mod tests {
         let mut resolver_mock = MockDIDResolver::default();
         resolver_mock
             .expect_read()
+            .with(
+                mockall::predicate::function(|did_doc: &String| -> bool {
+                    did_doc.clone().len() > 0
+                }),
+            )
             .return_once(|_| (restore_response));
 
         let iu = Identity::new(resolver_mock);
@@ -182,7 +186,7 @@ mod tests {
         let restored_identity = aw!(gn);
 
         match restored_identity {
-            Ok(did_document) => {
+            Ok(_) => {
                 if expect_ok {
                     Ok(())
                 } else {
