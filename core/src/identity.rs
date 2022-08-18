@@ -37,7 +37,7 @@ impl<T: crate::DIDResolver> Identity<T> {
         did: String,
         key_pair: Ed25519SSIKeyPair,
     ) -> Result<serde_json::Value, crate::error::ResolverError> {
-        let did = key_pair.get_master_public_key_encoded();
+        let did = key_pair.get_mnemonic();
         let rsp = self.resolver.read(did).await?;
         Ok(rsp)
     }

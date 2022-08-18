@@ -103,6 +103,10 @@ impl Ed25519SSIKeyPair {
         multibase::encode(multibase::Base::Base58Btc, self.public_key)
     }
 
+    pub fn get_mnemonic (&self) -> String {
+        self.get_master_public_key_encoded()
+    }
+
     pub fn get_master_public_key_encoded(&self) -> String {
         multibase::encode(multibase::Base::Base58Btc, self.master_public_key)
     }
