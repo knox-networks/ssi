@@ -185,18 +185,9 @@ mod tests {
                     let did_doc_mock: DidDocument =
                         serde_json::from_value(did_document_input_mock.clone()).unwrap();
 
-                    if did_doc_input.id != did_doc_mock.id {
-                        return false;
-                    }
-                    if did_doc_input.context != did_doc_mock.context {
-                        return false;
-                    }
-                    if did_doc_input.assertion_method[0].public_key_multibase
-                        != did_doc_mock.assertion_method[0].public_key_multibase
-                    {
-                        return false;
-                    }
-                    return true;
+                    return did_doc_input.id == did_doc_mock.id 
+                            && did_doc_input.context == did_doc_mock.context 
+                            && did_doc_input.assertion_method[0].public_key_multibase == did_doc_mock.assertion_method[0].public_key_multibase;
                 }),
             )
             .return_once(|_, _| (mock_create_response.unwrap()));
@@ -206,21 +197,7 @@ mod tests {
         let gn = iu.generate(kp);
         let identity = aw!(gn);
 
-        match identity {
-            Ok(_) => {
-                if expect_ok {
-                    Ok(())
-                } else {
-                    Err("Expected error".to_string())
-                }
-            }
-            Err(_) => {
-                if expect_ok {
-                    Err("Expected success".to_string())
-                } else {
-                    Ok(())
-                }
-            }
-        }
+        assert_eq!(identity.is_err(), !expect_ok);
+        Ok(())
     }
 }
