@@ -15,7 +15,8 @@ impl<T: crate::DIDResolver> Identity<T> {
     }
     pub async fn generate(
         self,
-        key_pair: Ed25519SSIKeyPair,
+        key_pair: KeyPair, //2 
+        resolver: crate::DIDResolver // 1 
     ) -> Result<DidDocument, crate::error::ResolverError> {
         let signer = signature::signer::Ed25519DidSigner::from(&key_pair);
         let signed_doc = self.create_did_document(&key_pair, signer);
@@ -34,8 +35,8 @@ impl<T: crate::DIDResolver> Identity<T> {
 
     pub fn create_did_document(
         &self,
-        key_pair: &signature::keypair::Ed25519SSIKeyPair,
-        signer: signature::signer::Ed25519DidSigner,
+        key_pair: &signature::keypair::Ed25519SSIKeyPair, // KeyPair here
+        signer: signature::signer::Ed25519DidSigner, // DIDSigner here
     ) -> DidDocument {
         let did_doc = DidDocument {
             context: vec!["default".to_string()],

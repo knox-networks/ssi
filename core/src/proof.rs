@@ -16,6 +16,7 @@ pub struct DataIntegrityProof {
     pub proof_value: String,
 }
 
+// Use it as an example
 /// Given a JSON-LD document, create a data integrity proof for the document.
 /// Currently, only `Ed25519Signature2018` data integrity proofs in the JSON-LD format can be created.
 pub fn create_data_integrity_proof<S: signature::suite::Signature>(
