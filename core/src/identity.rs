@@ -185,9 +185,10 @@ mod tests {
                     let did_doc_mock: DidDocument =
                         serde_json::from_value(did_document_input_mock.clone()).unwrap();
 
-                    return did_doc_input.id == did_doc_mock.id 
-                            && did_doc_input.context == did_doc_mock.context 
-                            && did_doc_input.assertion_method[0].public_key_multibase == did_doc_mock.assertion_method[0].public_key_multibase;
+                    return did_doc_input.id == did_doc_mock.id
+                        && did_doc_input.context == did_doc_mock.context
+                        && did_doc_input.assertion_method[0].public_key_multibase
+                            == did_doc_mock.assertion_method[0].public_key_multibase;
                 }),
             )
             .return_once(|_, _| (mock_create_response.unwrap()));
