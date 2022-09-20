@@ -1,31 +1,13 @@
-use std::fmt;
-
 use serde::{Deserialize, Serialize};
 use signature::keypair::SSIKeyMaterial;
-
-// use signature::keypair::Ed25519SSIKeyPair;
-// use signature::signer::DIDSigner;
 
 #[derive(Clone, Debug, Copy)]
 pub struct Identity<D> {
     resolver: D,
 }
 
-// pub trait TTD {
-//     fn get_public_key_encoded(&self) -> String;
-//     fn get_private_key_encoded(&self) -> String;
-// }
-
-
-// pub trait IdentitySigner101 where Self: TTD + fmt::Debug{}
-// pub trait IdentitySigner101: TTD + fmt::Debug{}
-
 pub trait Signature: signature::suite::Signature{}
 
-
-//<S>
-//:// signature::signer::DIDSigner<S> 
-// where S: Signature, 
 pub trait IdentitySigner <S, P, K>: signature::signer::DIDSigner<S> + signature::keypair::KeyPair<P, K> 
 where S: Signature,
       P: signature::keypair::PrivateKey,
@@ -38,26 +20,20 @@ where S: Signature,
 impl <D>Identity <D> 
 where 
 D: super::DIDResolver {
-    // where D: super::DIDResolver {
     pub fn new(resolver: D) -> Identity<D> {
         Identity { resolver: resolver }
     }
     pub async fn generate<S, P, K>(
         self,
-        // key_pair: Box<dyn signature::keypair::KeyPair<P, K>>, //2 
-        is: Box<dyn IdentitySigner<S, P, K>>, //2 
-        // resolver: Box<dyn super::DIDResolver> // 1 
+        identity_signer: Box<dyn IdentitySigner<S, P, K>>, 
     ) -> Result<DidDocument, crate::error::ResolverError> 
     where 
     S: Signature,
     P: signature::keypair::PrivateKey,
     K: signature::keypair::PublicKey {
-        // let signer = signature::signer::Ed25519DidSigner::from(&key_pair); // generic signer here
-        // let signer = signature::signer::DIDSigner::from(key_pair); // generic signer here
-        // let signed_doc = self.create_did_document(key_pair, signer);
-        let signed_doc = self.create_did_document(&is);
+        let signed_doc = self.create_did_document(&identity_signer);
         let signed_doc_json = serde_json::to_value(signed_doc.clone()).unwrap();
-        let did = is.get_master_public_key_encoded();
+        let did = identity_signer.get_master_public_key_encoded();
         match self.resolver.create(did, signed_doc_json).await {
             Ok(()) => {
                 return Ok(signed_doc);
@@ -71,9 +47,7 @@ D: super::DIDResolver {
 
     pub fn create_did_document <S, P, K>(
         &self,
-        // key_pair: Box<dyn signature::keypair::KeyPair<T, U>>, // KeyPair here
-        // signer: Box<dyn signature::signer::DIDSigner<S>> // DIDSigner here
-        signer: &Box<dyn IdentitySigner<S, P, K>>, //2 
+        signer: &Box<dyn IdentitySigner<S, P, K>>,
     ) -> DidDocument
     where 
     P: signature::keypair::PrivateKey,
