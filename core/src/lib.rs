@@ -12,7 +12,7 @@ use std::collections::HashMap;
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
 /// The DIDResolver is responsible for resolving the `verificationMethod` to a key that can be used to verify the proof.
 
-#[automock]
+#[mockall::automock]
 #[async_trait::async_trait]
 pub trait DIDResolver {
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
@@ -23,7 +23,7 @@ pub trait DIDResolver {
     // Returns the DID Method that the DID Resolver is compatible with. Each resolver can only be compatible with one.
     fn get_method() -> &'static str;
     // Given a `did` and `key` it will construct the proper `verificationMethod` to use as part of the data integrity proof creation process.
-    fn create_verification_method(public_key: String, key_id: String) -> String {
+    fn create_verification_method(public_key: String, key_id: String) -> String{
         return format!(
             "did:{}:{public_key}#{key_id}",
             String::from(Self::get_method()),
