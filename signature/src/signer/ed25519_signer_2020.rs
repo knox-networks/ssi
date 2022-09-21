@@ -2,6 +2,8 @@ use crate::error::SignatureError;
 use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
 use std::convert::From;
 
+const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
+
 pub struct Ed25519DidSigner {
     private_key: ed25519_zebra::SigningKey,
     pub(crate) public_key: ed25519_zebra::VerificationKey,
@@ -25,7 +27,7 @@ impl super::DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     }
 
     fn get_proof_type(&self) -> String {
-        return crate::suite::PROOF_TYPE.to_string();
+        return ED25519_SIGNATURE_2020.to_string();
     }
 
     fn get_verification_method(&self, _relation: VerificationRelation) -> String {
