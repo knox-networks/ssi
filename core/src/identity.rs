@@ -126,7 +126,7 @@ mod tests {
         };
     }
 
-    fn get_json_input_mock() -> serde_json::Value {
+    fn _get_json_input_mock() -> serde_json::Value {
         json!({
         "assertion_method":[
             {
@@ -162,52 +162,35 @@ mod tests {
             })
     }
 
-    fn get_did() -> String {
-        String::from("123456789")
-    }
 
     #[rstest::rstest]
     #[case::created_successfully(
         Some(Ok(())),
-        get_did(),
-        get_json_input_mock(),
+       
         true
     )]
     #[case::created_error(
         Some(Err(crate::error::ResolverError{
             message: "testErr".to_string(), 
             kind: crate::error::ErrorKind::NetworkFailure})),
-        get_did(),
-        get_json_input_mock(),
         false
     )]
 
     fn test_create_identity(
         #[case] mock_create_response: Option<Result<(), crate::error::ResolverError>>,
-        #[case] did: String,
-        #[case] did_document_input_mock: serde_json::Value,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
 
+        let kp = signature::keypair::Ed25519SSIKeyPair::new();
+        let verifier = signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&kp);
         resolver_mock
             .expect_create()
             .with(
-                mockall::predicate::eq(did),
-                mockall::predicate::function(move |doc: &serde_json::Value| -> bool {
-                    let did_doc_input: DidDocument = serde_json::from_value(doc.clone()).unwrap();
-                    let did_doc_mock: DidDocument =
-                        serde_json::from_value(did_document_input_mock.clone()).unwrap();
-
-                    return did_doc_input.id == did_doc_mock.id
-                        && did_doc_input.context == did_doc_mock.context
-                        && did_doc_input.assertion_method[0].public_key_multibase
-                            == did_doc_mock.assertion_method[0].public_key_multibase;
-                }),
+                mockall::predicate::eq(signature::verifier::DIDVerifier::get_did(&verifier)),
+                mockall::predicate::always(),
             )
             .return_once(|_, _| (mock_create_response.unwrap()));
-
-        let kp = signature::keypair::Ed25519SSIKeyPair::new();
 
         let res = generate(
             resolver_mock,
