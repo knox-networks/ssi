@@ -209,13 +209,12 @@ mod tests {
 
         let kp = signature::keypair::Ed25519SSIKeyPair::new();
 
-        let gn = generate(
+        let res = generate(
             resolver_mock,
             signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&kp),
         );
-        let identity = aw!(gn);
 
-        assert_eq!(identity.is_err(), !expect_ok);
+        assert_eq!(aw!(res).is_err(), !expect_ok);
         Ok(())
     }
 }
