@@ -7,10 +7,10 @@ pub trait KeyPair<T: PrivateKey, U: PublicKey> {
     where
         Self: Sized;
 
-    fn get_master_public_key(&self, relation: crate::suite::VerificationRelation) -> U
+    fn get_master_public_key(&self) -> U
     where
         Self: Sized;
-    fn get_master_private_key(&self, relation: crate::suite::VerificationRelation) -> T
+    fn get_master_private_key(&self) -> T
     where
         Self: Sized;
 
@@ -42,17 +42,11 @@ impl KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25
         }
     }
 
-    fn get_master_public_key(
-        &self,
-        _relation: crate::suite::VerificationRelation,
-    ) -> ed25519_zebra::VerificationKey {
+    fn get_master_public_key(&self) -> ed25519_zebra::VerificationKey {
         return self.master_public_key;
     }
 
-    fn get_master_private_key(
-        &self,
-        _relation: crate::suite::VerificationRelation,
-    ) -> ed25519_zebra::SigningKey {
+    fn get_master_private_key(&self) -> ed25519_zebra::SigningKey {
         return self.master_private_key;
     }
     fn get_private_key(
