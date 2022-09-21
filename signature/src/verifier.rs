@@ -3,6 +3,8 @@ use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
 
 const DID_PREFIX: &str = "did:knox:";
 
+const ED25519_VERIFICATION_KEY_2020: &str = "Ed25519VerificationKey2020";
+
 pub trait DIDVerifier<S>
 where
     S: Signature,
@@ -121,7 +123,7 @@ impl DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
     }
 
     fn get_proof_type(&self) -> String {
-        "Ed25519VerificationKey2020".to_string()
+        ED25519_VERIFICATION_KEY_2020.to_string()
     }
 
     fn get_verification_method(&self, relation: VerificationRelation) -> String {
