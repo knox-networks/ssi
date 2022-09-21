@@ -133,7 +133,7 @@ mod tests {
                 "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
                 "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
                 "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                "type":"Ed25519Signature2018",
+                "type":"Ed25519Signature2020",
                 "public_key_multibase":"AssertionMethod"
             }],
             "authentication":[
@@ -141,20 +141,20 @@ mod tests {
                     "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
                     "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
                     "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                    "type":"Ed25519Signature2018","public_key_multibase":"Authentication"
+                    "type":"Ed25519Signature2020","public_key_multibase":"Authentication"
                 }],
                 "capability_delegation":[{
                     "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
                     "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
                     "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                    "type":"Ed25519Signature2018",
+                    "type":"Ed25519Signature2020",
                     "public_key_multibase":"CapabilityDelegation"
                 }],
                 "capability_invocation":[{
                     "controller":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
                     "id":"did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ#zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
                     "master_public_key":"zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ",
-                    "type":"Ed25519Signature2018",
+                    "type":"Ed25519Signature2020",
                     "public_key_multibase":"CapabilityInvocation"
                 }],
                 "context":["default"],
