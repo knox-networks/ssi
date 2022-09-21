@@ -1,47 +1,6 @@
 use crate::error::SignatureError;
-// use crate::keypair::KeyPair;
 use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
 use std::convert::From;
-
-// impl From<&crate::keypair::Ed25519SSIKeyPair> for crate::signer::Ed25519DidSigner {
-//     fn from(key_pair: &crate::keypair::Ed25519SSIKeyPair) -> Self {
-//         Self {
-//             public_key: key_pair.public_key,
-//             private_key: key_pair.private_key,
-//         }
-//     }
-// }
-
-// pub trait KPTest where Self: Sized {
-//     fn get_public_key_encoded(&self) -> String
-//     where
-//         Self: Sized;
-// }
-
-// pub trait KPTest2: KPTest + Sized
-// where
-//         Self: Sized
-// {
-//     fn get_private_key_encoded(&self) -> String
-//     where
-//         Self: Sized;
-// }
-
-
-// trait KP<T: crate::keypair::PrivateKey, U: crate::keypair::PublicKey>: crate::keypair::KeyPair<T, U> + Sized
-// where T: crate::keypair::PrivateKey,
-//       U: crate::keypair::PublicKey{}
-
-// // #![feature(associated_type_bounds)]
-// impl <S> From <&dyn KPTest2> for Box<dyn crate::signer::DIDSigner<S>>
-// where S: crate::suite::Signature {
-//     fn from(key_pair: &dyn KPTest2) -> Self {
-//         Self {
-//             // public_key: key_pair.get_public_key(),
-//             // private_key: key_pair.get_private_key(),
-//         }
-//     }
-// }
 
 pub trait DIDSigner<S>
 where

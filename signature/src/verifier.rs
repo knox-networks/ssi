@@ -1,6 +1,8 @@
 use crate::error::{ErrorKind, SignatureError};
 use crate::suite::{Ed25519Signature, Signature, VerificationRelation};
 
+const DID_PREFIX: &str = "did:knox:";
+
 pub trait DIDVerifier<S>
 where
     S: Signature,
@@ -24,6 +26,11 @@ where
         relation: VerificationRelation,
     ) -> Result<(), SignatureError>;
     fn decode(&self, encoded_sig: String) -> Result<S, SignatureError>;
+    fn get_did_method(&self) -> String;
+    fn get_did(&self) -> String;
+    fn get_proof_type(&self) -> String;
+    fn get_verification_method(&self, relation: VerificationRelation) -> String;
+    fn get_public_key_by_relation(&self, relation: crate::suite::VerificationRelation) -> String;
 }
 
 pub struct Ed25519DidVerifier {
@@ -34,6 +41,14 @@ impl From<&crate::signer::Ed25519DidSigner> for Ed25519DidVerifier {
     fn from(signer: &crate::signer::Ed25519DidSigner) -> Self {
         Self {
             public_key: signer.public_key,
+        }
+    }
+}
+
+impl From<&crate::keypair::Ed25519SSIKeyPair> for Ed25519DidVerifier {
+    fn from(kp: &crate::keypair::Ed25519SSIKeyPair) -> Self {
+        Self {
+            public_key: kp.master_public_key,
         }
     }
 }
@@ -103,5 +118,32 @@ impl DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
                 .verify(&sig, msg)
                 .map_err(SignatureError::from),
         }
+    }
+
+    fn get_proof_type(&self) -> String {
+        "Ed25519VerificationKey2020".to_string()
+    }
+
+    fn get_verification_method(&self, relation: VerificationRelation) -> String {
+        let encoded_pk = self.get_public_key_by_relation(relation);
+        return format!("did:knox:{0}#{0}", encoded_pk);
+    }
+
+    fn get_public_key_by_relation(&self, relation: crate::suite::VerificationRelation) -> String {
+        match relation {
+            _ => {
+                let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+                return format!("did:knox:{0}#{0}", encoded_pk);
+            }
+        }
+    }
+
+    fn get_did_method(&self) -> String {
+        DID_PREFIX.to_string()
+    }
+
+    fn get_did(&self) -> String {
+        let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+        return format!("did:knox:{0}", encoded_pk);
     }
 }

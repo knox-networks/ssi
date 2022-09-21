@@ -1,22 +1,20 @@
-use serde::{Deserialize, Serialize};
-
-const DID_PREFIX: &str = "did:knox:";
-
 pub trait PrivateKey: Copy + Clone {}
 
 pub trait PublicKey: Copy + Clone {}
 
 pub trait KeyPair<T: PrivateKey, U: PublicKey> {
-    fn get_public_key_encoded(&self) -> String
+    fn get_public_key_encoded(&self, relation: crate::suite::VerificationRelation) -> String
     where
         Self: Sized;
-    fn get_private_key_encoded(&self) -> String
+
+    fn get_master_public_key(&self, relation: crate::suite::VerificationRelation) -> U
     where
         Self: Sized;
-    fn get_public_key(&self) -> U
+    fn get_master_private_key(&self, relation: crate::suite::VerificationRelation) -> T
     where
         Self: Sized;
-    fn get_private_key(&self) -> T
+
+    fn get_private_key(&self, relation: crate::suite::VerificationRelation) -> T
     where
         Self: Sized;
 }
@@ -25,37 +23,71 @@ impl PrivateKey for ed25519_zebra::SigningKey {}
 impl PublicKey for ed25519_zebra::VerificationKey {}
 
 impl KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25519SSIKeyPair {
-    fn get_public_key_encoded(&self) -> String {
-        multibase::encode(multibase::Base::Base58Btc, self.public_key)
-    }
-    fn get_private_key_encoded(&self) -> String {
-        multibase::encode(multibase::Base::Base58Btc, self.private_key)
+    fn get_public_key_encoded(&self, relation: crate::suite::VerificationRelation) -> String {
+        match relation {
+            crate::suite::VerificationRelation::AssertionMethod => {
+                multibase::encode(multibase::Base::Base58Btc, self.assertion_method_public_key)
+            }
+            crate::suite::VerificationRelation::Authentication => {
+                multibase::encode(multibase::Base::Base58Btc, self.authetication_public_key)
+            }
+            crate::suite::VerificationRelation::CapabilityInvocation => multibase::encode(
+                multibase::Base::Base58Btc,
+                self.capability_invocation_public_key,
+            ),
+            crate::suite::VerificationRelation::CapabilityDelegation => multibase::encode(
+                multibase::Base::Base58Btc,
+                self.capability_delegation_public_key,
+            ),
+        }
     }
 
-    fn get_public_key(&self) -> ed25519_zebra::VerificationKey {
-        return self.public_key;
+    fn get_master_public_key(
+        &self,
+        _relation: crate::suite::VerificationRelation,
+    ) -> ed25519_zebra::VerificationKey {
+        return self.master_public_key;
     }
-    fn get_private_key(&self) -> ed25519_zebra::SigningKey {
-        return self.private_key.clone();
+
+    fn get_master_private_key(
+        &self,
+        _relation: crate::suite::VerificationRelation,
+    ) -> ed25519_zebra::SigningKey {
+        return self.master_private_key;
+    }
+    fn get_private_key(
+        &self,
+        relation: crate::suite::VerificationRelation,
+    ) -> ed25519_zebra::SigningKey {
+        match relation {
+            crate::suite::VerificationRelation::AssertionMethod => {
+                return self.assertion_method_private_key
+            }
+            crate::suite::VerificationRelation::Authentication => {
+                return self.authetication_private_key
+            }
+            crate::suite::VerificationRelation::CapabilityInvocation => {
+                return self.capability_invocation_private_key
+            }
+
+            crate::suite::VerificationRelation::CapabilityDelegation => {
+                return self.capability_delegation_private_key
+            }
+        }
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct SSIKeyMaterial {
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct KeyMaterial {
     pub id: String,
+    #[serde(rename = "type")]
     pub proof_type: String,
     pub controller: String,
-    pub public_key_multibase: crate::suite::VerificationRelation,
-    pub master_public_key: String,
+    pub public_key_multibase: String,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct Ed25519SSIKeyPair {
-    pub(crate) relation: crate::suite::VerificationRelation,
-
-    pub(crate) private_key: ed25519_zebra::SigningKey,
-    pub(crate) public_key: ed25519_zebra::VerificationKey,
-
     pub(crate) master_public_key: ed25519_zebra::VerificationKey,
     pub(crate) master_private_key: ed25519_zebra::SigningKey,
 
@@ -78,10 +110,6 @@ impl Ed25519SSIKeyPair {
         let vk = ed25519_zebra::VerificationKey::from(&sk);
 
         return Self {
-            private_key: sk,
-            public_key: vk,
-            relation: crate::suite::VerificationRelation::AssertionMethod,
-
             master_public_key: vk,
             master_private_key: sk,
 
@@ -97,55 +125,5 @@ impl Ed25519SSIKeyPair {
             assertion_method_public_key: vk,
             assertion_method_private_key: sk,
         };
-    }
-
-    pub fn get_public_key_encoded(&self) -> String {
-        multibase::encode(multibase::Base::Base58Btc, self.public_key)
-    }
-
-    pub fn get_master_public_key_encoded(&self) -> String {
-        multibase::encode(multibase::Base::Base58Btc, self.master_public_key)
-    }
-
-    pub fn get_verification_method(self, relation: crate::suite::VerificationRelation) -> String {
-        let verification_key = match relation {
-            crate::suite::VerificationRelation::AssertionMethod => self.assertion_method_public_key,
-            crate::suite::VerificationRelation::Authentication => self.authetication_public_key,
-            crate::suite::VerificationRelation::CapabilityInvocation => {
-                self.capability_invocation_public_key
-            }
-            crate::suite::VerificationRelation::CapabilityDelegation => {
-                self.capability_delegation_public_key
-            }
-        };
-        format!(
-            "{DID_PREFIX}{}#{}",
-            multibase::encode(multibase::Base::Base58Btc, self.master_public_key),
-            multibase::encode(multibase::Base::Base58Btc, verification_key)
-        )
-    }
-
-    pub fn get_public_key_by_relation(
-        &self,
-        relation: crate::suite::VerificationRelation,
-    ) -> ed25519_zebra::VerificationKey {
-        match relation {
-            crate::suite::VerificationRelation::AssertionMethod => self.assertion_method_public_key,
-            crate::suite::VerificationRelation::Authentication => self.authetication_public_key,
-            crate::suite::VerificationRelation::CapabilityInvocation => {
-                self.capability_invocation_public_key
-            }
-            crate::suite::VerificationRelation::CapabilityDelegation => {
-                self.capability_delegation_public_key
-            }
-        }
-    }
-
-    pub fn get_controller(&self, relation: crate::suite::VerificationRelation) -> String {
-        format!(
-            "{}{}",
-            DID_PREFIX,
-            multibase::encode(multibase::Base::Base58Btc, self.master_public_key)
-        )
     }
 }
