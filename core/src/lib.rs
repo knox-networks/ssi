@@ -253,7 +253,7 @@ mod tests {
                 "verification_method":"did:knox:zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU#zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU"},
                 "type":["VerifiableCredential","PermanentResidentCard"]}]});
         // here we test the presentation
-        let signer = signature::signer::Ed25519DidSigner::new();
+        let signer = signature::signer::ed25519_signer_2020::Ed25519DidSigner::new();
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(

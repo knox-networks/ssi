@@ -9,8 +9,8 @@ pub struct Ed25519DidVerifier {
     public_key: ed25519_zebra::VerificationKey,
 }
 
-impl From<&crate::signer::Ed25519DidSigner> for Ed25519DidVerifier {
-    fn from(signer: &crate::signer::Ed25519DidSigner) -> Self {
+impl From<&crate::signer::ed25519_signer_2020::Ed25519DidSigner> for Ed25519DidVerifier {
+    fn from(signer: &crate::signer::ed25519_signer_2020::Ed25519DidSigner) -> Self {
         Self {
             public_key: signer.public_key,
         }
