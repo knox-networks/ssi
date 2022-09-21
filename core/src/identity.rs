@@ -22,7 +22,7 @@ where
     resolver
         .create(did_doc.id.clone(), encoded_did_doc)
         .await
-        .unwrap();
+        .map_err(|_e| crate::error::Error::Unknown)?;
 
     Ok(did_doc)
 }
@@ -36,8 +36,7 @@ where
             "https://www.w3.org/ns/did/v1".to_string(),
             "https://w3id.org/security/suites/ed25519-2020/v1".to_string(),
         ],
-        id: verifier
-            .get_public_key_by_relation(signature::suite::VerificationRelation::Authentication),
+        id: verifier.get_did(),
         authentication: vec![KeyMaterial {
             id: verifier
                 .get_verification_method(signature::suite::VerificationRelation::Authentication),
@@ -162,22 +161,20 @@ mod tests {
             })
     }
 
-
     #[rstest::rstest]
-    #[case::created_successfully(
-        Some(Ok(())),
-       
+    #[case::generate_succeed(
+        Ok(()),
         true
     )]
-    #[case::created_error(
-        Some(Err(crate::error::ResolverError{
+    #[case::generate_fails_with_resolver_network_error(
+        Err(crate::error::ResolverError{
             message: "testErr".to_string(), 
-            kind: crate::error::ErrorKind::NetworkFailure})),
+            kind: crate::error::ErrorKind::NetworkFailure}),
         false
     )]
 
-    fn test_create_identity(
-        #[case] mock_create_response: Option<Result<(), crate::error::ResolverError>>,
+    fn test_generate(
+        #[case] mock_create_response: Result<(), crate::error::ResolverError>,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
@@ -190,14 +187,11 @@ mod tests {
                 mockall::predicate::eq(signature::verifier::DIDVerifier::get_did(&verifier)),
                 mockall::predicate::always(),
             )
-            .return_once(|_, _| (mock_create_response.unwrap()));
+            .return_once(|_, _| (mock_create_response));
 
-        let res = generate(
-            resolver_mock,
-            signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&kp),
-        );
+        let res = aw!(generate(resolver_mock, verifier));
 
-        assert_eq!(aw!(res).is_err(), !expect_ok);
+        assert_eq!(res.is_err(), !expect_ok);
         Ok(())
     }
 }
