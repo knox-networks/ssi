@@ -56,7 +56,8 @@ mod tests {
         #[case] relation: signature::suite::VerificationRelation,
     ) {
         let signer = signature::signer::Ed25519DidSigner::new();
-        let verifier = signature::verifier::Ed25519DidVerifier::from(&signer);
+        let verifier =
+            signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&signer);
         let res = create_data_integrity_proof(&signer, doc.clone(), relation);
 
         assert!(res.is_ok());

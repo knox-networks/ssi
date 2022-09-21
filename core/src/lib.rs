@@ -4,7 +4,6 @@ pub mod identity;
 pub mod proof;
 
 use credential::*;
-use mockall::*;
 use serde_json::{self, Value};
 use std::collections::HashMap;
 
@@ -23,7 +22,7 @@ pub trait DIDResolver {
     // Returns the DID Method that the DID Resolver is compatible with. Each resolver can only be compatible with one.
     fn get_method() -> &'static str;
     // Given a `did` and `key` it will construct the proper `verificationMethod` to use as part of the data integrity proof creation process.
-    fn create_verification_method(public_key: String, key_id: String) -> String{
+    fn create_verification_method(public_key: String, key_id: String) -> String {
         return format!(
             "did:{}:{public_key}#{key_id}",
             String::from(Self::get_method()),

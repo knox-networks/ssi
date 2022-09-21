@@ -214,7 +214,7 @@ mod tests {
 
         let gn = generate(
             resolver_mock,
-            signature::verifier::Ed25519DidVerifier::from(&kp),
+            signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&kp),
         );
         let identity = aw!(gn);
 
