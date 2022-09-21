@@ -184,7 +184,7 @@ mod tests {
 
     fn test_create_identity(
         #[case] mock_create_response: Option<Result<(), crate::error::ResolverError>>,
-        #[case] _did_doc: String,
+        #[case] did: String,
         #[case] did_document_input_mock: serde_json::Value,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
@@ -193,12 +193,9 @@ mod tests {
         resolver_mock
             .expect_create()
             .with(
-                mockall::predicate::function(|did_doc: &String| -> bool {
-                    did_doc.clone().len() > 0
-                }),
-                mockall::predicate::function(move |doc_input: &serde_json::Value| -> bool {
-                    let did_doc_input: DidDocument =
-                        serde_json::from_value(doc_input.clone()).unwrap();
+                mockall::predicate::eq(did),
+                mockall::predicate::function(move |doc: &serde_json::Value| -> bool {
+                    let did_doc_input: DidDocument = serde_json::from_value(doc.clone()).unwrap();
                     let did_doc_mock: DidDocument =
                         serde_json::from_value(did_document_input_mock.clone()).unwrap();
 
