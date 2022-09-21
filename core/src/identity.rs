@@ -1,5 +1,13 @@
 use serde::{Deserialize, Serialize};
-use signature::keypair::KeyMaterial;
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct KeyMaterial {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub proof_type: String,
+    pub controller: String,
+    pub public_key_multibase: String,
+}
 
 pub async fn generate<S: signature::suite::Signature>(
     resolver: impl super::DIDResolver,

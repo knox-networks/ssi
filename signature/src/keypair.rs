@@ -71,15 +71,6 @@ impl KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub struct KeyMaterial {
-    pub id: String,
-    #[serde(rename = "type")]
-    pub proof_type: String,
-    pub controller: String,
-    pub public_key_multibase: String,
-}
-
 #[derive(Debug, Clone, Copy)]
 pub struct Ed25519SSIKeyPair {
     pub(crate) master_public_key: ed25519_zebra::VerificationKey,
