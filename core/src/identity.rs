@@ -41,7 +41,7 @@ where
         authentication: vec![KeyMaterial {
             id: verifier
                 .get_verification_method(signature::suite::VerificationRelation::Authentication),
-            proof_type: verifier.get_proof_type(),
+            proof_type: verifier.get_key_material_type(),
             controller: format!(
                 "{}{}",
                 verifier.get_did_method(),
@@ -56,7 +56,7 @@ where
             id: verifier.get_verification_method(
                 signature::suite::VerificationRelation::CapabilityInvocation,
             ),
-            proof_type: verifier.get_proof_type(),
+            proof_type: verifier.get_key_material_type(),
             controller: format!(
                 "{}{}",
                 verifier.get_did_method(),
@@ -72,7 +72,7 @@ where
             id: verifier.get_verification_method(
                 signature::suite::VerificationRelation::CapabilityDelegation,
             ),
-            proof_type: verifier.get_proof_type(),
+            proof_type: verifier.get_key_material_type(),
             controller: format!(
                 "{}{}",
                 verifier.get_did_method(),
@@ -87,7 +87,7 @@ where
         assertion_method: vec![KeyMaterial {
             id: verifier
                 .get_verification_method(signature::suite::VerificationRelation::AssertionMethod),
-            proof_type: verifier.get_proof_type(),
+            proof_type: verifier.get_key_material_type(),
             controller: format!(
                 "{}{}",
                 verifier.get_did_method(),

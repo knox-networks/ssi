@@ -28,7 +28,7 @@ where
     fn decode(&self, encoded_sig: String) -> Result<S, SignatureError>;
     fn get_did_method(&self) -> String;
     fn get_did(&self) -> String;
-    fn get_proof_type(&self) -> String;
+    fn get_key_material_type(&self) -> String;
     fn get_verification_method(&self, relation: VerificationRelation) -> String;
     fn get_public_key_by_relation(&self, relation: crate::suite::VerificationRelation) -> String;
 }

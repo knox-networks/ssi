@@ -92,7 +92,7 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
         }
     }
 
-    fn get_proof_type(&self) -> String {
+    fn get_key_material_type(&self) -> String {
         ED25519_VERIFICATION_KEY_2020.to_string()
     }
 
