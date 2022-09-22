@@ -1,5 +1,5 @@
 [package]
-name = "registry-resolver"
+name = "registry_resolver"
 version = "0.1.0"
 edition = "2021"
 
@@ -15,6 +15,7 @@ pbjson = "0.3"
 pbjson-types = "0.3"
 async-trait = "0.1.53"
 mockall = "0.11.1"
+serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
 rstest = "0.15.0"

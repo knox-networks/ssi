@@ -1,15 +1,17 @@
 mod credential;
+pub mod error;
+pub mod identity;
+pub mod proof;
 
 use credential::*;
 use serde_json::{self, Value};
 use std::collections::HashMap;
 
-pub mod error;
-pub mod proof;
-
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
 /// The DIDResolver is responsible for resolving the `verificationMethod` to a key that can be used to verify the proof.
+
+#[mockall::automock]
 #[async_trait::async_trait]
 pub trait DIDResolver {
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
@@ -50,22 +52,14 @@ pub trait DocumentBuilder {
     }
 
     /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
-    /// In order to become a Verifiable Presentation, a data integrity proof must be created for the presentation and appended to the JSON-LD document.
+    /// In order to become a Verifiable Presentation, a data integrity proof must be created for the
+    /// presentation and appended to the JSON-LD document.
     fn create_presentation(
         &self,
         credentials: Vec<VerifiableCredential>,
     ) -> Result<Presentation, Box<dyn std::error::Error>> {
         Ok(Presentation::new(CONTEXT_CREDENTIALS, credentials))
     }
-}
-
-// Commented due to failing cargo check
-// ed25519 cryptography key generation & DID Document creation
-pub fn create_identity(
-    _mnemonic: &str,
-    _password: Option<String>,
-) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-    unimplemented!();
 }
 
 /// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the document.
@@ -102,9 +96,10 @@ mod tests {
 
     impl TestObj {
         pub fn new() -> Self {
-            TestObj {}
+            Self {}
         }
     }
+
     impl DocumentBuilder for TestObj {}
 
     fn get_body_subject() -> (HashMap<String, Value>, HashMap<String, Value>) {
@@ -258,7 +253,7 @@ mod tests {
                 "verification_method":"did:knox:zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU#zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU"},
                 "type":["VerifiableCredential","PermanentResidentCard"]}]});
         // here we test the presentation
-        let signer = signature::signer::Ed25519DidSigner::new();
+        let signer = signature::signer::ed25519_signer_2020::Ed25519DidSigner::new();
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
