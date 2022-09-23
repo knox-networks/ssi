@@ -1,9 +1,8 @@
 use super::Signature;
 
-const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
-
 const DID_PREFIX: &str = "did:knox:";
 
+const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
 const ED25519_VERIFICATION_KEY_2020: &str = "Ed25519VerificationKey2020";
 
 // Implementation of https://www.w3.org/community/reports/credentials/CG-FINAL-di-eddsa-2020-20220724/
