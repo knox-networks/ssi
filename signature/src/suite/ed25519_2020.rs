@@ -34,7 +34,7 @@ pub struct Ed25519DidVerifier {
 
 pub struct Ed25519DidSigner {
     private_key: ed25519_zebra::SigningKey,
-    pub(crate) public_key: ed25519_zebra::VerificationKey,
+    public_key: ed25519_zebra::VerificationKey,
 }
 
 impl AsRef<[u8]> for Ed25519Signature {
