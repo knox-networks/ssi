@@ -1,5 +1,3 @@
-use serde::{Deserialize, Serialize};
-
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct KeyMaterial {
     pub id: String,
@@ -103,7 +101,7 @@ where
     return did_doc;
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct DidDocument {
     context: Vec<String>,
     id: String,
