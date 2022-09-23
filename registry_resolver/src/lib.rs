@@ -19,7 +19,7 @@ impl RegistryResolver {
     }
 }
 #[async_trait::async_trait]
-impl ssi::DIDResolver for RegistryResolver {
+impl ssi_core::DIDResolver for RegistryResolver {
     fn get_method() -> &'static str {
         return Self::get_method_helper();
     }
@@ -28,40 +28,52 @@ impl ssi::DIDResolver for RegistryResolver {
         self,
         did: String,
         document: serde_json::Value,
-    ) -> Result<(), ssi::error::ResolverError> {
+    ) -> Result<(), ssi_core::error::ResolverError> {
         let document: pbjson_types::Struct = serde_json::from_value(document).map_err(|e| {
-            ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::InvalidData)
+            ssi_core::error::ResolverError::new(
+                e.to_string(),
+                ssi_core::error::ErrorKind::InvalidData,
+            )
         })?;
 
         self.client.create(did, Some(document)).await.map_err(|e| {
-            ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::NetworkFailure)
+            ssi_core::error::ResolverError::new(
+                e.to_string(),
+                ssi_core::error::ErrorKind::NetworkFailure,
+            )
         })?;
 
         Ok(())
     }
 
-    async fn read(self, did: String) -> Result<serde_json::Value, ssi::error::ResolverError> {
+    async fn read(self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
         let res = self.client.read(did).await.map_err(|e| {
-            ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::NetworkFailure)
+            ssi_core::error::ResolverError::new(
+                e.to_string(),
+                ssi_core::error::ErrorKind::NetworkFailure,
+            )
         })?;
 
         let document = res
             .into_inner()
             .document
-            .ok_or(ssi::error::ResolverError::new(
+            .ok_or(ssi_core::error::ResolverError::new(
                 "Document not found",
-                ssi::error::ErrorKind::DocumentNotFound,
+                ssi_core::error::ErrorKind::DocumentNotFound,
             ))?;
 
         Ok(serde_json::to_value(document).map_err(|e| {
-            ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::InvalidData)
+            ssi_core::error::ResolverError::new(
+                e.to_string(),
+                ssi_core::error::ErrorKind::InvalidData,
+            )
         })?)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use ssi::DIDResolver;
+    use ssi_core::DIDResolver;
 
     use crate::{
         registry_client::{registry::CreateResponse, registry::ReadResponse, MockRegistryClient},
@@ -107,7 +119,7 @@ mod tests {
         create_did(),
         create_did_doc(create_did()),
         Some(Err(tonic::Status::invalid_argument("message"))),
-        Some(ssi::error::ErrorKind::NetworkFailure),
+        Some(ssi_core::error::ErrorKind::NetworkFailure),
         false
     )]
     #[case::success(
@@ -121,7 +133,7 @@ mod tests {
         create_did(),
         serde_json::json!("{}"),
         None,
-        Some(ssi::error::ErrorKind::InvalidData),
+        Some(ssi_core::error::ErrorKind::InvalidData),
         false
     )]
     fn test_create(
@@ -130,7 +142,7 @@ mod tests {
         #[case] mock_create_response: Option<
             Result<tonic::Response<CreateResponse>, tonic::Status>,
         >,
-        #[case] expect_error_kind: Option<ssi::error::ErrorKind>,
+        #[case] expect_error_kind: Option<ssi_core::error::ErrorKind>,
         #[case] expect_ok: bool,
     ) {
         let mut mock_client = MockRegistryClient::default();
@@ -160,7 +172,7 @@ mod tests {
     #[case::network_failure(
         create_did(),
         Some(Err(tonic::Status::invalid_argument("message"))),
-        Some(ssi::error::ErrorKind::NetworkFailure),
+        Some(ssi_core::error::ErrorKind::NetworkFailure),
         false
     )]
     #[case::success(
@@ -180,13 +192,13 @@ mod tests {
             document: None,
             metadata: None,
          }))),
-        Some(ssi::error::ErrorKind::DocumentNotFound),
+        Some(ssi_core::error::ErrorKind::DocumentNotFound),
         false
     )]
     fn test_read(
         #[case] did: String,
         #[case] mock_read_response: Option<Result<tonic::Response<ReadResponse>, tonic::Status>>,
-        #[case] expect_error_kind: Option<ssi::error::ErrorKind>,
+        #[case] expect_error_kind: Option<ssi_core::error::ErrorKind>,
         #[case] expect_ok: bool,
     ) {
         let mut mock_client = MockRegistryClient::default();

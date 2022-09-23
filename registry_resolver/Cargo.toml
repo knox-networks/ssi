@@ -9,7 +9,7 @@ edition = "2021"
 prost = "0.11.0"
 prost-types = "0.11.0"
 tonic = "0.8.0"
-ssi = {path = "../core"}
+ssi_core = {path = "../core"}
 serde_json = "1.0.81"
 pbjson = "0.5.0"
 pbjson-types = "0.5.0"
