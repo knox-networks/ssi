@@ -1405,6 +1405,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ssi"
+version = "0.1.0"
+dependencies = [
+ "registry_resolver",
+ "signature",
+ "ssi_core",
+]
+
+[[package]]
 name = "ssi_core"
 version = "0.1.0"
 dependencies = [
