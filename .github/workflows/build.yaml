@@ -13,7 +13,12 @@ jobs:
       - name: Setup | Rust
         uses: ATiltedTree/setup-rust@v1
         with:
-          rust-version: 1.62
+          rust-version: 1.64
+
+      - name: Install Protoc (required by ::pbjson_types)
+        uses: arduino/setup-protoc@v1
+        with:
+          version: "3.x"
 
       - uses: bufbuild/buf-setup-action@v1
 
