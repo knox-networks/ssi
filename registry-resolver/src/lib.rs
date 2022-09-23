@@ -45,17 +45,17 @@ impl ssi::DIDResolver for RegistryResolver {
             ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::NetworkFailure)
         })?;
 
-        let document = res.into_inner().document;
-
-        match document {
-            Some(document) => Ok(serde_json::to_value(document).map_err(|e| {
-                ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::InvalidData)
-            })?),
-            None => Err(ssi::error::ResolverError::new(
+        let document = res
+            .into_inner()
+            .document
+            .ok_or(ssi::error::ResolverError::new(
                 "Document not found",
                 ssi::error::ErrorKind::DocumentNotFound,
-            )),
-        }
+            ))?;
+
+        Ok(serde_json::to_value(document).map_err(|e| {
+            ssi::error::ResolverError::new(e.to_string(), ssi::error::ErrorKind::InvalidData)
+        })?)
     }
 }
 
