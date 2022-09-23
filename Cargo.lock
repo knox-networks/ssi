@@ -1268,7 +1268,6 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "mockall",
- "pbjson",
  "pbjson-types",
  "prost",
  "prost-types",
