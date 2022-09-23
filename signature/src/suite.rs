@@ -1,8 +1,9 @@
 use crate::error::SignatureError;
-use serde::{Deserialize, Serialize};
 pub mod ed25519_2020;
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(
+    serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd,
+)]
 pub enum VerificationRelation {
     AssertionMethod,
     Authentication,
