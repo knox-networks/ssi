@@ -15,6 +15,11 @@ jobs:
         with:
           rust-version: 1.64
 
+      - name: Install Protoc (required by ::pbjson_types)
+        uses: arduino/setup-protoc@v1
+        with:
+          version: "3.x"
+
       - uses: bufbuild/buf-setup-action@v1
 
       - name: Build
