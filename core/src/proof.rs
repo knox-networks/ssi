@@ -16,6 +16,7 @@ pub struct DataIntegrityProof {
     pub proof_value: String,
 }
 
+// Use it as an example
 /// Given a JSON-LD document, create a data integrity proof for the document.
 /// Currently, only `Ed25519Signature2018` data integrity proofs in the JSON-LD format can be created.
 pub fn create_data_integrity_proof<S: signature::suite::Signature>(
@@ -54,8 +55,9 @@ mod tests {
         #[case] doc: serde_json::Value,
         #[case] relation: signature::suite::VerificationRelation,
     ) {
-        let signer = signature::signer::Ed25519DidSigner::new();
-        let verifier = signature::verifier::Ed25519DidVerifier::from(&signer);
+        let signer = signature::signer::ed25519_signer_2020::Ed25519DidSigner::new();
+        let verifier =
+            signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&signer);
         let res = create_data_integrity_proof(&signer, doc.clone(), relation);
 
         assert!(res.is_ok());
