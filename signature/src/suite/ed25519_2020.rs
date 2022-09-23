@@ -1,4 +1,5 @@
 use super::Signature;
+
 const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
 
 const DID_PREFIX: &str = "did:knox:";
@@ -9,6 +10,33 @@ const ED25519_VERIFICATION_KEY_2020: &str = "Ed25519VerificationKey2020";
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Ed25519Signature(pub Vec<u8>);
+
+#[derive(Debug, Clone, Copy)]
+pub struct Ed25519SSIKeyPair {
+    pub(crate) master_public_key: ed25519_zebra::VerificationKey,
+    pub(crate) master_private_key: ed25519_zebra::SigningKey,
+
+    pub(crate) authetication_public_key: ed25519_zebra::VerificationKey,
+    pub(crate) authetication_private_key: ed25519_zebra::SigningKey,
+
+    pub(crate) capability_invocation_public_key: ed25519_zebra::VerificationKey,
+    pub(crate) capability_invocation_private_key: ed25519_zebra::SigningKey,
+
+    pub(crate) capability_delegation_public_key: ed25519_zebra::VerificationKey,
+    pub(crate) capability_delegation_private_key: ed25519_zebra::SigningKey,
+
+    pub(crate) assertion_method_public_key: ed25519_zebra::VerificationKey,
+    pub(crate) assertion_method_private_key: ed25519_zebra::SigningKey,
+}
+
+pub struct Ed25519DidVerifier {
+    public_key: ed25519_zebra::VerificationKey,
+}
+
+pub struct Ed25519DidSigner {
+    private_key: ed25519_zebra::SigningKey,
+    pub(crate) public_key: ed25519_zebra::VerificationKey,
+}
 
 impl AsRef<[u8]> for Ed25519Signature {
     fn as_ref(&self) -> &[u8] {
@@ -76,24 +104,6 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey>
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Ed25519SSIKeyPair {
-    pub(crate) master_public_key: ed25519_zebra::VerificationKey,
-    pub(crate) master_private_key: ed25519_zebra::SigningKey,
-
-    pub(crate) authetication_public_key: ed25519_zebra::VerificationKey,
-    pub(crate) authetication_private_key: ed25519_zebra::SigningKey,
-
-    pub(crate) capability_invocation_public_key: ed25519_zebra::VerificationKey,
-    pub(crate) capability_invocation_private_key: ed25519_zebra::SigningKey,
-
-    pub(crate) capability_delegation_public_key: ed25519_zebra::VerificationKey,
-    pub(crate) capability_delegation_private_key: ed25519_zebra::SigningKey,
-
-    pub(crate) assertion_method_public_key: ed25519_zebra::VerificationKey,
-    pub(crate) assertion_method_private_key: ed25519_zebra::SigningKey,
-}
-
 impl Ed25519SSIKeyPair {
     pub fn new() -> Self {
         let sk = ed25519_zebra::SigningKey::new(rand::thread_rng());
@@ -116,11 +126,6 @@ impl Ed25519SSIKeyPair {
             assertion_method_private_key: sk,
         };
     }
-}
-
-pub struct Ed25519DidSigner {
-    private_key: ed25519_zebra::SigningKey,
-    pub(crate) public_key: ed25519_zebra::VerificationKey,
 }
 
 impl Ed25519DidSigner {
@@ -152,10 +157,6 @@ impl super::DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     fn encode(&self, sig: Ed25519Signature) -> String {
         multibase::encode(multibase::Base::Base58Btc, sig)
     }
-}
-
-pub struct Ed25519DidVerifier {
-    public_key: ed25519_zebra::VerificationKey,
 }
 
 impl From<&Ed25519DidSigner> for Ed25519DidVerifier {
