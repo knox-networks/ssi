@@ -118,7 +118,6 @@ fn create_did_document<S>(verifier: impl signature::verifier::DIDVerifier<S>) ->
         };
 
         return did_doc;
-    // >>>>>>> main
     }
 
 
