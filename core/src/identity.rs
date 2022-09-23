@@ -11,7 +11,7 @@ pub struct KeyMaterial {
 
 pub async fn generate<S: signature::suite::Signature>(
     resolver: impl super::DIDResolver,
-    verifier: impl signature::verifier::DIDVerifier<S>,
+    verifier: impl signature::suite::DIDVerifier<S>,
 ) -> Result<DidDocument, crate::error::Error>
 where
     S: signature::suite::Signature,
@@ -27,7 +27,7 @@ where
     Ok(did_doc)
 }
 
-fn create_did_document<S>(verifier: impl signature::verifier::DIDVerifier<S>) -> DidDocument
+fn create_did_document<S>(verifier: impl signature::suite::DIDVerifier<S>) -> DidDocument
 where
     S: signature::suite::Signature,
 {
@@ -179,12 +179,12 @@ mod tests {
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
 
-        let kp = signature::keypair::Ed25519SSIKeyPair::new();
-        let verifier = signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&kp);
+        let kp = signature::suite::ed25519_2020::Ed25519DidSigner::new();
+        let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(&kp);
         resolver_mock
             .expect_create()
             .with(
-                mockall::predicate::eq(signature::verifier::DIDVerifier::get_did(&verifier)),
+                mockall::predicate::eq(signature::suite::DIDVerifier::get_did(&verifier)),
                 mockall::predicate::always(),
             )
             .return_once(|_, _| (mock_create_response));
