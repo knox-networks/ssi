@@ -14,25 +14,6 @@ impl<T: crate::DIDResolver> Identity<T> {
     pub fn new(resolver: T) -> Identity<T> {
         Identity { resolver: resolver }
     }
-    // pub async fn generate(
-    //     self,
-    //     key_pair: Ed25519SSIKeyPair,
-    // ) -> Result<DidDocument, crate::error::ResolverError> {
-    //     let signer = signature::signer::Ed25519DidSigner::from(&key_pair);
-    //     let signed_doc = self.create_did_document(&key_pair, signer);
-    //     let signed_doc_json = serde_json::to_value(signed_doc.clone()).unwrap();
-    //     let did = key_pair.get_master_public_key_encoded();
-    //     match self.resolver.create(did, signed_doc_json).await {
-    //         Ok(()) => {
-    //             return Ok(signed_doc);
-    //         }
-    //         Err(_) => Err(crate::error::ResolverError::new(
-    //             "Failed to create DID document",
-    //             crate::error::ErrorKind::InvalidData,
-    //         )),
-    //     }
-    // }
-
     pub async fn recover(
         self,
         did: String,
@@ -42,59 +23,6 @@ impl<T: crate::DIDResolver> Identity<T> {
         let rsp = self.resolver.read(did).await?;
         Ok(rsp)
     }
-
-    // pub fn create_did_document(
-    //     &self,
-    //     key_pair: &signature::keypair::Ed25519SSIKeyPair,
-    //     signer: signature::signer::Ed25519DidSigner,
-    // ) -> DidDocument {
-    //     let did_doc = DidDocument {
-    //         context: vec!["default".to_string()],
-    //         id: "default".to_string(),
-    //         authentication: vec![SSIKeyMaterial {
-    //             master_public_key: key_pair.get_master_public_key_encoded(),
-    //             id: key_pair.get_verification_method(
-    //                 signature::suite::VerificationRelation::Authentication,
-    //             ),
-    //             proof_type: signer.get_proof_type(),
-    //             controller: key_pair
-    //                 .get_controller(signature::suite::VerificationRelation::Authentication),
-    //             public_key_multibase: signature::suite::VerificationRelation::Authentication,
-    //         }],
-    //         capability_invocation: vec![SSIKeyMaterial {
-    //             master_public_key: key_pair.get_master_public_key_encoded(),
-    //             id: key_pair.get_verification_method(
-    //                 signature::suite::VerificationRelation::CapabilityInvocation,
-    //             ),
-    //             proof_type: signer.get_proof_type(),
-    //             controller: key_pair
-    //                 .get_controller(signature::suite::VerificationRelation::CapabilityInvocation),
-    //             public_key_multibase: signature::suite::VerificationRelation::CapabilityInvocation,
-    //         }],
-    //         capability_delegation: vec![SSIKeyMaterial {
-    //             master_public_key: key_pair.get_master_public_key_encoded(),
-    //             id: key_pair.get_verification_method(
-    //                 signature::suite::VerificationRelation::CapabilityDelegation,
-    //             ),
-    //             proof_type: signer.get_proof_type(),
-    //             controller: key_pair
-    //                 .get_controller(signature::suite::VerificationRelation::CapabilityDelegation),
-    //             public_key_multibase: signature::suite::VerificationRelation::CapabilityDelegation,
-    //         }],
-    //         assertion_method: vec![SSIKeyMaterial {
-    //             master_public_key: key_pair.get_master_public_key_encoded(),
-    //             id: key_pair.get_verification_method(
-    //                 signature::suite::VerificationRelation::AssertionMethod,
-    //             ),
-    //             proof_type: signer.get_proof_type(),
-    //             controller: key_pair
-    //                 .get_controller(signature::suite::VerificationRelation::AssertionMethod),
-    //             public_key_multibase: signature::suite::VerificationRelation::AssertionMethod,
-    //         }],
-    //     };
-
-    //     return did_doc;
-    // }
 //=======
 }
 
@@ -194,8 +122,6 @@ fn create_did_document<S>(verifier: impl signature::verifier::DIDVerifier<S>) ->
     }
 
 
-
-
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct KeyMaterial {
     pub id: String,
@@ -204,9 +130,6 @@ pub struct KeyMaterial {
     pub controller: String,
     pub public_key_multibase: String,
 }
-
-
-
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DidDocument {
@@ -231,7 +154,7 @@ mod tests {
         };
     }
 
-    fn _get_json_input_mock() -> serde_json::Value {
+    fn get_json_input_mock() -> serde_json::Value {
         json!({
         "assertion_method":[
             {
@@ -332,76 +255,9 @@ mod tests {
         #[case] mock_create_response: Option<Result<(), crate::error::ResolverError>>,
         #[case] did_doc: String,
         #[case] did_document_input_mock: serde_json::Value,
-// =======
-    // #[rstest::rstest]
-    // #[case::generate_succeed(
-    //     Ok(()),
-    //     true
-    // )]
-    // #[case::generate_fails_with_resolver_network_error(
-    //     Err(crate::error::ResolverError{
-    //         message: "testErr".to_string(), 
-    //         kind: crate::error::ErrorKind::NetworkFailure}),
-    //     false
-    // )]
-
-    // fn test_generate(
-    //     #[case] mock_create_response: Result<(), crate::error::ResolverError>,
-// >>>>>>> main
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
-// <<<<<<< HEAD
-        // resolver_mock
-        //     .expect_create()
-        //     .with(
-        //         mockall::predicate::function(|did_doc: &String| -> bool {
-        //             did_doc.clone().len() > 0
-        //         }),
-        //         mockall::predicate::function(move |doc_input: &serde_json::Value| -> bool {
-        //             let did_doc_input: DidDocument =
-        //                 serde_json::from_value(doc_input.clone()).unwrap();
-        //             let did_doc_mock: DidDocument =
-        //                 serde_json::from_value(did_document_input_mock.clone()).unwrap();
-
-        //             if did_doc_input.id != did_doc_mock.id {
-        //                 return false;
-        //             }
-        //             if did_doc_input.context != did_doc_mock.context {
-        //                 return false;
-        //             }
-        //             if did_doc_input.assertion_method[0].public_key_multibase
-        //                 != did_doc_mock.assertion_method[0].public_key_multibase
-        //             {
-        //                 return false;
-        //             }
-        //             return true;
-        //         }),
-        //     )
-        //     .return_once(|_, _| (mock_create_response.unwrap()));
-
-        // let iu = Identity::new(resolver_mock);
-        // let kp = signature::keypair::Ed25519SSIKeyPair::new();
-        // let gn = iu.generate(kp);
-        // let identity = aw!(gn);
-
-        // match identity {
-        //     Ok(_) => {
-        //         if expect_ok {
-        //             Ok(())
-        //         } else {
-        //             Err("Expected error".to_string())
-        //         }
-        //     }
-        //     Err(_) => {
-        //         if expect_ok {
-        //             Err("Expected success".to_string())
-        //         } else {
-        //             Ok(())
-        //         }
-        //     }
-        // }
-// =======
         let kp = signature::keypair::Ed25519SSIKeyPair::new();
         let verifier = signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&kp);
         resolver_mock
@@ -416,6 +272,5 @@ mod tests {
 
         assert_eq!(res.is_err(), !expect_ok);
         Ok(())
-// >>>>>>> main
     }
 }
