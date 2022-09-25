@@ -9,4 +9,7 @@ edition = "2021"
 ed25519-zebra = "3.0.0"
 multibase = "0.9.1"
 rand = "0.8.5"
+tiny-bip39 = "0.8.2"
+thiserror = "1.0.30"
+anyhow = "1.0.51"
 serde = { version = "1.0", features = ["derive"] }

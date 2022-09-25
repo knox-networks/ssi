@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
-// <<<<<<< HEAD
-// use signature::keypair::SSIKeyMaterial;
 
-use signature::keypair::Ed25519SSIKeyPair;
+use signature::keypair::{Ed25519SSIKeyPair, KeyPair};
 use signature::signer::DIDSigner;
 
 #[derive(Clone, Debug, Copy)]
@@ -14,19 +12,18 @@ impl<T: crate::DIDResolver> Identity<T> {
     pub fn new(resolver: T) -> Identity<T> {
         Identity { resolver: resolver }
     }
-    pub async fn recover(
+    pub async fn recover<S>(
         self,
-        did: String,
-        key_pair: Ed25519SSIKeyPair,
-    ) -> Result<serde_json::Value, crate::error::ResolverError> {
-        let did = key_pair.get_mnemonic();
-        let rsp = self.resolver.read(did).await?;
+        verifier: impl signature::verifier::DIDVerifier<S>,
+    ) -> Result<serde_json::Value, crate::error::ResolverError> 
+    where
+    S: signature::suite::Signature {
+        let rsp = self.resolver.read(verifier.get_did()).await?;
         Ok(rsp)
     }
-//=======
 }
 
-pub async fn generate<S: signature::suite::Signature>(
+pub async fn generate<S>(
     resolver: impl super::DIDResolver,
     verifier: impl signature::verifier::DIDVerifier<S>,
 ) -> Result<DidDocument, crate::error::Error>
@@ -213,7 +210,8 @@ mod tests {
 
         let iu = Identity::new(resolver_mock);
         let kp = signature::keypair::Ed25519SSIKeyPair::new();
-        let gn = iu.recover(did, kp);
+        let verifier = signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&kp);
+        let gn = iu.recover(verifier);
         let restored_identity = aw!(gn);
 
         match restored_identity {
