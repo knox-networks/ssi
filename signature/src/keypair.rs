@@ -51,7 +51,7 @@ impl KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25
     fn get_master_private_key(&self) -> ed25519_zebra::SigningKey {
         return self.master_private_key;
     }
-    
+
     fn get_private_key(
         &self,
         relation: crate::suite::VerificationRelation,
@@ -93,7 +93,10 @@ pub struct Ed25519SSIKeyPair {
 }
 
 impl Ed25519SSIKeyPair {
-    pub fn generate_mnemonic(phrase: &str, language: bip39::Language) -> Result<bip39::Mnemonic, crate::error::Error> {
+    pub fn generate_mnemonic(
+        phrase: &str,
+        language: bip39::Language,
+    ) -> Result<bip39::Mnemonic, crate::error::Error> {
         bip39::Mnemonic::validate(phrase, language)?;
         let mnemonic = bip39::Mnemonic::from_phrase(phrase, language)?;
         Ok(mnemonic)

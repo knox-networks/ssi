@@ -6,7 +6,6 @@ pub struct Identity<T> {
 }
 
 impl<T: crate::DIDResolver> Identity<T> {
-    
     pub fn new(resolver: T) -> Identity<T> {
         Identity { resolver: resolver }
     }
@@ -14,7 +13,10 @@ impl<T: crate::DIDResolver> Identity<T> {
     pub async fn recover<S>(
         self,
         verifier: impl signature::verifier::DIDVerifier<S>,
-    ) -> Result<serde_json::Value, crate::error::ResolverError> where S: signature::suite::Signature {
+    ) -> Result<serde_json::Value, crate::error::ResolverError>
+    where
+        S: signature::suite::Signature,
+    {
         let rsp = self.resolver.read(verifier.get_did()).await?;
         Ok(rsp)
     }
@@ -38,79 +40,81 @@ where
     Ok(did_doc)
 }
 
-fn create_did_document<S>(verifier: impl signature::verifier::DIDVerifier<S>) -> DidDocument where S: signature::suite::Signature{
-        let did_doc = DidDocument {
-            context: vec![
-                "https://www.w3.org/ns/did/v1".to_string(),
-                "https://w3id.org/security/suites/ed25519-2020/v1".to_string(),
-            ],
-            id: verifier.get_did(),
-            authentication: vec![KeyMaterial {
-                id: verifier
-                    .get_verification_method(signature::suite::VerificationRelation::Authentication),
-                proof_type: verifier.get_key_material_type(),
-                controller: format!(
-                    "{}{}",
-                    verifier.get_did_method(),
-                    verifier.get_public_key_by_relation(
-                        signature::suite::VerificationRelation::Authentication
-                    )
-                ),
-                public_key_multibase: verifier
-                    .get_public_key_by_relation(signature::suite::VerificationRelation::Authentication),
-            }],
-            capability_invocation: vec![KeyMaterial {
-                id: verifier.get_verification_method(
-                    signature::suite::VerificationRelation::CapabilityInvocation,
-                ),
-                proof_type: verifier.get_key_material_type(),
-                controller: format!(
-                    "{}{}",
-                    verifier.get_did_method(),
-                    verifier.get_public_key_by_relation(
-                        signature::suite::VerificationRelation::CapabilityInvocation
-                    )
-                ),
-                public_key_multibase: verifier.get_public_key_by_relation(
-                    signature::suite::VerificationRelation::CapabilityInvocation,
-                ),
-            }],
-            capability_delegation: vec![KeyMaterial {
-                id: verifier.get_verification_method(
-                    signature::suite::VerificationRelation::CapabilityDelegation,
-                ),
-                proof_type: verifier.get_key_material_type(),
-                controller: format!(
-                    "{}{}",
-                    verifier.get_did_method(),
-                    verifier.get_public_key_by_relation(
-                        signature::suite::VerificationRelation::CapabilityDelegation
-                    )
-                ),
-                public_key_multibase: verifier.get_public_key_by_relation(
-                    signature::suite::VerificationRelation::CapabilityDelegation,
-                ),
-            }],
-            assertion_method: vec![KeyMaterial {
-                id: verifier
-                    .get_verification_method(signature::suite::VerificationRelation::AssertionMethod),
-                proof_type: verifier.get_key_material_type(),
-                controller: format!(
-                    "{}{}",
-                    verifier.get_did_method(),
-                    verifier.get_public_key_by_relation(
-                        signature::suite::VerificationRelation::AssertionMethod
-                    )
-                ),
-                public_key_multibase: verifier.get_public_key_by_relation(
-                    signature::suite::VerificationRelation::AssertionMethod,
-                ),
-            }],
-        };
+fn create_did_document<S>(verifier: impl signature::verifier::DIDVerifier<S>) -> DidDocument
+where
+    S: signature::suite::Signature,
+{
+    let did_doc = DidDocument {
+        context: vec![
+            "https://www.w3.org/ns/did/v1".to_string(),
+            "https://w3id.org/security/suites/ed25519-2020/v1".to_string(),
+        ],
+        id: verifier.get_did(),
+        authentication: vec![KeyMaterial {
+            id: verifier
+                .get_verification_method(signature::suite::VerificationRelation::Authentication),
+            proof_type: verifier.get_key_material_type(),
+            controller: format!(
+                "{}{}",
+                verifier.get_did_method(),
+                verifier.get_public_key_by_relation(
+                    signature::suite::VerificationRelation::Authentication
+                )
+            ),
+            public_key_multibase: verifier
+                .get_public_key_by_relation(signature::suite::VerificationRelation::Authentication),
+        }],
+        capability_invocation: vec![KeyMaterial {
+            id: verifier.get_verification_method(
+                signature::suite::VerificationRelation::CapabilityInvocation,
+            ),
+            proof_type: verifier.get_key_material_type(),
+            controller: format!(
+                "{}{}",
+                verifier.get_did_method(),
+                verifier.get_public_key_by_relation(
+                    signature::suite::VerificationRelation::CapabilityInvocation
+                )
+            ),
+            public_key_multibase: verifier.get_public_key_by_relation(
+                signature::suite::VerificationRelation::CapabilityInvocation,
+            ),
+        }],
+        capability_delegation: vec![KeyMaterial {
+            id: verifier.get_verification_method(
+                signature::suite::VerificationRelation::CapabilityDelegation,
+            ),
+            proof_type: verifier.get_key_material_type(),
+            controller: format!(
+                "{}{}",
+                verifier.get_did_method(),
+                verifier.get_public_key_by_relation(
+                    signature::suite::VerificationRelation::CapabilityDelegation
+                )
+            ),
+            public_key_multibase: verifier.get_public_key_by_relation(
+                signature::suite::VerificationRelation::CapabilityDelegation,
+            ),
+        }],
+        assertion_method: vec![KeyMaterial {
+            id: verifier
+                .get_verification_method(signature::suite::VerificationRelation::AssertionMethod),
+            proof_type: verifier.get_key_material_type(),
+            controller: format!(
+                "{}{}",
+                verifier.get_did_method(),
+                verifier.get_public_key_by_relation(
+                    signature::suite::VerificationRelation::AssertionMethod
+                )
+            ),
+            public_key_multibase: verifier.get_public_key_by_relation(
+                signature::suite::VerificationRelation::AssertionMethod,
+            ),
+        }],
+    };
 
-        return did_doc;
-    }
-
+    return did_doc;
+}
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct KeyMaterial {
@@ -198,11 +202,9 @@ mod tests {
         let mut resolver_mock = MockDIDResolver::default();
         resolver_mock
             .expect_read()
-            .with(
-                mockall::predicate::function(|did_doc: &String| -> bool {
-                    did_doc.clone().len() > 0
-                }),
-            )
+            .with(mockall::predicate::function(|did_doc: &String| -> bool {
+                did_doc.clone().len() > 0
+            }))
             .return_once(|_| (restore_response));
 
         let iu = Identity::new(resolver_mock);
