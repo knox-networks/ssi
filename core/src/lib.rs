@@ -4,6 +4,7 @@ pub mod identity;
 pub mod proof;
 
 use credential::*;
+use mockall::*;
 use serde_json::{self, Value};
 use std::collections::HashMap;
 
