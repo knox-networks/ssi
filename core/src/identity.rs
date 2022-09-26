@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-pub async fn recover<S, T>(
-    resolver: T,
+pub async fn recover<S>(
+    resolver: impl crate::DIDResolver,
     verifier: impl signature::verifier::DIDVerifier<S>,
 ) -> Result<serde_json::Value, crate::error::ResolverError>
 where
     S: signature::suite::Signature,
-    T: crate::DIDResolver,
 {
     let rsp = resolver.read(verifier.get_did()).await?;
     Ok(rsp)
