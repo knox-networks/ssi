@@ -29,12 +29,10 @@ where
 {
     let did_doc = create_did_document(verifier);
     let encoded_did_doc = serde_json::to_value(did_doc.clone()).unwrap();
-
     resolver
         .create(did_doc.id.clone(), encoded_did_doc)
         .await
         .map_err(|_e| crate::error::Error::Unknown)?;
-
     Ok(did_doc)
 }
 
