@@ -234,22 +234,22 @@ mod tests {
 
     #[rstest::rstest]
     #[case::created_successfully(
-        Some(Ok(())),
+        Ok(()),
         get_did(),
         get_json_input_mock(),
         true
     )]
     #[case::created_error(
-        Some(Err(crate::error::ResolverError{
+        Err(crate::error::ResolverError{
             message: "testErr".to_string(), 
-            kind: crate::error::ErrorKind::NetworkFailure})),
+            kind: crate::error::ErrorKind::NetworkFailure}),
         get_did(),
         get_json_input_mock(),
         false
     )]
 
     fn test_create_identity(
-        #[case] mock_create_response: Option<Result<(), crate::error::ResolverError>>,
+        #[case] mock_create_response: Result<(), crate::error::ResolverError>,
         #[case] did_doc: String,
         #[case] did_document_input_mock: serde_json::Value,
         #[case] expect_ok: bool,
