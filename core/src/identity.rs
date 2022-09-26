@@ -6,9 +6,11 @@ pub struct Identity<T> {
 }
 
 impl<T: crate::DIDResolver> Identity<T> {
+    
     pub fn new(resolver: T) -> Identity<T> {
         Identity { resolver: resolver }
     }
+
     pub async fn recover<S>(
         self,
         verifier: impl signature::verifier::DIDVerifier<S>,
