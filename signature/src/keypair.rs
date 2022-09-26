@@ -93,10 +93,7 @@ pub struct Ed25519SSIKeyPair {
 }
 
 impl Ed25519SSIKeyPair {
-
-    pub fn generate_mnemonic(
-        phrase: &str,
-        language: bip39::Language) -> Result<bip39::Mnemonic, crate::error::Error> {
+    pub fn generate_mnemonic(phrase: &str, language: bip39::Language) -> Result<bip39::Mnemonic, crate::error::Error> {
         bip39::Mnemonic::validate(phrase, language)?;
         let mnemonic = bip39::Mnemonic::from_phrase(phrase, language)?;
         Ok(mnemonic)

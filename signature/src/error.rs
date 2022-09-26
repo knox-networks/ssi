@@ -1,4 +1,4 @@
-// use serde::{Deserialize, Serialize};
+
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -39,22 +39,6 @@ impl SignatureError {
         }
     }
 }
-
-// Trait to trait example that doesn't work
-// pub trait SigErr {
-//     fn new(kind: ErrorKind) -> Self;
-// }
-
-
-// impl From<Box<dyn std::error::Error + Send + Sync + 'static>> for Box<dyn SigErr  + Send + Sync + 'static> {
-//     fn from(source: Box<dyn std::error::Error + Send + Sync + 'static>) -> Box<dyn SigErr  + Send + Sync + 'static> {
-//         SignatureError {
-//             message: String::from(""),
-//             kind: ErrorKind::Uncategorized,
-//             source: Some(source),
-//         }
-//     }
-// }
 
 impl From<Box<dyn std::error::Error + Send + Sync + 'static>> for SignatureError {
     fn from(source: Box<dyn std::error::Error + Send + Sync + 'static>) -> SignatureError {
