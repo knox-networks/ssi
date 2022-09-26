@@ -126,6 +126,15 @@ impl Ed25519SSIKeyPair {
             assertion_method_private_key: sk,
         };
     }
+
+    pub fn generate_mnemonic(
+        phrase: &str,
+        language: bip39::Language,
+    ) -> Result<bip39::Mnemonic, crate::error::Error> {
+        bip39::Mnemonic::validate(phrase, language)?;
+        let mnemonic = bip39::Mnemonic::from_phrase(phrase, language)?;
+        Ok(mnemonic)
+    }
 }
 
 impl Ed25519DidSigner {

@@ -1,13 +1,17 @@
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub struct KeyMaterial {
-    pub id: String,
-    #[serde(rename = "type")]
-    pub proof_type: String,
-    pub controller: String,
-    pub public_key_multibase: String,
+use serde::{Deserialize, Serialize};
+
+pub async fn recover<S>(
+    resolver: impl crate::DIDResolver,
+    verifier: impl signature::suite::DIDVerifier<S>,
+) -> Result<serde_json::Value, crate::error::ResolverError>
+where
+    S: signature::suite::Signature,
+{
+    let rsp = resolver.read(verifier.get_did()).await?;
+    Ok(rsp)
 }
 
-pub async fn generate<S: signature::suite::Signature>(
+pub async fn create_identity<S>(
     resolver: impl super::DIDResolver,
     verifier: impl signature::suite::DIDVerifier<S>,
 ) -> Result<DidDocument, crate::error::Error>
@@ -16,12 +20,10 @@ where
 {
     let did_doc = create_did_document(verifier);
     let encoded_did_doc = serde_json::to_value(did_doc.clone()).unwrap();
-
     resolver
         .create(did_doc.id.clone(), encoded_did_doc)
         .await
         .map_err(|_e| crate::error::Error::Unknown)?;
-
     Ok(did_doc)
 }
 
@@ -102,6 +104,15 @@ where
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct KeyMaterial {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub proof_type: String,
+    pub controller: String,
+    pub public_key_multibase: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DidDocument {
     context: Vec<String>,
     id: String,
@@ -123,7 +134,11 @@ mod tests {
         };
     }
 
-    fn _get_json_input_mock() -> serde_json::Value {
+    fn get_json_restore_mock_ok() -> Result<serde_json::Value, crate::error::ResolverError> {
+        Ok(get_json_input_mock())
+    }
+
+    fn get_json_input_mock() -> serde_json::Value {
         json!({
         "assertion_method":[
             {
@@ -159,25 +174,72 @@ mod tests {
             })
     }
 
-    #[rstest::rstest]
-    #[case::generate_succeed(
-        Ok(()),
-        true
-    )]
-    #[case::generate_fails_with_resolver_network_error(
-        Err(crate::error::ResolverError{
-            message: "testErr".to_string(), 
-            kind: crate::error::ErrorKind::NetworkFailure}),
-        false
-    )]
+    fn get_did() -> String {
+        String::from("123456789")
+    }
 
-    fn test_generate(
-        #[case] mock_create_response: Result<(), crate::error::ResolverError>,
+    #[rstest::rstest]
+    #[case::restored_successfully(get_did(), get_json_restore_mock_ok(), true)]
+    fn test_restore_identity(
+        #[case] did: String,
+        #[case] restore_response: Result<serde_json::Value, crate::error::ResolverError>,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
+        resolver_mock
+            .expect_read()
+            .with(mockall::predicate::function(|did_doc: &String| -> bool {
+                did_doc.clone().len() > 0
+            }))
+            .return_once(|_| (restore_response));
 
-        let kp = signature::suite::ed25519_2020::Ed25519DidSigner::new();
+        let kp = signature::suite::ed25519_2020::Ed25519SSIKeyPair::new();
+        let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(&kp);
+        let gn = recover(resolver_mock, verifier);
+        let restored_identity = aw!(gn);
+
+        match restored_identity {
+            Ok(_) => {
+                if expect_ok {
+                    Ok(())
+                } else {
+                    Err("Expected error".to_string())
+                }
+            }
+            Err(_) => {
+                if expect_ok {
+                    Err("Expected success".to_string())
+                } else {
+                    Ok(())
+                }
+            }
+        }
+    }
+
+    #[rstest::rstest]
+    #[case::created_successfully(
+        Ok(()),
+        get_did(),
+        get_json_input_mock(),
+        true
+    )]
+    #[case::created_error(
+        Err(crate::error::ResolverError{
+            message: "testErr".to_string(), 
+            kind: crate::error::ErrorKind::NetworkFailure}),
+        get_did(),
+        get_json_input_mock(),
+        false
+    )]
+
+    fn test_create_identity(
+        #[case] mock_create_response: Result<(), crate::error::ResolverError>,
+        #[case] did_doc: String,
+        #[case] did_document_input_mock: serde_json::Value,
+        #[case] expect_ok: bool,
+    ) -> Result<(), String> {
+        let mut resolver_mock = MockDIDResolver::default();
+        let kp = signature::suite::ed25519_2020::Ed25519SSIKeyPair::new();
         let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(&kp);
         resolver_mock
             .expect_create()
@@ -187,7 +249,7 @@ mod tests {
             )
             .return_once(|_, _| (mock_create_response));
 
-        let res = aw!(generate(resolver_mock, verifier));
+        let res = aw!(create_identity(resolver_mock, verifier));
 
         assert_eq!(res.is_err(), !expect_ok);
         Ok(())
