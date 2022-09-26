@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-pub struct Identity {}
-
 pub async fn recover<S, T>(
     resolver: T,
     verifier: impl signature::verifier::DIDVerifier<S>,
@@ -128,7 +126,6 @@ pub struct DidDocument {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::identity::Identity;
     use crate::MockDIDResolver;
     use serde_json::json;
 
