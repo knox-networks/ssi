@@ -12,9 +12,7 @@ impl<T: crate::DIDResolver> Identity<T> {
     pub async fn recover<S>(
         self,
         verifier: impl signature::verifier::DIDVerifier<S>,
-    ) -> Result<serde_json::Value, crate::error::ResolverError> 
-    where
-    S: signature::suite::Signature {
+    ) -> Result<serde_json::Value, crate::error::ResolverError> where S: signature::suite::Signature {
         let rsp = self.resolver.read(verifier.get_did()).await?;
         Ok(rsp)
     }
@@ -38,10 +36,7 @@ where
     Ok(did_doc)
 }
 
-fn create_did_document<S>(verifier: impl signature::verifier::DIDVerifier<S>) -> DidDocument
-    where
-        S: signature::suite::Signature,
-    {
+fn create_did_document<S>(verifier: impl signature::verifier::DIDVerifier<S>) -> DidDocument where S: signature::suite::Signature{
         let did_doc = DidDocument {
             context: vec![
                 "https://www.w3.org/ns/did/v1".to_string(),
