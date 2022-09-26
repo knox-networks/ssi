@@ -1,8 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use signature::keypair::{Ed25519SSIKeyPair, KeyPair};
-use signature::signer::DIDSigner;
-
 #[derive(Clone, Debug, Copy)]
 pub struct Identity<T> {
     resolver: T,
@@ -190,7 +187,6 @@ mod tests {
             })
     }
 
-// <<<<<<< HEAD
     fn get_did() -> String {
         String::from("123456789")
     }
