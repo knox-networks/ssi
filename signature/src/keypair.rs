@@ -1,5 +1,4 @@
 #[warn(unused_imports)]
-
 use serde::{Deserialize, Serialize};
 
 pub trait PrivateKey: Copy + Clone {}
