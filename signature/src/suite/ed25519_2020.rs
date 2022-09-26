@@ -81,7 +81,8 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey>
     fn get_master_private_key(&self) -> ed25519_zebra::SigningKey {
         return self.master_private_key;
     }
-    fn get_private_key(
+
+    fn get_private_key_by_relation(
         &self,
         relation: crate::suite::VerificationRelation,
     ) -> ed25519_zebra::SigningKey {

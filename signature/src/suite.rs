@@ -48,7 +48,7 @@ pub trait KeyPair<T: PrivateKey, U: PublicKey> {
     where
         Self: Sized;
 
-    fn get_private_key(&self, relation: crate::suite::VerificationRelation) -> T
+    fn get_private_key_by_relation(&self, relation: crate::suite::VerificationRelation) -> T
     where
         Self: Sized;
 }
