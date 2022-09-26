@@ -2,23 +2,16 @@ use serde::{Deserialize, Serialize};
 
 pub struct Identity {}
 
-impl Identity {
-    pub fn new() -> Identity {
-        Identity {}
-    }
-
-    pub async fn recover<S, T>(
-        self,
-        resolver: T,
-        verifier: impl signature::verifier::DIDVerifier<S>,
-    ) -> Result<serde_json::Value, crate::error::ResolverError>
-    where
-        S: signature::suite::Signature,
-        T: crate::DIDResolver,
-    {
-        let rsp = resolver.read(verifier.get_did()).await?;
-        Ok(rsp)
-    }
+pub async fn recover<S, T>(
+    resolver: T,
+    verifier: impl signature::verifier::DIDVerifier<S>,
+) -> Result<serde_json::Value, crate::error::ResolverError>
+where
+    S: signature::suite::Signature,
+    T: crate::DIDResolver,
+{
+    let rsp = resolver.read(verifier.get_did()).await?;
+    Ok(rsp)
 }
 
 pub async fn create_identity<S>(
@@ -204,10 +197,9 @@ mod tests {
             }))
             .return_once(|_| (restore_response));
 
-        let iu = Identity::new();
         let kp = signature::keypair::Ed25519SSIKeyPair::new();
         let verifier = signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&kp);
-        let gn = iu.recover(resolver_mock, verifier);
+        let gn = recover(resolver_mock, verifier);
         let restored_identity = aw!(gn);
 
         match restored_identity {
