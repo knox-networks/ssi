@@ -13,7 +13,8 @@ impl<T: crate::DIDResolver> Identity<T> {
     pub async fn recover<S>(
         self,
         verifier: impl signature::verifier::DIDVerifier<S>,
-    ) -> Result<serde_json::Value, crate::error::ResolverError> where S: signature::suite::Signature {
+    ) -> Result<serde_json::Value, crate::error::ResolverError> 
+    where S: signature::suite::Signature {
         let rsp = self.resolver.read(verifier.get_did()).await?;
         Ok(rsp)
     }
