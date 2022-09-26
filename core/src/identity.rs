@@ -150,6 +150,10 @@ mod tests {
         };
     }
 
+    fn get_json_restore_mock_ok() -> Result<serde_json::Value, crate::error::ResolverError> {
+        Ok(get_json_input_mock())
+    }
+
     fn get_json_input_mock() -> serde_json::Value {
         json!({
         "assertion_method":[
