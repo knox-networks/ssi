@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-const DID_PREFIX: &str = "did:knox:";
-
 pub trait PrivateKey: Copy + Clone {}
 
 pub trait PublicKey: Copy + Clone {}
@@ -21,10 +19,6 @@ pub trait KeyPair<T: PrivateKey, U: PublicKey> {
     fn get_private_key(&self, relation: crate::suite::VerificationRelation) -> T
     where
         Self: Sized;
-    
-    // fn get_mnemonic(&self) -> String
-    // where
-    //     Self: Sized;
 }
 
 impl PrivateKey for ed25519_zebra::SigningKey {}
@@ -78,13 +72,6 @@ impl KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25
             }
         }
     }
-
-    // fn get_mnemonic(&self) -> bip39::Mnemonic {}
-
-    // fn generate_mnemonic(
-    //     phrase: &str,
-    //     language: bip39::Language) -> Result<bip39::Mnemonic, crate::error::Error> {}
-
 }
 
 #[derive(Debug, Clone)]
@@ -103,8 +90,6 @@ pub struct Ed25519SSIKeyPair {
 
     pub(crate) assertion_method_public_key: ed25519_zebra::VerificationKey,
     pub(crate) assertion_method_private_key: ed25519_zebra::SigningKey,
-
-    // pub(crate) mnemonic: Option<bip39::Mnemonic>,
 }
 
 impl Ed25519SSIKeyPair {
@@ -118,11 +103,7 @@ impl Ed25519SSIKeyPair {
     }
 
     pub fn new() -> Self {
-        
-        // let seed = bip39::Seed::new(&mnemonic, &password.unwrap_or_default());
         let sk = ed25519_zebra::SigningKey::new(rand::thread_rng());
-        // ed25519_zebra::SigningKey::from_bytes(&seed.as_bytes()).unwrap();
-        // let sk = ed25519_zebra::SigningKey::new(seed);
         let vk = ed25519_zebra::VerificationKey::from(&sk);
 
         return Self {
@@ -140,8 +121,6 @@ impl Ed25519SSIKeyPair {
 
             assertion_method_public_key: vk,
             assertion_method_private_key: sk,
-
-            // mnemonic: Some(mnemonic),
         };
     }
 }
