@@ -1,6 +1,7 @@
 [workspace]
 members = [
 	"core",
-	"registry-resolver",
-	"signature"
+	"registry_resolver",
+	"signature",
+	"ssi"
 ]
