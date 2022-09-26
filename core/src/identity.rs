@@ -1,28 +1,27 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Copy)]
-pub struct Identity<T> {
-    resolver: T,
-}
+pub struct Identity {}
 
-impl<T: crate::DIDResolver> Identity<T> {
-    pub fn new(resolver: T) -> Identity<T> {
-        Identity { resolver: resolver }
+impl Identity {
+    pub fn new() -> Identity {
+        Identity {}
     }
 
-    pub async fn recover<S>(
+    pub async fn recover<S, T>(
         self,
+        resolver: T,
         verifier: impl signature::verifier::DIDVerifier<S>,
     ) -> Result<serde_json::Value, crate::error::ResolverError>
     where
         S: signature::suite::Signature,
+        T: crate::DIDResolver,
     {
-        let rsp = self.resolver.read(verifier.get_did()).await?;
+        let rsp = resolver.read(verifier.get_did()).await?;
         Ok(rsp)
     }
 }
 
-pub async fn generate<S>(
+pub async fn create_identity<S>(
     resolver: impl super::DIDResolver,
     verifier: impl signature::verifier::DIDVerifier<S>,
 ) -> Result<DidDocument, crate::error::Error>
@@ -205,10 +204,10 @@ mod tests {
             }))
             .return_once(|_| (restore_response));
 
-        let iu = Identity::new(resolver_mock);
+        let iu = Identity::new();
         let kp = signature::keypair::Ed25519SSIKeyPair::new();
         let verifier = signature::verifier::ed25519_verifier_2020::Ed25519DidVerifier::from(&kp);
-        let gn = iu.recover(verifier);
+        let gn = iu.recover(resolver_mock, verifier);
         let restored_identity = aw!(gn);
 
         match restored_identity {
@@ -262,7 +261,7 @@ mod tests {
             )
             .return_once(|_, _| (mock_create_response));
 
-        let res = aw!(generate(resolver_mock, verifier));
+        let res = aw!(create_identity(resolver_mock, verifier));
 
         assert_eq!(res.is_err(), !expect_ok);
         Ok(())
