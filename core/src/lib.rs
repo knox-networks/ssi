@@ -4,7 +4,6 @@ pub mod identity;
 pub mod proof;
 
 use credential::*;
-use mockall::*;
 use serde_json::{self, Value};
 use std::collections::HashMap;
 
@@ -69,7 +68,7 @@ pub trait DocumentBuilder {
 pub fn verify_data_integrity_proof<S: signature::suite::Signature>(
     _doc: serde_json::Value,
     _resolver: &impl DIDResolver,
-    _verifier: &impl signature::verifier::DIDVerifier<S>,
+    _verifier: &impl signature::suite::DIDVerifier<S>,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     unimplemented!();
 }
@@ -79,7 +78,7 @@ pub fn verify_data_integrity_proof<S: signature::suite::Signature>(
 pub fn verify_presentation<S: signature::suite::Signature>(
     _doc: serde_json::Value,
     _resolver: &impl DIDResolver,
-    _verifier: &impl signature::verifier::DIDVerifier<S>,
+    _verifier: &impl signature::suite::DIDVerifier<S>,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     unimplemented!();
 }
@@ -254,7 +253,7 @@ mod tests {
                 "verification_method":"did:knox:zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU#zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU"},
                 "type":["VerifiableCredential","PermanentResidentCard"]}]});
         // here we test the presentation
-        let signer = signature::signer::ed25519_signer_2020::Ed25519DidSigner::new();
+        let signer = signature::suite::ed25519_2020::Ed25519DidSigner::new();
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
