@@ -9,12 +9,12 @@ pub enum ResolverError {
     #[error("Unknown Error: {0}")]
     Unknown(String),
 
-    #[error("Document not found")]
-    DocumentNotFound,
+    #[error("Document not found: {0}")]
+    DocumentNotFound(String),
 
-    #[error("InvalidData")]
-    InvalidData,
+    #[error("InvalidData: {0}")]
+    InvalidData(String),
 
-    #[error("Network Failure")]
-    NetworkFailure,
+    #[error("Network Failure: {0}")]
+    NetworkFailure(String),
 }

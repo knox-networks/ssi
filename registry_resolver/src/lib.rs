@@ -30,12 +30,12 @@ impl ssi_core::DIDResolver for RegistryResolver {
         document: serde_json::Value,
     ) -> Result<(), ssi_core::error::ResolverError> {
         let document: pbjson_types::Struct = serde_json::from_value(document)
-            .map_err(|e| ssi_core::error::ResolverError::InvalidData)?;
+            .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?;
 
         self.client
             .create(did, Some(document))
             .await
-            .map_err(|e| ssi_core::error::ResolverError::NetworkFailure)?;
+            .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
         Ok(())
     }
@@ -43,17 +43,20 @@ impl ssi_core::DIDResolver for RegistryResolver {
     async fn read(self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
         let res = self
             .client
-            .read(did)
+            .read(did.clone())
             .await
-            .map_err(|e| ssi_core::error::ResolverError::NetworkFailure)?;
+            .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
-        let document = res
-            .into_inner()
-            .document
-            .ok_or(ssi_core::error::ResolverError::DocumentNotFound)?;
+        let document =
+            res.into_inner()
+                .document
+                .ok_or(ssi_core::error::ResolverError::DocumentNotFound(format!(
+                    "No document found associated with {}",
+                    did
+                )))?;
 
         Ok(serde_json::to_value(document)
-            .map_err(|e| ssi_core::error::ResolverError::InvalidData)?)
+            .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?)
     }
 }
 
@@ -105,7 +108,7 @@ mod tests {
         create_did(),
         create_did_doc(create_did()),
         Some(Err(tonic::Status::invalid_argument("message"))),
-        Some(ssi_core::error::ResolverError::NetworkFailure),
+        Some(ssi_core::error::ResolverError::NetworkFailure("mock error".to_string())),
         false
     )]
     #[case::success(
@@ -119,7 +122,7 @@ mod tests {
         create_did(),
         serde_json::json!("{}"),
         None,
-        Some(ssi_core::error::ResolverError::InvalidData),
+        Some(ssi_core::error::ResolverError::InvalidData("mock error".to_string())),
         false
     )]
     fn test_create(
@@ -158,7 +161,7 @@ mod tests {
     #[case::network_failure(
         create_did(),
         Some(Err(tonic::Status::invalid_argument("message"))),
-        Some(ssi_core::error::ResolverError::NetworkFailure),
+        Some(ssi_core::error::ResolverError::NetworkFailure("mock error".to_string())),
         false
     )]
     #[case::success(
@@ -178,7 +181,7 @@ mod tests {
             document: None,
             metadata: None,
          }))),
-        Some(ssi_core::error::ResolverError::DocumentNotFound),
+        Some(ssi_core::error::ResolverError::DocumentNotFound("mock error".to_string())),
         false
     )]
     fn test_read(
