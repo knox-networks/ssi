@@ -66,7 +66,7 @@ impl AsRef<[u8]> for Ed25519Signature {
 }
 
 impl super::Signature for Ed25519Signature {
-    fn from_bytes(bytes: &[u8]) -> Result<Self, super::SignatureError> {
+    fn from_bytes(bytes: &[u8]) -> Result<Self, super::error::Error> {
         Ok(Ed25519Signature(bytes.to_vec()))
     }
 }
@@ -188,7 +188,7 @@ impl Ed25519DidSigner {
 }
 
 impl super::DIDSigner<Ed25519Signature> for Ed25519DidSigner {
-    fn try_sign(&self, data: &[u8]) -> Result<Ed25519Signature, super::SignatureError> {
+    fn try_sign(&self, data: &[u8]) -> Result<Ed25519Signature, super::error::Error> {
         let res: [u8; 64] = self.private_key.sign(data).into();
         return Ed25519Signature::from_bytes(&res);
     }
@@ -224,28 +224,26 @@ impl From<&Ed25519SSIKeyPair> for Ed25519DidVerifier {
 }
 
 impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
-    fn verify(&self, msg: &[u8], sig: &Ed25519Signature) -> Result<(), super::SignatureError> {
-        let sig_bytes: [u8; 64] = sig
-            .0
-            .as_slice()
-            .try_into()
-            .map_err(|_| super::SignatureError::new(crate::error::ErrorKind::Uncategorized))?;
+    fn verify(&self, msg: &[u8], sig: &Ed25519Signature) -> Result<(), super::error::Error> {
+        let sig_bytes: [u8; 64] = sig.0.as_slice().try_into().map_err(|_| {
+            super::error::Error::Unknown("Failed to convert signature to slice".to_string())
+        })?;
 
         self.public_key
             .verify(&ed25519_zebra::Signature::from(sig_bytes), msg)
-            .map_err(super::SignatureError::from)
+            .map_err(|e| super::error::Error::Verify(e.to_string()))
     }
-    fn decode(&self, encoded_sig: String) -> Result<Ed25519Signature, super::SignatureError> {
+
+    fn decode(&self, encoded_sig: String) -> Result<Ed25519Signature, super::error::Error> {
         let res = multibase::decode(encoded_sig);
 
         match res {
             Ok(sig) => {
                 let sig_bytes: [u8; 64] = sig.1.as_slice().try_into().unwrap();
-                return Ed25519Signature::from_bytes(&sig_bytes)
-                    .map_err(super::SignatureError::from);
+                return Ed25519Signature::from_bytes(&sig_bytes).map_err(super::error::Error::from);
             }
-            _ => Err(super::SignatureError::new(
-                crate::error::ErrorKind::Uncategorized,
+            _ => Err(super::error::Error::Unknown(
+                "Failed to decode signature".to_string(),
             )),
         }
     }
@@ -255,7 +253,7 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
         msg: &[u8],
         data: String,
         relation: super::VerificationRelation,
-    ) -> Result<(), super::SignatureError> {
+    ) -> Result<(), super::error::Error> {
         let decoded_sig = self.decode(data)?;
         return self.relational_verify(msg, &decoded_sig, relation);
     }
@@ -265,31 +263,29 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
         msg: &[u8],
         sig: &Ed25519Signature,
         relation: super::VerificationRelation,
-    ) -> Result<(), super::SignatureError> {
-        let sig_bytes: [u8; 64] = sig
-            .0
-            .as_slice()
-            .try_into()
-            .map_err(|_| super::SignatureError::new(crate::error::ErrorKind::Uncategorized))?;
+    ) -> Result<(), super::error::Error> {
+        let sig_bytes: [u8; 64] = sig.0.as_slice().try_into().map_err(|_| {
+            super::error::Error::Unknown("Failed to convert signature to slice".to_string())
+        })?;
 
         let sig = ed25519_zebra::Signature::from(sig_bytes);
         match relation {
             super::VerificationRelation::AssertionMethod => self
                 .public_key
                 .verify(&sig, msg)
-                .map_err(super::SignatureError::from),
+                .map_err(|e| super::error::Error::Verify(e.to_string())),
             super::VerificationRelation::Authentication => self
                 .public_key
                 .verify(&sig, msg)
-                .map_err(super::SignatureError::from),
+                .map_err(|e| super::error::Error::Verify(e.to_string())),
             super::VerificationRelation::CapabilityInvocation => self
                 .public_key
                 .verify(&sig, msg)
-                .map_err(super::SignatureError::from),
+                .map_err(|e| super::error::Error::Verify(e.to_string())),
             super::VerificationRelation::CapabilityDelegation => self
                 .public_key
                 .verify(&sig, msg)
-                .map_err(super::SignatureError::from),
+                .map_err(|e| super::error::Error::Verify(e.to_string())),
         }
     }
 
