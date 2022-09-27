@@ -239,17 +239,18 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
     }
 
     fn decode(&self, encoded_sig: String) -> Result<Ed25519Signature, super::error::Error> {
-        let res = multibase::decode(encoded_sig);
+        let sig = multibase::decode(encoded_sig)
+            .map_err(|e| super::error::Error::Unknown(e.to_string()))?;
 
-        match res {
-            Ok(sig) => {
-                let sig_bytes: [u8; 64] = sig.1.as_slice().try_into().unwrap();
-                return Ed25519Signature::from_bytes(&sig_bytes).map_err(super::error::Error::from);
-            }
-            _ => Err(super::error::Error::Unknown(
-                "Failed to decode signature".to_string(),
-            )),
-        }
+        let sig_bytes: [u8; 64] =
+            sig.1
+                .as_slice()
+                .try_into()
+                .map_err(|e: std::array::TryFromSliceError| {
+                    super::error::Error::Unknown(e.to_string())
+                })?;
+
+        return Ed25519Signature::from_bytes(&sig_bytes).map_err(super::error::Error::from);
     }
 
     fn decoded_relational_verify(
