@@ -230,7 +230,7 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
                 .as_slice()
                 .try_into()
                 .map_err(|e: std::array::TryFromSliceError| {
-                    super::error::Error::Unknown(e.to_string())
+                    super::error::Error::Signature(e.to_string())
                 })?;
 
         self.public_key
@@ -240,14 +240,14 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
 
     fn decode(&self, encoded_sig: String) -> Result<Ed25519Signature, super::error::Error> {
         let sig = multibase::decode(encoded_sig)
-            .map_err(|e| super::error::Error::Unknown(e.to_string()))?;
+            .map_err(|e| super::error::Error::Signature(e.to_string()))?;
 
         let sig_bytes: [u8; 64] =
             sig.1
                 .as_slice()
                 .try_into()
                 .map_err(|e: std::array::TryFromSliceError| {
-                    super::error::Error::Unknown(e.to_string())
+                    super::error::Error::Signature(e.to_string())
                 })?;
 
         return Ed25519Signature::from_bytes(&sig_bytes).map_err(super::error::Error::from);
@@ -274,7 +274,7 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
                 .as_slice()
                 .try_into()
                 .map_err(|e: std::array::TryFromSliceError| {
-                    super::error::Error::Unknown(e.to_string())
+                    super::error::Error::Signature(e.to_string())
                 })?;
 
         let sig = ed25519_zebra::Signature::from(sig_bytes);
