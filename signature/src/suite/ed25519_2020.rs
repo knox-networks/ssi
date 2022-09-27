@@ -1,6 +1,5 @@
-use sha2::Digest;
-
 use super::Signature;
+use sha2::Digest;
 
 const DID_PREFIX: &str = "did:knox:";
 
