@@ -108,7 +108,7 @@ mod tests {
         create_did(),
         create_did_doc(create_did()),
         Some(Err(tonic::Status::invalid_argument("message"))),
-        Some(ssi_core::error::ResolverError::NetworkFailure("mock error".to_string())),
+        Some(ssi_core::error::ResolverError::NetworkFailure("status: InvalidArgument, message: \"message\", details: [], metadata: MetadataMap { headers: {} }".to_string())),
         false
     )]
     #[case::success(
@@ -122,7 +122,7 @@ mod tests {
         create_did(),
         serde_json::json!("{}"),
         None,
-        Some(ssi_core::error::ResolverError::InvalidData("mock error".to_string())),
+        Some(ssi_core::error::ResolverError::InvalidData("invalid type: string \"{}\", expected google.protobuf.Struct".to_string())),
         false
     )]
     fn test_create(
@@ -153,7 +153,7 @@ mod tests {
         assert_eq!(res.is_ok(), expect_ok);
         match res.err() {
             Some(e) => {
-                // add assertions
+                assert_eq!(e, expect_error_kind.unwrap());
             }
             None => assert!(expect_error_kind.is_none()),
         }
@@ -163,7 +163,7 @@ mod tests {
     #[case::network_failure(
         create_did(),
         Some(Err(tonic::Status::invalid_argument("message"))),
-        Some(ssi_core::error::ResolverError::NetworkFailure("mock error".to_string())),
+        Some(ssi_core::error::ResolverError::NetworkFailure("status: InvalidArgument, message: \"message\", details: [], metadata: MetadataMap { headers: {} }".to_string())),
         false
     )]
     #[case::success(
@@ -183,7 +183,7 @@ mod tests {
             document: None,
             metadata: None,
          }))),
-        Some(ssi_core::error::ResolverError::DocumentNotFound("mock error".to_string())),
+        Some(ssi_core::error::ResolverError::DocumentNotFound("No document found associated with did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh".to_string())),
         false
     )]
     fn test_read(
@@ -208,7 +208,7 @@ mod tests {
         assert_eq!(res.is_ok(), expect_ok);
         match res.err() {
             Some(e) => {
-                // add assertions
+                assert_eq!(e, expect_error_kind.unwrap());
             }
             None => assert!(expect_error_kind.is_none()),
         }

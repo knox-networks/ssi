@@ -4,7 +4,7 @@ pub enum Error {
     Unknown(String),
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum ResolverError {
     #[error("Unknown Error: {0}")]
     Unknown(String),
