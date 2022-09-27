@@ -37,7 +37,7 @@ pub trait PrivateKey: Copy + Clone {}
 pub trait PublicKey: Copy + Clone {}
 
 pub trait KeyPair<T: PrivateKey, U: PublicKey> {
-    fn get_public_key_encoded(&self, relation: crate::suite::VerificationRelation) -> String
+    fn get_public_key_encoded(&self, relation: VerificationRelation) -> String
     where
         Self: Sized;
 
@@ -48,7 +48,7 @@ pub trait KeyPair<T: PrivateKey, U: PublicKey> {
     where
         Self: Sized;
 
-    fn get_private_key_by_relation(&self, relation: crate::suite::VerificationRelation) -> T
+    fn get_private_key_by_relation(&self, relation: VerificationRelation) -> T
     where
         Self: Sized;
 }
@@ -104,5 +104,5 @@ where
     fn get_did(&self) -> String;
     fn get_key_material_type(&self) -> String;
     fn get_verification_method(&self, relation: VerificationRelation) -> String;
-    fn get_public_key_by_relation(&self, relation: crate::suite::VerificationRelation) -> String;
+    fn get_public_key_by_relation(&self, relation: VerificationRelation) -> String;
 }
