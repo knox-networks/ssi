@@ -1,41 +1,20 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, thiserror::Error)]
 pub enum Error {
-    Unknown,
+    #[error("Unknown Error: {0}")]
+    Unknown(String),
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum ErrorKind {
+#[derive(Debug, thiserror::Error)]
+pub enum ResolverError {
+    #[error("Unknown Error: {0}")]
+    Unknown(String),
+
+    #[error("Document not found")]
     DocumentNotFound,
+
+    #[error("InvalidData")]
     InvalidData,
-    Uncategorized,
+
+    #[error("Network Failure")]
     NetworkFailure,
-}
-
-impl std::fmt::Display for ErrorKind {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct ResolverError {
-    pub message: String,
-    pub kind: ErrorKind,
-}
-
-impl std::fmt::Display for ResolverError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}:{}", self.kind, self.message)
-    }
-}
-
-impl ResolverError {
-    pub fn new(message: impl Into<String>, kind: ErrorKind) -> Self {
-        Self {
-            message: message.into(),
-            kind: kind,
-        }
-    }
 }

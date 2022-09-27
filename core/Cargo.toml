@@ -13,6 +13,7 @@ sha2 = "0.10.2"
 signature = {path = "../signature"}
 serde = { version = "1.0", features = ["derive"] }
 mockall = "0.11.1"
+thiserror = "1.0.30"
 
 [dev-dependencies]
 rstest = "0.15.0"

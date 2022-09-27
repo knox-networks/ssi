@@ -23,7 +23,7 @@ where
     resolver
         .create(did_doc.id.clone(), encoded_did_doc)
         .await
-        .map_err(|_e| crate::error::Error::Unknown)?;
+        .map_err(|e| crate::error::Error::Unknown(e.to_string()))?;
     Ok(did_doc)
 }
 
@@ -224,9 +224,7 @@ mod tests {
         true
     )]
     #[case::created_error(
-        Err(crate::error::ResolverError{
-            message: "testErr".to_string(), 
-            kind: crate::error::ErrorKind::NetworkFailure}),
+        Err(crate::error::ResolverError::Unknown("mock error".to_string())),
         get_did(),
         get_json_input_mock(),
         false
