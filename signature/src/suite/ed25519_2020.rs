@@ -225,9 +225,13 @@ impl From<&Ed25519SSIKeyPair> for Ed25519DidVerifier {
 
 impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
     fn verify(&self, msg: &[u8], sig: &Ed25519Signature) -> Result<(), super::error::Error> {
-        let sig_bytes: [u8; 64] = sig.0.as_slice().try_into().map_err(|_| {
-            super::error::Error::Unknown("Failed to convert signature to slice".to_string())
-        })?;
+        let sig_bytes: [u8; 64] =
+            sig.0
+                .as_slice()
+                .try_into()
+                .map_err(|e: std::array::TryFromSliceError| {
+                    super::error::Error::Unknown(e.to_string())
+                })?;
 
         self.public_key
             .verify(&ed25519_zebra::Signature::from(sig_bytes), msg)
@@ -264,9 +268,13 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
         sig: &Ed25519Signature,
         relation: super::VerificationRelation,
     ) -> Result<(), super::error::Error> {
-        let sig_bytes: [u8; 64] = sig.0.as_slice().try_into().map_err(|_| {
-            super::error::Error::Unknown("Failed to convert signature to slice".to_string())
-        })?;
+        let sig_bytes: [u8; 64] =
+            sig.0
+                .as_slice()
+                .try_into()
+                .map_err(|e: std::array::TryFromSliceError| {
+                    super::error::Error::Unknown(e.to_string())
+                })?;
 
         let sig = ed25519_zebra::Signature::from(sig_bytes);
         match relation {
@@ -314,5 +322,10 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
     fn get_did(&self) -> String {
         let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
         return format!("did:knox:{0}", encoded_pk);
+    }
+
+    fn decoded_verify(&self, msg: &[u8], data: String) -> Result<(), super::error::Error> {
+        let decoded_sig = self.decode(data)?;
+        return self.verify(msg, &decoded_sig);
     }
 }
