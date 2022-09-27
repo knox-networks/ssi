@@ -7,6 +7,8 @@ const DID_PREFIX: &str = "did:knox:";
 const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
 const ED25519_VERIFICATION_KEY_2020: &str = "Ed25519VerificationKey2020";
 
+mod ed25519_2020_error;
+
 // Implementation of https://www.w3.org/community/reports/credentials/CG-FINAL-di-eddsa-2020-20220724/
 
 #[derive(Debug, Clone)]
@@ -125,10 +127,10 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey>
 }
 
 impl Ed25519SSIKeyPair {
-    pub fn new(mnemonic: Option<Mnemonic>) -> Self {
+    pub fn new(mnemonic: Option<Mnemonic>) -> Result<Self, ed25519_2020_error::Error> {
         let mnemonic = mnemonic.unwrap_or(Self::generate_mnemonic(MnemonicLanguage::English));
-        let mnemonic =
-            bip39::Mnemonic::from_phrase(&mnemonic.phrase, mnemonic.language.into()).unwrap();
+        let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic.phrase, mnemonic.language.into())
+            .map_err(|e| ed25519_2020_error::Error::Bip39(e.to_string()))?;
 
         // we do not support passwords
         let seed = bip39::Seed::new(&mnemonic, "");
@@ -138,12 +140,15 @@ impl Ed25519SSIKeyPair {
         hasher.update(seed.as_bytes());
 
         // Use hashed bip39 seed as the signer seed.
-        let seed = <[u8; 32]>::try_from(hasher.finalize()).unwrap();
+        let seed = <[u8; 32]>::try_from(hasher.finalize())
+            .map_err(|e| ed25519_2020_error::Error::SeedHashConversion(e.to_string()))?;
 
-        let sk = ed25519_zebra::SigningKey::try_from(seed).unwrap();
+        let sk = ed25519_zebra::SigningKey::try_from(seed)
+            .map_err(|e| ed25519_2020_error::Error::SigningKeyConversion(e.to_string()))?;
+
         let vk = ed25519_zebra::VerificationKey::from(&sk);
 
-        return Self {
+        return Ok(Self {
             master_public_key: vk,
             master_private_key: sk,
 
@@ -158,7 +163,7 @@ impl Ed25519SSIKeyPair {
 
             assertion_method_public_key: vk,
             assertion_method_private_key: sk,
-        };
+        });
     }
 
     pub fn generate_mnemonic(language: MnemonicLanguage) -> Mnemonic {
