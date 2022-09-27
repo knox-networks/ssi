@@ -1,3 +1,5 @@
+use sha2::Digest;
+
 use super::Signature;
 
 const DID_PREFIX: &str = "did:knox:";
@@ -5,8 +7,28 @@ const DID_PREFIX: &str = "did:knox:";
 const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
 const ED25519_VERIFICATION_KEY_2020: &str = "Ed25519VerificationKey2020";
 
+mod error;
+
 // Implementation of https://www.w3.org/community/reports/credentials/CG-FINAL-di-eddsa-2020-20220724/
 
+#[derive(Debug, Clone)]
+pub enum MnemonicLanguage {
+    English,
+}
+
+#[derive(Debug, Clone)]
+pub struct Mnemonic {
+    language: MnemonicLanguage,
+    phrase: String,
+}
+
+impl Into<bip39::Language> for MnemonicLanguage {
+    fn into(self) -> bip39::Language {
+        match self {
+            MnemonicLanguage::English => bip39::Language::English,
+        }
+    }
+}
 #[derive(Debug, PartialEq, Clone)]
 pub struct Ed25519Signature(pub Vec<u8>);
 
@@ -105,11 +127,28 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey>
 }
 
 impl Ed25519SSIKeyPair {
-    pub fn new() -> Self {
-        let sk = ed25519_zebra::SigningKey::new(rand::thread_rng());
+    pub fn new(mnemonic: Option<Mnemonic>) -> Result<Self, error::Error> {
+        let mnemonic = mnemonic.unwrap_or(Self::generate_mnemonic(MnemonicLanguage::English));
+        let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic.phrase, mnemonic.language.into())
+            .map_err(|e| error::Error::Bip39(e.to_string()))?;
+
+        // we do not support passwords
+        let seed = bip39::Seed::new(&mnemonic, "");
+
+        // Hash the bip39 entropy seed into a [u8; 32] seed
+        let mut hasher = sha2::Sha256::new();
+        hasher.update(seed.as_bytes());
+
+        // Use hashed bip39 seed as the signer seed.
+        let seed = <[u8; 32]>::try_from(hasher.finalize())
+            .map_err(|e| error::Error::SeedHashConversion(e.to_string()))?;
+
+        let sk = ed25519_zebra::SigningKey::try_from(seed)
+            .map_err(|e| error::Error::SigningKeyConversion(e.to_string()))?;
+
         let vk = ed25519_zebra::VerificationKey::from(&sk);
 
-        return Self {
+        return Ok(Self {
             master_public_key: vk,
             master_private_key: sk,
 
@@ -124,16 +163,16 @@ impl Ed25519SSIKeyPair {
 
             assertion_method_public_key: vk,
             assertion_method_private_key: sk,
-        };
+        });
     }
 
-    pub fn generate_mnemonic(
-        phrase: &str,
-        language: bip39::Language,
-    ) -> Result<bip39::Mnemonic, crate::error::Error> {
-        bip39::Mnemonic::validate(phrase, language)?;
-        let mnemonic = bip39::Mnemonic::from_phrase(phrase, language)?;
-        Ok(mnemonic)
+    pub fn generate_mnemonic(language: MnemonicLanguage) -> Mnemonic {
+        let mnemonic = bip39::Mnemonic::new(bip39::MnemonicType::Words24, language.clone().into());
+
+        return Mnemonic {
+            language: language,
+            phrase: mnemonic.phrase().to_string(),
+        };
     }
 }
 
