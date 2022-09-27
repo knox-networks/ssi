@@ -130,6 +130,7 @@ impl Ed25519SSIKeyPair {
         let mnemonic =
             bip39::Mnemonic::from_phrase(&mnemonic.phrase, mnemonic.language.into()).unwrap();
 
+        // we do not support passwords
         let seed = bip39::Seed::new(&mnemonic, "");
 
         // Hash the bip39 entropy seed into a [u8; 32] seed
