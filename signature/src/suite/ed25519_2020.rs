@@ -1,7 +1,7 @@
 use super::Signature;
 use sha2::Digest;
 
-const DID_PREFIX: &str = "did:knox:";
+const DID_PREFIX: &str = "did:knox";
 
 const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
 const ED25519_VERIFICATION_KEY_2020: &str = "Ed25519VerificationKey2020";
@@ -198,7 +198,7 @@ impl super::DIDSigner<Ed25519Signature> for Ed25519DidSigner {
 
     fn get_verification_method(&self, _relation: super::VerificationRelation) -> String {
         let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
-        return format!("did:knox:{0}#{0}", encoded_pk);
+        return format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk);
     }
 
     fn encode(&self, sig: Ed25519Signature) -> String {
@@ -303,14 +303,14 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
 
     fn get_verification_method(&self, relation: super::VerificationRelation) -> String {
         let encoded_pk = self.get_public_key_by_relation(relation);
-        return format!("did:knox:{0}#{0}", encoded_pk);
+        return format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk);
     }
 
     fn get_public_key_by_relation(&self, relation: crate::suite::VerificationRelation) -> String {
         match relation {
             _ => {
                 let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
-                return format!("did:knox:{0}#{0}", encoded_pk);
+                return format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk);
             }
         }
     }
@@ -321,7 +321,7 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
 
     fn get_did(&self) -> String {
         let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
-        return format!("did:knox:{0}", encoded_pk);
+        return format!("{0}:{1}", DID_PREFIX, encoded_pk);
     }
 
     fn decoded_verify(&self, msg: &[u8], data: String) -> Result<(), super::error::Error> {

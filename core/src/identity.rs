@@ -42,7 +42,7 @@ where
                 .get_verification_method(signature::suite::VerificationRelation::Authentication),
             proof_type: verifier.get_key_material_type(),
             controller: format!(
-                "{}{}",
+                "{}:{}",
                 verifier.get_did_method(),
                 verifier.get_public_key_by_relation(
                     signature::suite::VerificationRelation::Authentication
@@ -57,7 +57,7 @@ where
             ),
             proof_type: verifier.get_key_material_type(),
             controller: format!(
-                "{}{}",
+                "{}:{}",
                 verifier.get_did_method(),
                 verifier.get_public_key_by_relation(
                     signature::suite::VerificationRelation::CapabilityInvocation
@@ -73,7 +73,7 @@ where
             ),
             proof_type: verifier.get_key_material_type(),
             controller: format!(
-                "{}{}",
+                "{}:{}",
                 verifier.get_did_method(),
                 verifier.get_public_key_by_relation(
                     signature::suite::VerificationRelation::CapabilityDelegation
@@ -88,7 +88,7 @@ where
                 .get_verification_method(signature::suite::VerificationRelation::AssertionMethod),
             proof_type: verifier.get_key_material_type(),
             controller: format!(
-                "{}{}",
+                "{}:{}",
                 verifier.get_did_method(),
                 verifier.get_public_key_by_relation(
                     signature::suite::VerificationRelation::AssertionMethod
