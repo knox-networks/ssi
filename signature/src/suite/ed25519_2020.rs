@@ -10,7 +10,7 @@ pub mod error;
 
 // Implementation of https://www.w3.org/community/reports/credentials/CG-FINAL-di-eddsa-2020-20220724/
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum MnemonicLanguage {
     English,
 }
@@ -32,7 +32,7 @@ impl From<MnemonicLanguage> for bip39::Language {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Ed25519Signature(pub Vec<u8>);
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Ed25519KeyPair {
     pub(crate) master_public_key: ed25519_zebra::VerificationKey,
     pub(crate) master_private_key: ed25519_zebra::SigningKey,
@@ -48,6 +48,8 @@ pub struct Ed25519KeyPair {
 
     pub(crate) assertion_method_public_key: ed25519_zebra::VerificationKey,
     pub(crate) assertion_method_private_key: ed25519_zebra::SigningKey,
+
+    pub(crate) mnemonic: Mnemonic,
 }
 
 pub struct Ed25519DidVerifier {
@@ -126,11 +128,12 @@ impl Ed25519KeyPair {
     pub fn new(mnemonic: Option<Mnemonic>) -> Result<Self, error::Error> {
         let mnemonic =
             mnemonic.unwrap_or_else(|| Self::generate_mnemonic(MnemonicLanguage::English));
-        let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic.phrase, mnemonic.language.into())
-            .map_err(|e| error::Error::Bip39(e.to_string()))?;
+        let bip39_mnemonic =
+            bip39::Mnemonic::from_phrase(&mnemonic.phrase, mnemonic.language.into())
+                .map_err(|e| error::Error::Bip39(e.to_string()))?;
 
         // we do not support passwords
-        let seed = bip39::Seed::new(&mnemonic, "");
+        let seed = bip39::Seed::new(&bip39_mnemonic, "");
 
         // Hash the bip39 entropy seed into a [u8; 32] seed
         let mut hasher = sha2::Sha256::new();
@@ -160,6 +163,8 @@ impl Ed25519KeyPair {
 
             assertion_method_public_key: vk,
             assertion_method_private_key: sk,
+
+            mnemonic,
         })
     }
 
@@ -170,6 +175,10 @@ impl Ed25519KeyPair {
             language,
             phrase: mnemonic.phrase().to_string(),
         };
+    }
+
+    pub fn get_mnemonic(&self) -> Mnemonic {
+        self.mnemonic.clone()
     }
 }
 
