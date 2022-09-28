@@ -33,7 +33,7 @@ impl From<MnemonicLanguage> for bip39::Language {
 pub struct Ed25519Signature(pub Vec<u8>);
 
 #[derive(Debug, Clone, Copy)]
-pub struct Ed25519SSIKeyPair {
+pub struct Ed25519KeyPair {
     pub(crate) master_public_key: ed25519_zebra::VerificationKey,
     pub(crate) master_private_key: ed25519_zebra::SigningKey,
 
@@ -74,9 +74,7 @@ impl super::Signature for Ed25519Signature {
 impl super::PrivateKey for ed25519_zebra::SigningKey {}
 impl super::PublicKey for ed25519_zebra::VerificationKey {}
 
-impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey>
-    for Ed25519SSIKeyPair
-{
+impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25519KeyPair {
     fn get_public_key_encoded(&self, relation: crate::suite::VerificationRelation) -> String {
         match relation {
             crate::suite::VerificationRelation::AssertionMethod => {
@@ -124,7 +122,7 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey>
     }
 }
 
-impl Ed25519SSIKeyPair {
+impl Ed25519KeyPair {
     pub fn new(mnemonic: Option<Mnemonic>) -> Result<Self, error::Error> {
         let mnemonic =
             mnemonic.unwrap_or_else(|| Self::generate_mnemonic(MnemonicLanguage::English));
@@ -220,8 +218,8 @@ impl From<&Ed25519DidSigner> for Ed25519DidVerifier {
     }
 }
 
-impl From<&Ed25519SSIKeyPair> for Ed25519DidVerifier {
-    fn from(kp: &Ed25519SSIKeyPair) -> Self {
+impl From<&Ed25519KeyPair> for Ed25519DidVerifier {
+    fn from(kp: &Ed25519KeyPair) -> Self {
         Self {
             public_key: kp.master_public_key,
         }
