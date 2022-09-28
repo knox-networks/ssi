@@ -126,7 +126,8 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey>
 
 impl Ed25519SSIKeyPair {
     pub fn new(mnemonic: Option<Mnemonic>) -> Result<Self, error::Error> {
-        let mnemonic = mnemonic.unwrap_or(Self::generate_mnemonic(MnemonicLanguage::English));
+        let mnemonic =
+            mnemonic.unwrap_or_else(|| Self::generate_mnemonic(MnemonicLanguage::English));
         let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic.phrase, mnemonic.language.into())
             .map_err(|e| error::Error::Bip39(e.to_string()))?;
 
