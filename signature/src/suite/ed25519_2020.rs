@@ -21,13 +21,14 @@ pub struct Mnemonic {
     phrase: String,
 }
 
-impl Into<bip39::Language> for MnemonicLanguage {
-    fn into(self) -> bip39::Language {
-        match self {
+impl From<MnemonicLanguage> for bip39::Language {
+    fn from(lang: MnemonicLanguage) -> Self {
+        match lang {
             MnemonicLanguage::English => bip39::Language::English,
         }
     }
 }
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Ed25519Signature(pub Vec<u8>);
 
