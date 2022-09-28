@@ -108,7 +108,7 @@ mod tests {
         create_did(),
         create_did_doc(create_did()),
         Some(Err(tonic::Status::invalid_argument("message"))),
-        Some(ssi_core::error::ResolverError::NetworkFailure("status: InvalidArgument, message: \"message\", details: [], metadata: MetadataMap { headers: {} }".to_string())),
+        Some(ssi_core::error::ResolverError::NetworkFailure(r#"status: InvalidArgument, message: "message", details: [], metadata: MetadataMap { headers: {} }"#.to_string())),
         false
     )]
     #[case::success(
@@ -122,8 +122,7 @@ mod tests {
         create_did(),
         serde_json::json!("{}"),
         None,
-        Some(ssi_core::error::ResolverError::InvalidData("invalid type: string \"{}\", expected google.protobuf.Struct".to_string())),
-        false
+        Some(ssi_core::error::ResolverError::InvalidData(r#"invalid type: string "{}", expected google.protobuf.Struct"#.to_string())),        false
     )]
     fn test_create(
         #[case] did: String,
@@ -163,7 +162,7 @@ mod tests {
     #[case::network_failure(
         create_did(),
         Some(Err(tonic::Status::invalid_argument("message"))),
-        Some(ssi_core::error::ResolverError::NetworkFailure("status: InvalidArgument, message: \"message\", details: [], metadata: MetadataMap { headers: {} }".to_string())),
+        Some(ssi_core::error::ResolverError::NetworkFailure(r#"status: InvalidArgument, message: "message", details: [], metadata: MetadataMap { headers: {} }"#.to_string())),
         false
     )]
     #[case::success(
@@ -183,8 +182,7 @@ mod tests {
             document: None,
             metadata: None,
          }))),
-        Some(ssi_core::error::ResolverError::DocumentNotFound("No document found associated with did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh".to_string())),
-        false
+         Some(ssi_core::error::ResolverError::DocumentNotFound("No document found associated with did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh".to_string())),        false
     )]
     fn test_read(
         #[case] did: String,
