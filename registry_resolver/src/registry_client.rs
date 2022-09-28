@@ -1,18 +1,18 @@
-use mockall::*;
-use registry::registry_service_client::RegistryServiceClient;
-
+#[allow(non_snake_case, clippy::all, unused_imports, dead_code)]
 #[rustfmt::skip]
 #[path = "gen/registry_api.v1.rs"]
 pub mod registry;
 
 pub struct GrpcClient {
-    inner: RegistryServiceClient<tonic::transport::Channel>,
+    inner: registry::registry_service_client::RegistryServiceClient<tonic::transport::Channel>,
 }
 
 impl GrpcClient {
-    pub async fn new(url: String) -> impl RegistryClient + Send + Sync {
-        let inner = RegistryServiceClient::connect(url.clone()).await.unwrap();
-        return Self { inner };
+    pub async fn new(url: String) -> Self {
+        let inner = registry::registry_service_client::RegistryServiceClient::connect(url.clone())
+            .await
+            .unwrap();
+        Self { inner }
     }
 }
 
@@ -39,7 +39,7 @@ impl RegistryClient for GrpcClient {
     }
 }
 
-#[automock]
+#[mockall::automock]
 #[async_trait::async_trait]
 pub trait RegistryClient {
     async fn create(

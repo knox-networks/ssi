@@ -63,12 +63,12 @@ where
 
     fn encoded_sign(&self, data: &[u8]) -> String {
         let signature = self.sign(data);
-        return self.encode(signature);
+        self.encode(signature)
     }
 
     fn try_encoded_sign(&self, data: &[u8]) -> Result<String, error::Error> {
         let signature = self.try_sign(data)?;
-        return Ok(self.encode(signature));
+        Ok(self.encode(signature))
     }
 
     fn try_sign(&self, msg: &[u8]) -> Result<S, error::Error>;
@@ -83,7 +83,7 @@ where
 {
     fn decoded_verify(&self, msg: &[u8], data: String) -> Result<(), error::Error> {
         let decoded_sig = self.decode(data)?;
-        return self.verify(msg, &decoded_sig);
+        self.verify(msg, &decoded_sig)
     }
 
     fn verify(&self, msg: &[u8], signature: &S) -> Result<(), error::Error>;

@@ -9,19 +9,19 @@ pub struct RegistryResolver {
 impl RegistryResolver {
     pub async fn new(url: impl Into<String>) -> Self {
         let client = GrpcClient::new(url.into()).await;
-        return Self {
+        Self {
             client: Box::new(client),
-        };
+        }
     }
 
     const fn get_method_helper() -> &'static str {
-        return DID_METHOD;
+        DID_METHOD
     }
 }
 #[async_trait::async_trait]
 impl ssi_core::DIDResolver for RegistryResolver {
     fn get_method() -> &'static str {
-        return Self::get_method_helper();
+        Self::get_method_helper()
     }
 
     async fn create(

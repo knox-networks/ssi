@@ -28,7 +28,7 @@ impl Into<bip39::Language> for MnemonicLanguage {
         }
     }
 }
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Ed25519Signature(pub Vec<u8>);
 
 #[derive(Debug, Clone, Copy)]
@@ -96,11 +96,11 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey>
     }
 
     fn get_master_public_key(&self) -> ed25519_zebra::VerificationKey {
-        return self.master_public_key;
+        self.master_public_key
     }
 
     fn get_master_private_key(&self) -> ed25519_zebra::SigningKey {
-        return self.master_private_key;
+        self.master_private_key
     }
 
     fn get_private_key_by_relation(
@@ -109,17 +109,15 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey>
     ) -> ed25519_zebra::SigningKey {
         match relation {
             crate::suite::VerificationRelation::AssertionMethod => {
-                return self.assertion_method_private_key
+                self.assertion_method_private_key
             }
-            crate::suite::VerificationRelation::Authentication => {
-                return self.authetication_private_key
-            }
+            crate::suite::VerificationRelation::Authentication => self.authetication_private_key,
             crate::suite::VerificationRelation::CapabilityInvocation => {
-                return self.capability_invocation_private_key
+                self.capability_invocation_private_key
             }
 
             crate::suite::VerificationRelation::CapabilityDelegation => {
-                return self.capability_delegation_private_key
+                self.capability_delegation_private_key
             }
         }
     }
@@ -147,7 +145,7 @@ impl Ed25519SSIKeyPair {
 
         let vk = ed25519_zebra::VerificationKey::from(&sk);
 
-        return Ok(Self {
+        Ok(Self {
             master_public_key: vk,
             master_private_key: sk,
 
@@ -162,14 +160,14 @@ impl Ed25519SSIKeyPair {
 
             assertion_method_public_key: vk,
             assertion_method_private_key: sk,
-        });
+        })
     }
 
     pub fn generate_mnemonic(language: MnemonicLanguage) -> Mnemonic {
         let mnemonic = bip39::Mnemonic::new(bip39::MnemonicType::Words24, language.clone().into());
 
         return Mnemonic {
-            language: language,
+            language,
             phrase: mnemonic.phrase().to_string(),
         };
     }
@@ -179,26 +177,32 @@ impl Ed25519DidSigner {
     pub fn new() -> Self {
         let sk = ed25519_zebra::SigningKey::new(rand::thread_rng());
 
-        return Self {
+        Self {
             private_key: sk,
             public_key: ed25519_zebra::VerificationKey::from(&sk),
-        };
+        }
+    }
+}
+
+impl Default for Ed25519DidSigner {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 impl super::DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     fn try_sign(&self, data: &[u8]) -> Result<Ed25519Signature, super::error::Error> {
         let res: [u8; 64] = self.private_key.sign(data).into();
-        return Ed25519Signature::from_bytes(&res);
+        Ed25519Signature::from_bytes(&res)
     }
 
     fn get_proof_type(&self) -> String {
-        return ED25519_SIGNATURE_2020.to_string();
+        ED25519_SIGNATURE_2020.to_string()
     }
 
     fn get_verification_method(&self, _relation: super::VerificationRelation) -> String {
         let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
-        return format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk);
+        format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
     }
 
     fn encode(&self, sig: Ed25519Signature) -> String {
@@ -249,7 +253,7 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
                     super::error::Error::Signature(e.to_string())
                 })?;
 
-        return Ed25519Signature::from_bytes(&sig_bytes).map_err(super::error::Error::from);
+        Ed25519Signature::from_bytes(&sig_bytes).map_err(super::error::Error::from)
     }
 
     fn decoded_relational_verify(
@@ -259,7 +263,7 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
         relation: super::VerificationRelation,
     ) -> Result<(), super::error::Error> {
         let decoded_sig = self.decode(data)?;
-        return self.relational_verify(msg, &decoded_sig, relation);
+        self.relational_verify(msg, &decoded_sig, relation)
     }
 
     fn relational_verify(
@@ -303,14 +307,26 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
 
     fn get_verification_method(&self, relation: super::VerificationRelation) -> String {
         let encoded_pk = self.get_public_key_by_relation(relation);
-        return format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk);
+        format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
     }
 
-    fn get_public_key_by_relation(&self, relation: crate::suite::VerificationRelation) -> String {
+    fn get_public_key_by_relation(&self, relation: super::VerificationRelation) -> String {
         match relation {
-            _ => {
+            super::VerificationRelation::AssertionMethod => {
                 let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
-                return format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk);
+                format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
+            }
+            super::VerificationRelation::Authentication => {
+                let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+                format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
+            }
+            super::VerificationRelation::CapabilityInvocation => {
+                let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+                format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
+            }
+            super::VerificationRelation::CapabilityDelegation => {
+                let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+                format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
             }
         }
     }
@@ -321,11 +337,11 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
 
     fn get_did(&self) -> String {
         let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
-        return format!("{0}:{1}", DID_PREFIX, encoded_pk);
+        format!("{0}:{1}", DID_PREFIX, encoded_pk)
     }
 
     fn decoded_verify(&self, msg: &[u8], data: String) -> Result<(), super::error::Error> {
         let decoded_sig = self.decode(data)?;
-        return self.verify(msg, &decoded_sig);
+        self.verify(msg, &decoded_sig)
     }
 }
