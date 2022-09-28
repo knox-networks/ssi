@@ -7,7 +7,7 @@ const DID_PREFIX: &str = "did:knox:";
 const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
 const ED25519_VERIFICATION_KEY_2020: &str = "Ed25519VerificationKey2020";
 
-mod error;
+pub mod error;
 
 // Implementation of https://www.w3.org/community/reports/credentials/CG-FINAL-di-eddsa-2020-20220724/
 
@@ -18,8 +18,8 @@ pub enum MnemonicLanguage {
 
 #[derive(Debug, Clone)]
 pub struct Mnemonic {
-    language: MnemonicLanguage,
-    phrase: String,
+    pub language: MnemonicLanguage,
+    pub phrase: String,
 }
 
 impl Into<bip39::Language> for MnemonicLanguage {
