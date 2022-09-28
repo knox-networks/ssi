@@ -18,8 +18,8 @@ pub enum MnemonicLanguage {
 
 #[derive(Debug, Clone)]
 pub struct Mnemonic {
-    language: MnemonicLanguage,
-    phrase: String,
+    pub language: MnemonicLanguage,
+    pub phrase: String,
 }
 
 impl Into<bip39::Language> for MnemonicLanguage {
