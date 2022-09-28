@@ -23,7 +23,7 @@ where
     resolver
         .create(did_doc.id.clone(), encoded_did_doc)
         .await
-        .map_err(|_e| crate::error::Error::Unknown)?;
+        .map_err(|e| crate::error::Error::Unknown(e.to_string()))?;
     Ok(did_doc)
 }
 
@@ -42,7 +42,7 @@ where
                 .get_verification_method(signature::suite::VerificationRelation::Authentication),
             proof_type: verifier.get_key_material_type(),
             controller: format!(
-                "{}{}",
+                "{}:{}",
                 verifier.get_did_method(),
                 verifier.get_public_key_by_relation(
                     signature::suite::VerificationRelation::Authentication
@@ -57,7 +57,7 @@ where
             ),
             proof_type: verifier.get_key_material_type(),
             controller: format!(
-                "{}{}",
+                "{}:{}",
                 verifier.get_did_method(),
                 verifier.get_public_key_by_relation(
                     signature::suite::VerificationRelation::CapabilityInvocation
@@ -73,7 +73,7 @@ where
             ),
             proof_type: verifier.get_key_material_type(),
             controller: format!(
-                "{}{}",
+                "{}:{}",
                 verifier.get_did_method(),
                 verifier.get_public_key_by_relation(
                     signature::suite::VerificationRelation::CapabilityDelegation
@@ -88,7 +88,7 @@ where
                 .get_verification_method(signature::suite::VerificationRelation::AssertionMethod),
             proof_type: verifier.get_key_material_type(),
             controller: format!(
-                "{}{}",
+                "{}:{}",
                 verifier.get_did_method(),
                 verifier.get_public_key_by_relation(
                     signature::suite::VerificationRelation::AssertionMethod
@@ -193,7 +193,7 @@ mod tests {
             }))
             .return_once(|_| (restore_response));
 
-        let kp = signature::suite::ed25519_2020::Ed25519SSIKeyPair::new(None).unwrap();
+        let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(None).unwrap();
         let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(&kp);
         let gn = recover(resolver_mock, verifier);
         let restored_identity = aw!(gn);
@@ -224,9 +224,7 @@ mod tests {
         true
     )]
     #[case::created_error(
-        Err(crate::error::ResolverError{
-            message: "testErr".to_string(), 
-            kind: crate::error::ErrorKind::NetworkFailure}),
+        Err(crate::error::ResolverError::Unknown("mock error".to_string())),
         get_did(),
         get_json_input_mock(),
         false
@@ -239,7 +237,7 @@ mod tests {
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
-        let kp = signature::suite::ed25519_2020::Ed25519SSIKeyPair::new(None).unwrap();
+        let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(None).unwrap();
         let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(&kp);
         resolver_mock
             .expect_create()
