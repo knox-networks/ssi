@@ -6,6 +6,9 @@ const DID_PREFIX: &str = "did:knox";
 const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
 const ED25519_VERIFICATION_KEY_2020: &str = "Ed25519VerificationKey2020";
 
+/// Ed25519 Multicodec constant
+pub const MULTICODEC_ED25519_PUB: &'static [u8] = &[0xed, 0x01];
+
 pub mod error;
 
 // Implementation of https://www.w3.org/community/reports/credentials/CG-FINAL-di-eddsa-2020-20220724/
@@ -74,30 +77,40 @@ impl super::Signature for Ed25519Signature {
 }
 
 impl super::PrivateKey for ed25519_zebra::SigningKey {}
-impl super::PublicKey for ed25519_zebra::VerificationKey {}
+impl super::PublicKey for ed25519_zebra::VerificationKey {
+    fn get_encoded_public_key(&self) -> String {
+        multibase::encode(multibase::Base::Base58Btc, get_prefixed_public_key(&self))
+    }
+}
+
+fn get_prefixed_public_key(pk: &ed25519_zebra::VerificationKey) -> Vec<u8> {
+    [MULTICODEC_ED25519_PUB, pk.as_ref()].concat()
+}
 
 impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25519KeyPair {
     fn get_public_key_encoded(&self, relation: crate::suite::VerificationRelation) -> String {
         match relation {
             crate::suite::VerificationRelation::AssertionMethod => {
-                multibase::encode(multibase::Base::Base58Btc, self.assertion_method_public_key)
+                super::PublicKey::get_encoded_public_key(&self.assertion_method_public_key)
             }
             crate::suite::VerificationRelation::Authentication => {
-                multibase::encode(multibase::Base::Base58Btc, self.authetication_public_key)
+                super::PublicKey::get_encoded_public_key(&self.authetication_public_key)
             }
-            crate::suite::VerificationRelation::CapabilityInvocation => multibase::encode(
-                multibase::Base::Base58Btc,
-                self.capability_invocation_public_key,
-            ),
-            crate::suite::VerificationRelation::CapabilityDelegation => multibase::encode(
-                multibase::Base::Base58Btc,
-                self.capability_delegation_public_key,
-            ),
+            crate::suite::VerificationRelation::CapabilityInvocation => {
+                super::PublicKey::get_encoded_public_key(&self.capability_invocation_public_key)
+            }
+            crate::suite::VerificationRelation::CapabilityDelegation => {
+                super::PublicKey::get_encoded_public_key(&self.capability_delegation_public_key)
+            }
         }
     }
 
     fn get_master_public_key(&self) -> ed25519_zebra::VerificationKey {
         self.master_public_key
+    }
+
+    fn get_encoded_master_public_key(&self) -> String {
+        super::PublicKey::get_encoded_public_key(&self.master_public_key)
     }
 
     fn get_master_private_key(&self) -> ed25519_zebra::SigningKey {
@@ -210,7 +223,8 @@ impl super::DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     }
 
     fn get_verification_method(&self, _relation: super::VerificationRelation) -> String {
-        let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+        let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
+
         format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
     }
 
@@ -322,19 +336,19 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
     fn get_public_key_by_relation(&self, relation: super::VerificationRelation) -> String {
         match relation {
             super::VerificationRelation::AssertionMethod => {
-                let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+                let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
                 format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
             }
             super::VerificationRelation::Authentication => {
-                let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+                let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
                 format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
             }
             super::VerificationRelation::CapabilityInvocation => {
-                let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+                let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
                 format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
             }
             super::VerificationRelation::CapabilityDelegation => {
-                let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+                let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
                 format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
             }
         }
@@ -345,7 +359,7 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
     }
 
     fn get_did(&self) -> String {
-        let encoded_pk = multibase::encode(multibase::Base::Base58Btc, self.public_key);
+        let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
         format!("{0}:{1}", DID_PREFIX, encoded_pk)
     }
 
