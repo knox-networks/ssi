@@ -129,7 +129,6 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> f
             crate::suite::VerificationRelation::CapabilityInvocation => {
                 self.capability_invocation_private_key
             }
-
             crate::suite::VerificationRelation::CapabilityDelegation => {
                 self.capability_delegation_private_key
             }
