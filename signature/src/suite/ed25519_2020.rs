@@ -223,16 +223,16 @@ impl From<&Ed25519DidSigner> for Ed25519DidVerifier {
     }
 }
 
-impl From<&Ed25519KeyPair> for Ed25519DidVerifier {
-    fn from(kp: &Ed25519KeyPair) -> Self {
+impl From<Ed25519KeyPair> for Ed25519DidVerifier {
+    fn from(kp: Ed25519KeyPair) -> Self {
         Self {
             public_key: kp.master_public_key,
         }
     }
 }
 
-impl From<&Ed25519KeyPair> for Ed25519DidSigner {
-    fn from(kp: &Ed25519KeyPair) -> Self {
+impl From<Ed25519KeyPair> for Ed25519DidSigner {
+    fn from(kp: Ed25519KeyPair) -> Self {
         Self {
             public_key: kp.master_public_key,
             private_key: kp.master_private_key,

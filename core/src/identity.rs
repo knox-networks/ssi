@@ -194,7 +194,7 @@ mod tests {
             .return_once(|_| (restore_response));
 
         let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(None).unwrap();
-        let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(&kp);
+        let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(kp);
         let gn = recover(resolver_mock, verifier);
         let restored_identity = aw!(gn);
 
@@ -238,7 +238,7 @@ mod tests {
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
         let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(None).unwrap();
-        let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(&kp);
+        let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(kp);
         resolver_mock
             .expect_create()
             .with(
