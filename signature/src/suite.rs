@@ -34,7 +34,9 @@ impl std::fmt::Display for VerificationRelation {
 
 pub trait PrivateKey: Copy + Clone {}
 
-pub trait PublicKey: Copy + Clone {}
+pub trait PublicKey: Copy + Clone {
+    fn get_encoded_public_key(&self) -> String;
+}
 
 pub trait KeyPair<T: PrivateKey, U: PublicKey> {
     fn get_public_key_encoded(&self, relation: VerificationRelation) -> String
@@ -44,6 +46,11 @@ pub trait KeyPair<T: PrivateKey, U: PublicKey> {
     fn get_master_public_key(&self) -> U
     where
         Self: Sized;
+
+    fn get_encoded_master_public_key(&self) -> String
+    where
+        Self: Sized;
+
     fn get_master_private_key(&self) -> T
     where
         Self: Sized;
