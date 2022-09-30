@@ -194,23 +194,6 @@ impl Ed25519KeyPair {
     }
 }
 
-impl Ed25519DidSigner {
-    pub fn new() -> Self {
-        let sk = ed25519_zebra::SigningKey::new(rand::thread_rng());
-
-        Self {
-            private_key: sk,
-            public_key: ed25519_zebra::VerificationKey::from(&sk),
-        }
-    }
-}
-
-impl Default for Ed25519DidSigner {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl super::DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     fn try_sign(&self, data: &[u8]) -> Result<Ed25519Signature, super::error::Error> {
         let res: [u8; 64] = self.private_key.sign(data).into();
@@ -244,6 +227,15 @@ impl From<&Ed25519KeyPair> for Ed25519DidVerifier {
     fn from(kp: &Ed25519KeyPair) -> Self {
         Self {
             public_key: kp.master_public_key,
+        }
+    }
+}
+
+impl From<&Ed25519KeyPair> for Ed25519DidSigner {
+    fn from(kp: &Ed25519KeyPair) -> Self {
+        Self {
+            public_key: kp.master_public_key,
+            private_key: kp.master_private_key,
         }
     }
 }

@@ -55,7 +55,9 @@ mod tests {
         #[case] doc: serde_json::Value,
         #[case] relation: signature::suite::VerificationRelation,
     ) {
-        let signer = signature::suite::ed25519_2020::Ed25519DidSigner::new();
+        let signer = signature::suite::ed25519_2020::Ed25519DidSigner::from(
+            &signature::suite::ed25519_2020::Ed25519KeyPair::new(None).unwrap(),
+        );
         let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(&signer);
         let res = create_data_integrity_proof(&signer, doc.clone(), relation);
 
