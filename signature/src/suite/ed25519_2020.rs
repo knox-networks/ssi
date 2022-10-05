@@ -35,6 +35,14 @@ impl From<MnemonicLanguage> for bip39::Language {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Ed25519Signature(pub Vec<u8>);
 
+impl From<Ed25519Signature> for [u8; 64] {
+    fn from(sig: Ed25519Signature) -> [u8; 64] {
+        let mut bytes = [0; 64];
+        bytes.copy_from_slice(&sig.0[0..64]);
+        bytes
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Ed25519KeyPair {
     pub(crate) master_public_key: ed25519_zebra::VerificationKey,
@@ -56,7 +64,13 @@ pub struct Ed25519KeyPair {
 }
 
 pub struct Ed25519DidVerifier {
-    public_key: ed25519_zebra::VerificationKey,
+    pub public_key: ed25519_zebra::VerificationKey,
+}
+
+impl Ed25519DidVerifier {
+    pub fn into_inner(self) -> ed25519_zebra::VerificationKey {
+        self.public_key
+    }
 }
 
 pub struct Ed25519DidSigner {
