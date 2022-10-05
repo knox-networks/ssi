@@ -64,7 +64,7 @@ pub struct Ed25519KeyPair {
 }
 
 pub struct Ed25519DidVerifier {
-    public_key: ed25519_zebra::VerificationKey,
+    pub public_key: ed25519_zebra::VerificationKey,
 }
 
 impl Ed25519DidVerifier {
