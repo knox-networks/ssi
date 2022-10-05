@@ -38,7 +38,7 @@ pub struct Ed25519Signature(pub Vec<u8>);
 impl From<Ed25519Signature> for [u8; 64] {
     fn from(sig: Ed25519Signature) -> [u8; 64] {
         let mut bytes = [0; 64];
-        bytes[0..64].copy_from_slice(&sig.0[0..64]);
+        bytes.copy_from_slice(&sig.0[0..64]);
         bytes
     }
 }
