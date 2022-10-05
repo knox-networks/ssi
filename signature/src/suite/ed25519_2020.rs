@@ -68,7 +68,7 @@ pub struct Ed25519DidVerifier {
 }
 
 impl Ed25519DidVerifier {
-    pub fn into_inner (self) -> ed25519_zebra::VerificationKey {
+    pub fn into_inner(self) -> ed25519_zebra::VerificationKey {
         self.public_key
     }
 }
