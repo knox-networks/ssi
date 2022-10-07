@@ -3,7 +3,10 @@ const DID_METHOD: &'static str = "knox";
 use registry_client::GrpcClient;
 
 pub struct RegistryResolver {
+    #[cfg(not(test))]
     client: Box<dyn registry_client::RegistryClient + Send + Sync>,
+    #[cfg(test)]
+    pub client: Box<dyn registry_client::RegistryClient + Send + Sync>,
 }
 
 impl RegistryResolver {
