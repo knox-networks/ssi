@@ -115,11 +115,11 @@ pub struct KeyMaterial {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DidDocument {
     context: Vec<String>,
-    id: String,
-    authentication: Vec<KeyMaterial>,
-    capability_invocation: Vec<KeyMaterial>,
-    capability_delegation: Vec<KeyMaterial>,
-    assertion_method: Vec<KeyMaterial>,
+    pub id: String,
+    pub authentication: Vec<KeyMaterial>,
+    pub capability_invocation: Vec<KeyMaterial>,
+    pub capability_delegation: Vec<KeyMaterial>,
+    pub assertion_method: Vec<KeyMaterial>,
 }
 
 #[cfg(test)]
