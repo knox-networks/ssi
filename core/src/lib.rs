@@ -5,7 +5,7 @@ pub mod proof;
 
 use credential::*;
 use serde_json::{self, Value};
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Debug};
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.

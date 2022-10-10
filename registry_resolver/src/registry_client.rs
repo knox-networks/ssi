@@ -3,6 +3,7 @@
 #[path = "gen/registry_api.v1.rs"]
 pub mod registry;
 
+#[derive(Debug)]
 pub struct GrpcClient {
     inner: registry::registry_service_client::RegistryServiceClient<tonic::transport::Channel>,
 }
@@ -41,7 +42,7 @@ impl RegistryClient for GrpcClient {
 
 #[mockall::automock]
 #[async_trait::async_trait]
-pub trait RegistryClient {
+pub trait RegistryClient: Send + Sync + std::fmt::Debug {
     async fn create(
         &self,
         did: String,
