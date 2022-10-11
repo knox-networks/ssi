@@ -15,6 +15,7 @@ pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credential
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum CredentialType {
+    #[serde(rename = "VerifiableCredential")]
     Common,
     PermanentResidentCard,
     BankCard,
@@ -25,7 +26,7 @@ impl CredentialType {
         match &self {
             CredentialType::Common => "VerifiableCredential".to_string(),
             CredentialType::PermanentResidentCard => "PermanentResidentCard".to_string(),
-            CredentialType::BankCard => "CRED_TYPE_BANK_CARD".to_string(),
+            CredentialType::BankCard => "BankCard".to_string(),
         }
     }
 }
@@ -120,25 +121,28 @@ mod tests {
     #[test]
     fn test_create_credential_from_string() -> Result<(), String> {
         let expect = json!({
-            "@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],"@id":"https://issuer.oidp.uscis.gov/credentials/83627465","type":["VerifiableCredential", "PermanentResidentCard"],"issuer": "did:example:28394728934792387",
+            "@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+            "@id":"https://issuer.oidp.uscis.gov/credentials/83627465",
+            "type":["VerifiableCredential", "PermanentResidentCard"],
+            "issuer": "did:example:28394728934792387",
             "identifier": "83627465",
             "name": "Permanent Resident Card",
             "description": "Government of Example Permanent Resident Card.",
             "issuanceDate": "2019-12-03T12:19:52Z",
             "expirationDate": "2029-12-03T12:19:52Z",
             "credentialSubject": {
-            "id": "did:example:b34ca6cd37bbf23",
-            "type": ["PermanentResident", "Person"],
-            "givenName": "JOHN",
-            "familyName": "SMITH",
-            "gender": "Male",
-            "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-            "residentSince": "2015-01-01",
-            "lprCategory": "C09",
-            "lprNumber": "999-999-999",
-            "commuterClassification": "C1",
-            "birthCountry": "Bahamas",
-            "birthDate": "1958-07-17"
+                "id": "did:example:b34ca6cd37bbf23",
+                "type": ["PermanentResident", "Person"],
+                "givenName": "JOHN",
+                "familyName": "SMITH",
+                "gender": "Male",
+                "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+                "residentSince": "2015-01-01",
+                "lprCategory": "C09",
+                "lprNumber": "999-999-999",
+                "commuterClassification": "C1",
+                "birthCountry": "Bahamas",
+                "birthDate": "1958-07-17"
             },
         });
 
@@ -147,7 +151,7 @@ mod tests {
             let vc = serde_json::to_value(ds.unwrap()).unwrap();
             assert_json_eq!(expect, vc);
         } else {
-            assert!(false);
+            assert!(false, "{:?}", ds.err().unwrap());
         }
         Ok(())
     }
