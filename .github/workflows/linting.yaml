@@ -16,7 +16,9 @@ jobs:
           rust-version: 1.64
 
       - name: Installing
-        run: rustup component add rustfmt
+        run: |-
+          rustup component add rustfmt
+          rustup component add clippy
 
       - name: Linting
         run: |-
