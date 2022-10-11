@@ -3,10 +3,6 @@ pub mod error;
 pub mod identity;
 pub mod proof;
 
-use credential::*;
-use serde_json::{self, Value};
-use std::collections::HashMap;
-
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
 /// The DIDResolver is responsible for resolving the `verificationMethod` to a key that can be used to verify the proof.
@@ -44,10 +40,10 @@ pub trait DocumentBuilder {
     fn create_credential(
         &self,
         cred_type: credential::CredentialType,
-        cred_subject: HashMap<String, Value>,
-        property_set: HashMap<String, Value>,
+        cred_subject: std::collections::HashMap<String, serde_json::Value>,
+        property_set: std::collections::HashMap<String, serde_json::Value>,
         id: &str,
-    ) -> Result<Credential, Box<dyn std::error::Error>> {
+    ) -> Result<credential::Credential, Box<dyn std::error::Error>> {
         let context = Self::get_contexts();
 
         Ok(credential::Credential {
@@ -68,8 +64,8 @@ pub trait DocumentBuilder {
     /// presentation and appended to the JSON-LD document.
     fn create_presentation(
         &self,
-        credentials: Vec<VerifiableCredential>,
-    ) -> Result<Presentation, Box<dyn std::error::Error>> {
+        credentials: Vec<credential::VerifiableCredential>,
+    ) -> Result<credential::Presentation, Box<dyn std::error::Error>> {
         let context = Self::get_contexts();
         Ok(credential::Presentation {
             context,
@@ -101,10 +97,9 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 
 #[cfg(test)]
 mod tests {
-    use crate::serde_json::json;
-    use crate::DocumentBuilder;
-    use crate::{credential::CredentialType, proof::create_data_integrity_proof};
+    use super::*;
     use assert_json_diff::assert_json_eq;
+    use serde_json::json;
     use std::{collections::HashMap, vec};
 
     use serde_json::Value;
@@ -229,7 +224,7 @@ mod tests {
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
-            CredentialType::PermanentResidentCard,
+            credential::CredentialType::PermanentResidentCard,
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
@@ -276,7 +271,7 @@ mod tests {
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
-            CredentialType::PermanentResidentCard,
+            credential::CredentialType::PermanentResidentCard,
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
@@ -284,7 +279,7 @@ mod tests {
 
         assert!(vc.is_ok());
         let credential = vc.unwrap();
-        let proof = create_data_integrity_proof(
+        let proof = proof::create_data_integrity_proof(
             &signer,
             credential.serialize(),
             signature::suite::VerificationRelation::AssertionMethod,
@@ -292,7 +287,7 @@ mod tests {
 
         assert!(proof.is_ok());
 
-        let verifiable_credential = credential.create_verifiable_credentials(proof.unwrap());
+        let verifiable_credential = credential.into_verifiable_credential(proof.unwrap());
         let credentials = vec![verifiable_credential];
         let interim_presentation = to
             .create_presentation(credentials)

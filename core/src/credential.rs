@@ -1,3 +1,6 @@
+// This module attempts to provide a relatively simple & high level way of interacting with Credentials, Verifiable Credentials, Presentations and Verifiable Presentations
+// Adheres to the https://www.w3.org/TR/vc-data-model/ spec.
+
 // cred_subject is a generic that implements trait X
 // trait X allows us to encode that object into JSON-LD
 // We provide types that implement trait X for the cred types that we support
@@ -37,7 +40,7 @@ pub struct CredentialSubject {
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct VerifiableCredential {
     #[serde(flatten)]
-    credential: Credential,
+    pub credential: Credential,
     pub proof: crate::proof::DataIntegrityProof,
 }
 
@@ -71,7 +74,21 @@ impl Credential {
         serde_json::from_str(&contents)
     }
 
-    pub fn create_verifiable_credentials(
+    pub fn try_into_verifiable_credential<S: signature::suite::Signature>(
+        self,
+        issuer_signer: &impl signature::suite::DIDSigner<S>,
+        relation: signature::suite::VerificationRelation,
+    ) -> Result<VerifiableCredential, Box<dyn std::error::Error>> {
+        let proof =
+            crate::proof::create_data_integrity_proof(issuer_signer, self.serialize(), relation)?;
+
+        Ok(VerifiableCredential {
+            credential: self,
+            proof,
+        })
+    }
+
+    pub fn into_verifiable_credential(
         self,
         integrity_proof: crate::proof::DataIntegrityProof,
     ) -> VerifiableCredential {
@@ -86,8 +103,8 @@ impl Credential {
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct VerifiablePresentation {
     #[serde(flatten)]
-    presentation: Presentation,
-    proof: crate::proof::DataIntegrityProof,
+    pub presentation: Presentation,
+    pub proof: crate::proof::DataIntegrityProof,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
@@ -106,7 +123,7 @@ impl Presentation {
 
 #[cfg(test)]
 mod tests {
-    use crate::Credential;
+    use super::*;
     use assert_json_diff::assert_json_eq;
     use serde_json::json;
 
