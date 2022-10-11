@@ -1,7 +1,7 @@
 mod registry_client;
 const DID_METHOD: &'static str = "knox";
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RegistryResolver<T>
 where
     T: registry_client::RegistryClient + 'static,

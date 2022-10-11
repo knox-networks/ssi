@@ -5,7 +5,7 @@ pub mod proof;
 
 use credential::*;
 use serde_json::{self, Value};
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
@@ -26,11 +26,9 @@ pub trait DIDResolver: Send + Sync + 'static {
     // // Given a `did` and `key` it will construct the proper `verificationMethod` to use as part of the data integrity proof creation process.
     fn create_verification_method(public_key: String, key_id: String) -> String
     where
-        Self: Sized {
-        format!(
-            "did:{}:{public_key}#{key_id}",
-            Self::get_method(),
-        )
+        Self: Sized,
+    {
+        format!("did:{}:{public_key}#{key_id}", Self::get_method(),)
     }
 }
 
