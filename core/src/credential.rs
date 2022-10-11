@@ -1,13 +1,3 @@
-use std::time::SystemTime;
-
-use crate::HashMap;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-
-mod formatter_context;
-mod formatter_credential_date;
-mod formatter_credential_type;
-
 // cred_subject is a generic that implements trait X
 // trait X allows us to encode that object into JSON-LD
 // We provide types that implement trait X for the cred types that we support
@@ -15,75 +5,65 @@ mod formatter_credential_type;
 // ---
 // Default context and Cred types are defaulted but can be redefined
 
-type VerificationContext = [&'static str; 2];
+pub type VerificationContext = Vec<String>;
 
-pub const CONTEXT_CREDENTIALS: VerificationContext = [
-    "https://www.w3.org/2018/credentials/v1",
-    "https://www.w3.org/2018/credentials/examples/v1",
-];
+pub const BASE_CREDENDIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
+pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/examples/v1";
 
-pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: &'static str = "PermanentResidentCard";
-pub const CRED_TYPE_BANK_CARD: &'static str = "BankCard";
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct CredentialSubject {
-    id: String,
-    #[serde(flatten)]
-    pub property_set: HashMap<String, Value>,
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub enum CredentialType {
+    Common,
+    PermanentResidentCard,
+    BankCard,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+impl CredentialType {
+    pub fn to_string(&self) -> String {
+        match &self {
+            CredentialType::Common => "VerifiableCredential".to_string(),
+            CredentialType::PermanentResidentCard => "PermanentResidentCard".to_string(),
+            CredentialType::BankCard => "CRED_TYPE_BANK_CARD".to_string(),
+        }
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct CredentialSubject {
+    pub id: String,
+    #[serde(flatten)]
+    pub property_set: std::collections::HashMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct VerifiableCredential {
     #[serde(flatten)]
     credential: Credential,
     pub proof: crate::proof::DataIntegrityProof,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Credential {
     #[serde(rename = "@context")]
-    #[serde(with = "formatter_context")]
-    context: Vec<String>,
+    pub context: Vec<String>,
 
     #[serde(rename = "@id")]
-    id: String,
+    pub id: String,
 
     #[serde(rename = "type")]
-    cred_type: Vec<String>,
+    pub cred_type: Vec<CredentialType>,
 
     #[serde(rename = "issuanceDate")]
-    #[serde(with = "formatter_credential_date")]
-    issuance_date: SystemTime,
+    pub issuance_date: String,
 
     #[serde(rename = "credentialSubject")]
-    subject: CredentialSubject,
+    pub subject: CredentialSubject,
+
     #[serde(flatten)]
-    pub property_set: HashMap<String, Value>,
+    pub property_set: std::collections::HashMap<String, serde_json::Value>,
 }
 
 impl Credential {
-    pub fn new(
-        context: VerificationContext,
-        cred_type: Vec<String>,
-        cred_subject: HashMap<String, Value>,
-        property_set: HashMap<String, Value>,
-        id: &str,
-    ) -> Credential {
-        let vc = Credential {
-            context: context.into_iter().map(|s| s.to_string()).collect(),
-            id: id.to_string(),
-            cred_type: cred_type,
-            issuance_date: SystemTime::now(),
-            subject: CredentialSubject {
-                id: id.to_string(),
-                property_set: cred_subject,
-            },
-            property_set: property_set,
-        };
-        vc
-    }
-
-    pub fn serialize(&self) -> Value {
+    pub fn serialize(&self) -> serde_json::Value {
         return serde_json::to_value(&self).unwrap();
     }
 
@@ -103,16 +83,14 @@ impl Credential {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(bound(deserialize = "'de: 'static"))]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct VerifiablePresentation {
     #[serde(flatten)]
     presentation: Presentation,
     proof: crate::proof::DataIntegrityProof,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(bound(deserialize = "'de: 'static"))]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Presentation {
     #[serde(rename = "@context")]
     pub context: VerificationContext,
@@ -121,17 +99,7 @@ pub struct Presentation {
 }
 
 impl Presentation {
-    pub fn new(
-        context: VerificationContext,
-        verifiable_credential: Vec<VerifiableCredential>,
-    ) -> Presentation {
-        Presentation {
-            context,
-            verifiable_credential,
-        }
-    }
-
-    pub fn serialize(&self) -> Value {
+    pub fn serialize(&self) -> serde_json::Value {
         return serde_json::to_value(&self).unwrap();
     }
 }

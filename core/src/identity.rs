@@ -181,7 +181,7 @@ mod tests {
     #[rstest::rstest]
     #[case::restored_successfully(get_did(), get_json_restore_mock_ok(), true)]
     fn test_restore_identity(
-        #[case] did: String,
+        #[case] _did: String,
         #[case] restore_response: Result<serde_json::Value, crate::error::ResolverError>,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
@@ -232,8 +232,8 @@ mod tests {
 
     fn test_create_identity(
         #[case] mock_create_response: Result<(), crate::error::ResolverError>,
-        #[case] did_doc: String,
-        #[case] did_document_input_mock: serde_json::Value,
+        #[case] _did_doc: String,
+        #[case] _did_document_input_mock: serde_json::Value,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();

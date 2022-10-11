@@ -31,24 +31,36 @@ pub trait DIDResolver {
 }
 
 pub trait DocumentBuilder {
+    fn get_contexts() -> credential::VerificationContext {
+        vec![
+            credential::BASE_CREDENDIAL_CONTEXT.to_string(),
+            credential::EXAMPLE_CREDENTIAL_CONTEXT.to_string(),
+        ]
+    }
+
     /// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
     /// In order to become a Verifiable Credential, a data integrity proof must be created for the credential and appended to the JSON-LD document.
     /// this is the default implementation of the `create` method. The `create` method can be overridden to create a custom credential.
     fn create_credential(
         &self,
-        cred_type: Vec<String>,
+        cred_type: credential::CredentialType,
         cred_subject: HashMap<String, Value>,
         property_set: HashMap<String, Value>,
         id: &str,
     ) -> Result<Credential, Box<dyn std::error::Error>> {
-        let vc = Credential::new(
-            CONTEXT_CREDENTIALS,
-            cred_type,
-            cred_subject,
-            property_set,
-            id,
-        );
-        Ok(vc)
+        let context = Self::get_contexts();
+
+        Ok(credential::Credential {
+            context: context.into_iter().map(|s| s.to_string()).collect(),
+            id: id.to_string(),
+            cred_type: vec![credential::CredentialType::Common, cred_type],
+            issuance_date: chrono::Utc::now().to_rfc3339(),
+            subject: credential::CredentialSubject {
+                id: id.to_string(),
+                property_set: cred_subject,
+            },
+            property_set: property_set,
+        })
     }
 
     /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
@@ -58,7 +70,11 @@ pub trait DocumentBuilder {
         &self,
         credentials: Vec<VerifiableCredential>,
     ) -> Result<Presentation, Box<dyn std::error::Error>> {
-        Ok(Presentation::new(CONTEXT_CREDENTIALS, credentials))
+        let context = Self::get_contexts();
+        Ok(credential::Presentation {
+            context,
+            verifiable_credential: credentials,
+        })
     }
 }
 
@@ -85,9 +101,9 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 
 #[cfg(test)]
 mod tests {
-    use crate::proof::create_data_integrity_proof;
     use crate::serde_json::json;
     use crate::DocumentBuilder;
+    use crate::{credential::CredentialType, proof::create_data_integrity_proof};
     use assert_json_diff::assert_json_eq;
     use std::{collections::HashMap, vec};
 
@@ -104,12 +120,11 @@ mod tests {
 
     fn get_body_subject() -> (HashMap<String, Value>, HashMap<String, Value>) {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
-        let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
         let type_rs = json!(["VerifiableCredential", "PermanentResidentCard"]);
         kv_body.entry("type".to_string()).or_insert(type_rs);
 
-        let expect = json!({
+        let _expect = json!({
             "@context": [
               "https://www.w3.org/2018/credentials/v1",
               "https://www.w3.org/2018/credentials/examples/v1"
@@ -158,7 +173,7 @@ mod tests {
             json!(["VerifiableCredential", "PermanentResidentCard"]),
         );
 
-        kv_subject = HashMap::from([
+        let mut kv_subject: HashMap<String, serde_json::Value> = HashMap::from([
             ("id", "did:example:b34ca6cd37bbf23"),
             ("givenName", "JOHN"),
             ("familyName", "SMITH"),
@@ -214,7 +229,7 @@ mod tests {
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
-            vec![crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string()],
+            CredentialType::PermanentResidentCard,
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
@@ -261,7 +276,7 @@ mod tests {
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
-            vec![crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string()],
+            CredentialType::PermanentResidentCard,
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
