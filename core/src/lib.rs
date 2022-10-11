@@ -232,7 +232,7 @@ mod tests {
 
         assert!(vc.is_ok());
         let credential = vc.unwrap();
-        assert_json_eq!(expect_credential, credential.serialize());
+        assert_json_eq!(expect_credential, serde_json::to_value(credential).unwrap());
         Ok(())
     }
 
@@ -281,7 +281,7 @@ mod tests {
         let credential = vc.unwrap();
         let proof = proof::create_data_integrity_proof(
             &signer,
-            credential.serialize(),
+            serde_json::to_value(credential.clone()).unwrap(),
             signature::suite::VerificationRelation::AssertionMethod,
         );
 
@@ -297,7 +297,7 @@ mod tests {
         let interim_proof = serde_json::to_value(interim_proof).unwrap();
         expect_presentation["verifiableCredential"][0]["proof"] = interim_proof;
 
-        let presentation_json = interim_presentation.serialize();
+        let presentation_json = serde_json::to_value(interim_presentation).unwrap();
 
         assert_json_eq!(expect_presentation, presentation_json);
         Ok(())

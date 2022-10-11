@@ -66,21 +66,17 @@ pub struct Credential {
 }
 
 impl Credential {
-    pub fn serialize(&self) -> serde_json::Value {
-        return serde_json::to_value(&self).unwrap();
-    }
-
-    pub fn deserialize(contents: String) -> Result<Credential, serde_json::Error> {
-        serde_json::from_str(&contents)
-    }
-
     pub fn try_into_verifiable_credential<S: signature::suite::Signature>(
         self,
         issuer_signer: &impl signature::suite::DIDSigner<S>,
         relation: signature::suite::VerificationRelation,
     ) -> Result<VerifiableCredential, Box<dyn std::error::Error>> {
-        let proof =
-            crate::proof::create_data_integrity_proof(issuer_signer, self.serialize(), relation)?;
+        let serialized_credential = serde_json::to_value(&self)?;
+        let proof = crate::proof::create_data_integrity_proof(
+            issuer_signer,
+            serialized_credential,
+            relation,
+        )?;
 
         Ok(VerifiableCredential {
             credential: self,
@@ -115,12 +111,6 @@ pub struct Presentation {
     pub verifiable_credential: Vec<VerifiableCredential>,
 }
 
-impl Presentation {
-    pub fn serialize(&self) -> serde_json::Value {
-        return serde_json::to_value(&self).unwrap();
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -152,9 +142,9 @@ mod tests {
             },
         });
 
-        let ds = Credential::deserialize(expect.to_string());
+        let ds = serde_json::from_str::<Credential>(&expect.to_string());
         if ds.is_ok() {
-            let vc = ds.unwrap().serialize();
+            let vc = serde_json::to_value(ds.unwrap()).unwrap();
             assert_json_eq!(expect, vc);
         } else {
             assert!(false);
