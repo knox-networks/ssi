@@ -3,7 +3,7 @@
 #[path = "gen/registry_api.v1.rs"]
 pub mod registry;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct GrpcClient {
     inner: registry::registry_service_client::RegistryServiceClient<tonic::transport::Channel>,
 }
