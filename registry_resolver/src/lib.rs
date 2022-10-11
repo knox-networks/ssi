@@ -1,5 +1,5 @@
 mod registry_client;
-const DID_METHOD: &'static str = "knox";
+const DID_METHOD: &str = "knox";
 use registry_client::GrpcClient;
 
 pub struct RegistryResolver {
@@ -47,13 +47,12 @@ impl ssi_core::DIDResolver for RegistryResolver {
             .await
             .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
-        let document =
-            res.into_inner()
-                .document
-                .ok_or(ssi_core::error::ResolverError::DocumentNotFound(format!(
-                    "No document found associated with {}",
-                    did
-                )))?;
+        let document = res.into_inner().document.ok_or_else(|| {
+            ssi_core::error::ResolverError::DocumentNotFound(format!(
+                "No document found associated with {}",
+                did
+            ))
+        })?;
 
         Ok(serde_json::to_value(document)
             .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?)
@@ -76,7 +75,7 @@ mod tests {
     }
 
     fn create_did_doc(did: String) -> serde_json::Value {
-        return serde_json::json!({
+        serde_json::json!({
                 "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
                 "id":did,
                 "authentication":[
@@ -92,15 +91,15 @@ mod tests {
                     {"id":format!("did:knox:{}#{}", did, did),"type":"Ed25519VerificationKey2020","controller":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","publicKeyMultibase":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh"
                 }]
             }
-        );
+        )
     }
 
     fn create_did_struct(doc: serde_json::Value) -> pbjson_types::Struct {
-        return serde_json::from_value(doc).unwrap();
+        serde_json::from_value(doc).unwrap()
     }
 
     fn create_did() -> String {
-        return String::from("did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh");
+        String::from("did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh")
     }
 
     #[rstest::rstest]
@@ -134,14 +133,14 @@ mod tests {
         #[case] expect_ok: bool,
     ) {
         let mut mock_client = MockRegistryClient::default();
-        if mock_create_response.is_some() {
+        if let Some(res) = mock_create_response {
             mock_client
                 .expect_create()
                 .with(
                     mockall::predicate::eq(did.clone()),
                     mockall::predicate::eq(Some(create_did_struct(doc.clone()))),
                 )
-                .return_once(|_, _| (mock_create_response.unwrap()));
+                .return_once(|_, _| (res));
         }
 
         let resolver = RegistryResolver {
@@ -191,11 +190,11 @@ mod tests {
         #[case] expect_ok: bool,
     ) {
         let mut mock_client = MockRegistryClient::default();
-        if mock_read_response.is_some() {
+        if let Some(res) = mock_read_response {
             mock_client
                 .expect_read()
                 .with(mockall::predicate::eq(did.clone()))
-                .return_once(|_| (mock_read_response.unwrap()));
+                .return_once(|_| res);
         }
 
         let resolver = RegistryResolver {

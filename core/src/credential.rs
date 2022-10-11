@@ -21,16 +21,6 @@ pub enum CredentialType {
     BankCard,
 }
 
-impl CredentialType {
-    pub fn to_string(&self) -> String {
-        match &self {
-            CredentialType::Common => "VerifiableCredential".to_string(),
-            CredentialType::PermanentResidentCard => "PermanentResidentCard".to_string(),
-            CredentialType::BankCard => "BankCard".to_string(),
-        }
-    }
-}
-
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct CredentialSubject {
     pub id: String,
@@ -89,11 +79,10 @@ impl Credential {
         self,
         integrity_proof: crate::proof::DataIntegrityProof,
     ) -> VerifiableCredential {
-        let vc = VerifiableCredential {
+        VerifiableCredential {
             credential: self,
             proof: integrity_proof,
-        };
-        return vc;
+        }
     }
 }
 
@@ -146,13 +135,13 @@ mod tests {
             },
         });
 
-        let ds = serde_json::from_str::<Credential>(&expect.to_string());
-        if ds.is_ok() {
-            let vc = serde_json::to_value(ds.unwrap()).unwrap();
+        let res = serde_json::from_str::<Credential>(&expect.to_string());
+        assert!(res.is_ok());
+        if let Ok(vc) = res {
+            let vc = serde_json::to_value(vc).unwrap();
             assert_json_eq!(expect, vc);
-        } else {
-            assert!(false, "{:?}", ds.err().unwrap());
         }
+
         Ok(())
     }
 }

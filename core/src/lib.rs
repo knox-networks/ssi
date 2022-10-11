@@ -47,7 +47,7 @@ pub trait DocumentBuilder {
         let context = Self::get_contexts();
 
         Ok(credential::Credential {
-            context: context.into_iter().map(|s| s.to_string()).collect(),
+            context,
             id: id.to_string(),
             cred_type: vec![credential::CredentialType::Common, cred_type],
             issuance_date: chrono::Utc::now().to_rfc3339(),
@@ -55,7 +55,7 @@ pub trait DocumentBuilder {
                 id: id.to_string(),
                 property_set: cred_subject,
             },
-            property_set: property_set,
+            property_set,
         })
     }
 
@@ -187,7 +187,7 @@ mod tests {
 
         kv_subject.insert("type".to_string(), json!(["PermanentResident", "Person"]));
 
-        return (kv_body, kv_subject);
+        (kv_body, kv_subject)
     }
 
     #[test]

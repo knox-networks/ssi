@@ -13,7 +13,7 @@ jobs:
       - name: Setup | Rust
         uses: ATiltedTree/setup-rust@v1
         with:
-          rust-version: 1.62
+          rust-version: 1.64
 
       - name: Installing
         run: rustup component add rustfmt
@@ -21,3 +21,4 @@ jobs:
       - name: Linting
         run: |-
           cargo fmt --check --all
+          cargo clippy --all-targets --all-features -- -D warnings
