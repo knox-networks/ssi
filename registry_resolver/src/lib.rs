@@ -1,5 +1,5 @@
 mod registry_client;
-const DID_METHOD: &'static str = "knox";
+const DID_METHOD: &str = "knox";
 
 #[derive(Clone, Debug)]
 pub struct RegistryResolver<T>
@@ -16,7 +16,7 @@ const fn get_method_helper() -> &'static str {
 impl RegistryResolver<registry_client::GrpcClient> {
     pub async fn new(url: impl Into<String>) -> Self {
         let client = registry_client::GrpcClient::new(url.into()).await;
-        RegistryResolver { client: client }
+        RegistryResolver { client }
     }
 }
 #[async_trait::async_trait]
