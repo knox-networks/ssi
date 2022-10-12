@@ -3,10 +3,6 @@ pub mod error;
 pub mod identity;
 pub mod proof;
 
-use credential::*;
-use serde_json::{self, Value};
-use std::collections::HashMap;
-
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
 /// The DIDResolver is responsible for resolving the `verificationMethod` to a key that can be used to verify the proof.
@@ -33,24 +29,36 @@ pub trait DIDResolver: Send + Sync + 'static {
 }
 
 pub trait DocumentBuilder {
+    fn get_contexts() -> credential::VerificationContext {
+        vec![
+            credential::BASE_CREDENDIAL_CONTEXT.to_string(),
+            credential::EXAMPLE_CREDENTIAL_CONTEXT.to_string(),
+        ]
+    }
+
     /// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
     /// In order to become a Verifiable Credential, a data integrity proof must be created for the credential and appended to the JSON-LD document.
     /// this is the default implementation of the `create` method. The `create` method can be overridden to create a custom credential.
     fn create_credential(
         &self,
-        cred_type: Vec<String>,
-        cred_subject: HashMap<String, Value>,
-        property_set: HashMap<String, Value>,
+        cred_type: credential::CredentialType,
+        cred_subject: std::collections::HashMap<String, serde_json::Value>,
+        property_set: std::collections::HashMap<String, serde_json::Value>,
         id: &str,
-    ) -> Result<Credential, Box<dyn std::error::Error>> {
-        let vc = Credential::new(
-            CONTEXT_CREDENTIALS,
-            cred_type,
-            cred_subject,
+    ) -> Result<credential::Credential, Box<dyn std::error::Error>> {
+        let context = Self::get_contexts();
+
+        Ok(credential::Credential {
+            context,
+            id: id.to_string(),
+            cred_type: vec![credential::CredentialType::Common, cred_type],
+            issuance_date: chrono::Utc::now().to_rfc3339(),
+            subject: credential::CredentialSubject {
+                id: id.to_string(),
+                property_set: cred_subject,
+            },
             property_set,
-            id,
-        );
-        Ok(vc)
+        })
     }
 
     /// Given the set of credentials, create a unsigned JSON-LD Presentation of those credentials.
@@ -58,9 +66,13 @@ pub trait DocumentBuilder {
     /// presentation and appended to the JSON-LD document.
     fn create_presentation(
         &self,
-        credentials: Vec<VerifiableCredential>,
-    ) -> Result<Presentation, Box<dyn std::error::Error>> {
-        Ok(Presentation::new(CONTEXT_CREDENTIALS, credentials))
+        credentials: Vec<credential::VerifiableCredential>,
+    ) -> Result<credential::Presentation, Box<dyn std::error::Error>> {
+        let context = Self::get_contexts();
+        Ok(credential::Presentation {
+            context,
+            verifiable_credential: credentials,
+        })
     }
 }
 
@@ -87,10 +99,9 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 
 #[cfg(test)]
 mod tests {
-    use crate::proof::create_data_integrity_proof;
-    use crate::serde_json::json;
-    use crate::DocumentBuilder;
+    use super::*;
     use assert_json_diff::assert_json_eq;
+    use serde_json::json;
     use std::{collections::HashMap, vec};
 
     use serde_json::Value;
@@ -106,12 +117,11 @@ mod tests {
 
     fn get_body_subject() -> (HashMap<String, Value>, HashMap<String, Value>) {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
-        let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
         let type_rs = json!(["VerifiableCredential", "PermanentResidentCard"]);
         kv_body.entry("type".to_string()).or_insert(type_rs);
 
-        let expect = json!({
+        let _expect = json!({
             "@context": [
               "https://www.w3.org/2018/credentials/v1",
               "https://www.w3.org/2018/credentials/examples/v1"
@@ -160,7 +170,7 @@ mod tests {
             json!(["VerifiableCredential", "PermanentResidentCard"]),
         );
 
-        kv_subject = HashMap::from([
+        let mut kv_subject: HashMap<String, serde_json::Value> = HashMap::from([
             ("id", "did:example:b34ca6cd37bbf23"),
             ("givenName", "JOHN"),
             ("familyName", "SMITH"),
@@ -179,7 +189,7 @@ mod tests {
 
         kv_subject.insert("type".to_string(), json!(["PermanentResident", "Person"]));
 
-        return (kv_body, kv_subject);
+        (kv_body, kv_subject)
     }
 
     #[test]
@@ -216,7 +226,7 @@ mod tests {
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
-            vec![crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string()],
+            credential::CredentialType::PermanentResidentCard,
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
@@ -224,7 +234,7 @@ mod tests {
 
         assert!(vc.is_ok());
         let credential = vc.unwrap();
-        assert_json_eq!(expect_credential, credential.serialize());
+        assert_json_eq!(expect_credential, serde_json::to_value(credential).unwrap());
         Ok(())
     }
 
@@ -263,7 +273,7 @@ mod tests {
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
-            vec![crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string()],
+            credential::CredentialType::PermanentResidentCard,
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
@@ -271,15 +281,15 @@ mod tests {
 
         assert!(vc.is_ok());
         let credential = vc.unwrap();
-        let proof = create_data_integrity_proof(
+        let proof = proof::create_data_integrity_proof(
             &signer,
-            credential.serialize(),
+            serde_json::to_value(credential.clone()).unwrap(),
             signature::suite::VerificationRelation::AssertionMethod,
         );
 
         assert!(proof.is_ok());
 
-        let verifiable_credential = credential.create_verifiable_credentials(proof.unwrap());
+        let verifiable_credential = credential.into_verifiable_credential(proof.unwrap());
         let credentials = vec![verifiable_credential];
         let interim_presentation = to
             .create_presentation(credentials)
@@ -289,7 +299,7 @@ mod tests {
         let interim_proof = serde_json::to_value(interim_proof).unwrap();
         expect_presentation["verifiableCredential"][0]["proof"] = interim_proof;
 
-        let presentation_json = interim_presentation.serialize();
+        let presentation_json = serde_json::to_value(interim_presentation).unwrap();
 
         assert_json_eq!(expect_presentation, presentation_json);
         Ok(())

@@ -31,7 +31,7 @@ fn create_did_document<S>(verifier: impl signature::suite::DIDVerifier<S>) -> Di
 where
     S: signature::suite::Signature,
 {
-    let did_doc = DidDocument {
+    DidDocument {
         context: vec![
             "https://www.w3.org/ns/did/v1".to_string(),
             "https://w3id.org/security/suites/ed25519-2020/v1".to_string(),
@@ -98,9 +98,7 @@ where
                 signature::suite::VerificationRelation::AssertionMethod,
             ),
         }],
-    };
-
-    return did_doc;
+    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -181,7 +179,7 @@ mod tests {
     #[rstest::rstest]
     #[case::restored_successfully(get_did(), get_json_restore_mock_ok(), true)]
     fn test_restore_identity(
-        #[case] did: String,
+        #[case] _did: String,
         #[case] restore_response: Result<serde_json::Value, crate::error::ResolverError>,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
@@ -189,7 +187,7 @@ mod tests {
         resolver_mock
             .expect_read()
             .with(mockall::predicate::function(|did_doc: &String| -> bool {
-                did_doc.clone().len() > 0
+                !did_doc.clone().is_empty()
             }))
             .return_once(|_| (restore_response));
 
@@ -232,8 +230,8 @@ mod tests {
 
     fn test_create_identity(
         #[case] mock_create_response: Result<(), crate::error::ResolverError>,
-        #[case] did_doc: String,
-        #[case] did_document_input_mock: serde_json::Value,
+        #[case] _did_doc: String,
+        #[case] _did_document_input_mock: serde_json::Value,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();

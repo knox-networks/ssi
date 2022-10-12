@@ -7,7 +7,7 @@ const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
 const ED25519_VERIFICATION_KEY_2020: &str = "Ed25519VerificationKey2020";
 
 /// Ed25519 Multicodec constant
-pub const MULTICODEC_ED25519_PUB: &'static [u8] = &[0xed, 0x01];
+pub const MULTICODEC_ED25519_PUB: &[u8] = &[0xed, 0x01];
 
 pub mod error;
 
@@ -93,7 +93,7 @@ impl super::Signature for Ed25519Signature {
 impl super::PrivateKey for ed25519_zebra::SigningKey {}
 impl super::PublicKey for ed25519_zebra::VerificationKey {
     fn get_encoded_public_key(&self) -> String {
-        multibase::encode(multibase::Base::Base58Btc, get_prefixed_public_key(&self))
+        multibase::encode(multibase::Base::Base58Btc, get_prefixed_public_key(self))
     }
 }
 
@@ -195,7 +195,7 @@ impl Ed25519KeyPair {
     }
 
     pub fn generate_mnemonic(language: MnemonicLanguage) -> Mnemonic {
-        let mnemonic = bip39::Mnemonic::new(bip39::MnemonicType::Words24, language.clone().into());
+        let mnemonic = bip39::Mnemonic::new(bip39::MnemonicType::Words24, language.into());
 
         return Mnemonic {
             language,

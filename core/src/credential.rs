@@ -1,12 +1,5 @@
-use std::time::SystemTime;
-
-use crate::HashMap;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-
-mod formatter_context;
-mod formatter_credential_date;
-mod formatter_credential_type;
+// This module attempts to provide a relatively simple & high level way of interacting with Credentials, Verifiable Credentials, Presentations and Verifiable Presentations
+// Adheres to the https://www.w3.org/TR/vc-data-model/ spec.
 
 // cred_subject is a generic that implements trait X
 // trait X allows us to encode that object into JSON-LD
@@ -15,104 +8,92 @@ mod formatter_credential_type;
 // ---
 // Default context and Cred types are defaulted but can be redefined
 
-type VerificationContext = [&'static str; 2];
+pub type VerificationContext = Vec<String>;
 
-pub const CONTEXT_CREDENTIALS: VerificationContext = [
-    "https://www.w3.org/2018/credentials/v1",
-    "https://www.w3.org/2018/credentials/examples/v1",
-];
+pub const BASE_CREDENDIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
+pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/examples/v1";
 
-pub const CRED_TYPE_PERMANENT_RESIDENT_CARD: &'static str = "PermanentResidentCard";
-pub const CRED_TYPE_BANK_CARD: &'static str = "BankCard";
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct CredentialSubject {
-    id: String,
-    #[serde(flatten)]
-    pub property_set: HashMap<String, Value>,
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub enum CredentialType {
+    #[serde(rename = "VerifiableCredential")]
+    Common,
+    PermanentResidentCard,
+    BankCard,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct CredentialSubject {
+    pub id: String,
+    #[serde(flatten)]
+    pub property_set: std::collections::HashMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct VerifiableCredential {
     #[serde(flatten)]
-    credential: Credential,
+    pub credential: Credential,
     pub proof: crate::proof::DataIntegrityProof,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Credential {
     #[serde(rename = "@context")]
-    #[serde(with = "formatter_context")]
-    context: Vec<String>,
+    pub context: Vec<String>,
 
     #[serde(rename = "@id")]
-    id: String,
+    pub id: String,
 
     #[serde(rename = "type")]
-    cred_type: Vec<String>,
+    pub cred_type: Vec<CredentialType>,
 
     #[serde(rename = "issuanceDate")]
-    #[serde(with = "formatter_credential_date")]
-    issuance_date: SystemTime,
+    pub issuance_date: String,
 
     #[serde(rename = "credentialSubject")]
-    subject: CredentialSubject,
+    pub subject: CredentialSubject,
+
     #[serde(flatten)]
-    pub property_set: HashMap<String, Value>,
+    pub property_set: std::collections::HashMap<String, serde_json::Value>,
 }
 
 impl Credential {
-    pub fn new(
-        context: VerificationContext,
-        cred_type: Vec<String>,
-        cred_subject: HashMap<String, Value>,
-        property_set: HashMap<String, Value>,
-        id: &str,
-    ) -> Credential {
-        let vc = Credential {
-            context: context.into_iter().map(|s| s.to_string()).collect(),
-            id: id.to_string(),
-            cred_type: cred_type,
-            issuance_date: SystemTime::now(),
-            subject: CredentialSubject {
-                id: id.to_string(),
-                property_set: cred_subject,
-            },
-            property_set: property_set,
-        };
-        vc
+    pub fn try_into_verifiable_credential<S: signature::suite::Signature>(
+        self,
+        issuer_signer: &impl signature::suite::DIDSigner<S>,
+        relation: signature::suite::VerificationRelation,
+    ) -> Result<VerifiableCredential, Box<dyn std::error::Error>> {
+        let serialized_credential = serde_json::to_value(&self)?;
+        let proof = crate::proof::create_data_integrity_proof(
+            issuer_signer,
+            serialized_credential,
+            relation,
+        )?;
+
+        Ok(VerifiableCredential {
+            credential: self,
+            proof,
+        })
     }
 
-    pub fn serialize(&self) -> Value {
-        return serde_json::to_value(&self).unwrap();
-    }
-
-    pub fn deserialize(contents: String) -> Result<Credential, serde_json::Error> {
-        serde_json::from_str(&contents)
-    }
-
-    pub fn create_verifiable_credentials(
+    pub fn into_verifiable_credential(
         self,
         integrity_proof: crate::proof::DataIntegrityProof,
     ) -> VerifiableCredential {
-        let vc = VerifiableCredential {
+        VerifiableCredential {
             credential: self,
             proof: integrity_proof,
-        };
-        return vc;
+        }
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(bound(deserialize = "'de: 'static"))]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct VerifiablePresentation {
     #[serde(flatten)]
-    presentation: Presentation,
-    proof: crate::proof::DataIntegrityProof,
+    pub presentation: Presentation,
+    pub proof: crate::proof::DataIntegrityProof,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(bound(deserialize = "'de: 'static"))]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Presentation {
     #[serde(rename = "@context")]
     pub context: VerificationContext,
@@ -120,60 +101,47 @@ pub struct Presentation {
     pub verifiable_credential: Vec<VerifiableCredential>,
 }
 
-impl Presentation {
-    pub fn new(
-        context: VerificationContext,
-        verifiable_credential: Vec<VerifiableCredential>,
-    ) -> Presentation {
-        Presentation {
-            context,
-            verifiable_credential,
-        }
-    }
-
-    pub fn serialize(&self) -> Value {
-        return serde_json::to_value(&self).unwrap();
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::Credential;
+    use super::*;
     use assert_json_diff::assert_json_eq;
     use serde_json::json;
 
     #[test]
     fn test_create_credential_from_string() -> Result<(), String> {
         let expect = json!({
-            "@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],"@id":"https://issuer.oidp.uscis.gov/credentials/83627465","type":["VerifiableCredential", "PermanentResidentCard"],"issuer": "did:example:28394728934792387",
+            "@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+            "@id":"https://issuer.oidp.uscis.gov/credentials/83627465",
+            "type":["VerifiableCredential", "PermanentResidentCard"],
+            "issuer": "did:example:28394728934792387",
             "identifier": "83627465",
             "name": "Permanent Resident Card",
             "description": "Government of Example Permanent Resident Card.",
             "issuanceDate": "2019-12-03T12:19:52Z",
             "expirationDate": "2029-12-03T12:19:52Z",
             "credentialSubject": {
-            "id": "did:example:b34ca6cd37bbf23",
-            "type": ["PermanentResident", "Person"],
-            "givenName": "JOHN",
-            "familyName": "SMITH",
-            "gender": "Male",
-            "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-            "residentSince": "2015-01-01",
-            "lprCategory": "C09",
-            "lprNumber": "999-999-999",
-            "commuterClassification": "C1",
-            "birthCountry": "Bahamas",
-            "birthDate": "1958-07-17"
+                "id": "did:example:b34ca6cd37bbf23",
+                "type": ["PermanentResident", "Person"],
+                "givenName": "JOHN",
+                "familyName": "SMITH",
+                "gender": "Male",
+                "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+                "residentSince": "2015-01-01",
+                "lprCategory": "C09",
+                "lprNumber": "999-999-999",
+                "commuterClassification": "C1",
+                "birthCountry": "Bahamas",
+                "birthDate": "1958-07-17"
             },
         });
 
-        let ds = Credential::deserialize(expect.to_string());
-        if ds.is_ok() {
-            let vc = ds.unwrap().serialize();
+        let res = serde_json::from_str::<Credential>(&expect.to_string());
+        assert!(res.is_ok());
+        if let Ok(vc) = res {
+            let vc = serde_json::to_value(vc).unwrap();
             assert_json_eq!(expect, vc);
-        } else {
-            assert!(false);
         }
+
         Ok(())
     }
 }

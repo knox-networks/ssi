@@ -1,4 +1,4 @@
-name: SSI Build
+name: Lint, Build & Test
 
 on:
   pull_request:
@@ -21,6 +21,16 @@ jobs:
           version: "3.x"
 
       - uses: bufbuild/buf-setup-action@v1
+
+      - name: Installing Rust Tools
+        run: |-
+          rustup component add rustfmt
+          rustup component add clippy
+
+      - name: Linting
+        run: |-
+          cargo fmt --check --all
+          cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Build
         run: |-
