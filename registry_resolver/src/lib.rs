@@ -1,27 +1,31 @@
 mod registry_client;
-const DID_METHOD: &str = "knox";
-use registry_client::GrpcClient;
+const DID_METHOD: &'static str = "knox";
 
-pub struct RegistryResolver {
-    client: Box<dyn registry_client::RegistryClient + Send + Sync>,
+#[derive(Clone, Debug)]
+pub struct RegistryResolver<T>
+where
+    T: registry_client::RegistryClient + 'static,
+{
+    client: T,
 }
 
-impl RegistryResolver {
-    pub async fn new(url: impl Into<String>) -> Self {
-        let client = GrpcClient::new(url.into()).await;
-        Self {
-            client: Box::new(client),
-        }
-    }
+const fn get_method_helper() -> &'static str {
+    DID_METHOD
+}
 
-    const fn get_method_helper() -> &'static str {
-        DID_METHOD
+impl RegistryResolver<registry_client::GrpcClient> {
+    pub async fn new(url: impl Into<String>) -> Self {
+        let client = registry_client::GrpcClient::new(url.into()).await;
+        RegistryResolver { client: client }
     }
 }
 #[async_trait::async_trait]
-impl ssi_core::DIDResolver for RegistryResolver {
+impl<T> ssi_core::DIDResolver for RegistryResolver<T>
+where
+    T: registry_client::RegistryClient,
+{
     fn get_method() -> &'static str {
-        Self::get_method_helper()
+        get_method_helper()
     }
 
     async fn create(
@@ -64,7 +68,9 @@ mod tests {
     use ssi_core::DIDResolver;
 
     use crate::{
-        registry_client::{registry::CreateResponse, registry::ReadResponse, MockRegistryClient},
+        registry_client::{
+            registry::CreateResponse, registry::ReadResponse, GrpcClient, MockRegistryClient,
+        },
         RegistryResolver,
     };
 
@@ -144,7 +150,7 @@ mod tests {
         }
 
         let resolver = RegistryResolver {
-            client: Box::new(mock_client),
+            client: mock_client,
         };
 
         let res = aw!(resolver.create(did, doc));
@@ -198,7 +204,7 @@ mod tests {
         }
 
         let resolver = RegistryResolver {
-            client: Box::new(mock_client),
+            client: mock_client,
         };
 
         let res = aw!(resolver.read(did));
@@ -213,7 +219,7 @@ mod tests {
 
     #[test]
     fn test_get_method() -> Result<(), String> {
-        assert_eq!(RegistryResolver::get_method(), "knox");
+        assert_eq!(RegistryResolver::<GrpcClient>::get_method(), "knox");
         Ok(())
     }
 
@@ -222,7 +228,7 @@ mod tests {
         let did = String::from("12345");
         let key_id = String::from("123456");
         assert_eq!(
-            RegistryResolver::create_verification_method(did, key_id),
+            RegistryResolver::<GrpcClient>::create_verification_method(did, key_id),
             "did:knox:12345#123456"
         );
         Ok(())
