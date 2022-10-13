@@ -6,6 +6,9 @@ pub struct RegistryResolver<T>
 where
     T: registry_client::RegistryClient + 'static,
 {
+    #[cfg(test)]
+    pub client: T,
+    #[cfg(not(test))]
     client: T,
 }
 
