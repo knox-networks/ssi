@@ -1,4 +1,4 @@
-mod registry_client;
+pub mod registry_client;
 const DID_METHOD: &str = "knox";
 
 #[derive(Clone, Debug)]
