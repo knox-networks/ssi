@@ -1,4 +1,4 @@
-mod credential;
+pub mod credential;
 pub mod error;
 pub mod identity;
 pub mod proof;
