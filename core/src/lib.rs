@@ -76,6 +76,10 @@ pub trait DocumentBuilder {
     }
 }
 
+pub struct DefaultDocumentBuilder {}
+
+impl DocumentBuilder for DefaultDocumentBuilder {}
+
 /// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the document.
 /// This will by parsing the `verificationMethod` property of the data integrity proof and resolving it to a key that can be used to verify the proof.
 /// Currently only `Ed25519Signature2018` is supported for data integrity proof verification.
