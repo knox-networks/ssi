@@ -54,3 +54,9 @@ pub trait RegistryClient: Send + Sync + std::fmt::Debug {
         did: String,
     ) -> Result<tonic::Response<registry::ReadResponse>, tonic::Status>;
 }
+
+impl Clone for MockRegistryClient {
+    fn clone(&self) -> Self {
+        Self::default()
+    }
+}
