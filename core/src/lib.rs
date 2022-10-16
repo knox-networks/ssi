@@ -28,6 +28,12 @@ pub trait DIDResolver: Send + Sync + 'static {
     }
 }
 
+impl Clone for MockDIDResolver {
+    fn clone(&self) -> Self {
+        Self::default()
+    }
+}
+
 pub trait DocumentBuilder {
     fn get_contexts() -> credential::VerificationContext {
         vec![
