@@ -73,6 +73,7 @@ impl Ed25519DidVerifier {
     }
 }
 
+#[derive(Debug)]
 pub struct Ed25519DidSigner {
     private_key: ed25519_zebra::SigningKey,
     public_key: ed25519_zebra::VerificationKey,

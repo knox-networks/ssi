@@ -63,6 +63,7 @@ pub trait KeyPair<T: PrivateKey, U: PublicKey> {
 pub trait DIDSigner<S>
 where
     S: Signature,
+    Self: Send + Sync + std::fmt::Debug,
 {
     fn sign(&self, msg: &[u8]) -> S {
         self.try_sign(msg).expect("signature operation failed")
