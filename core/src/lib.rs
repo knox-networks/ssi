@@ -1,4 +1,4 @@
-mod credential;
+pub mod credential;
 pub mod error;
 pub mod identity;
 pub mod proof;
@@ -81,6 +81,10 @@ pub trait DocumentBuilder {
         })
     }
 }
+
+pub struct DefaultDocumentBuilder {}
+
+impl DocumentBuilder for DefaultDocumentBuilder {}
 
 /// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the document.
 /// This will by parsing the `verificationMethod` property of the data integrity proof and resolving it to a key that can be used to verify the proof.
