@@ -2,7 +2,7 @@ use sha2::{Digest, Sha512};
 
 mod normalization;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct DataIntegrityProof {
     #[serde(rename = "type")]
     pub proof_type: String,
