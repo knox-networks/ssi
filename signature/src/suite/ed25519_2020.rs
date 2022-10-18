@@ -63,6 +63,7 @@ pub struct Ed25519KeyPair {
     pub(crate) mnemonic: Mnemonic,
 }
 
+#[derive(Debug)]
 pub struct Ed25519DidVerifier {
     pub public_key: ed25519_zebra::VerificationKey,
 }

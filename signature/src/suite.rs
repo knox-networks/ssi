@@ -11,7 +11,7 @@ pub enum VerificationRelation {
     CapabilityDelegation,
 }
 
-pub trait Signature: AsRef<[u8]> + core::fmt::Debug + Sized {
+pub trait Signature: AsRef<[u8]> + core::fmt::Debug + Sized + Send + Sync {
     /// Parse a signature from its byte representation
     fn from_bytes(bytes: &[u8]) -> Result<Self, error::Error>;
 
@@ -38,7 +38,12 @@ pub trait PublicKey: Copy + Clone {
     fn get_encoded_public_key(&self) -> String;
 }
 
-pub trait KeyPair<T: PrivateKey, U: PublicKey> {
+pub trait KeyPair<T, U>
+where
+    T: PrivateKey,
+    U: PublicKey,
+    Self: Send + Sync + std::fmt::Debug,
+{
     fn get_public_key_encoded(&self, relation: VerificationRelation) -> String
     where
         Self: Sized;
@@ -88,6 +93,7 @@ where
 pub trait DIDVerifier<S>
 where
     S: Signature,
+    Self: Send + Sync + std::fmt::Debug,
 {
     fn decoded_verify(&self, msg: &[u8], data: String) -> Result<(), error::Error> {
         let decoded_sig = self.decode(data)?;
