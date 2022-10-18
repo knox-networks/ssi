@@ -63,16 +63,12 @@ pub struct Ed25519KeyPair {
     pub(crate) mnemonic: Mnemonic,
 }
 
+#[derive(Debug)]
 pub struct Ed25519DidVerifier {
     pub public_key: ed25519_zebra::VerificationKey,
 }
 
-impl Ed25519DidVerifier {
-    pub fn into_inner(self) -> ed25519_zebra::VerificationKey {
-        self.public_key
-    }
-}
-
+#[derive(Debug)]
 pub struct Ed25519DidSigner {
     private_key: ed25519_zebra::SigningKey,
     public_key: ed25519_zebra::VerificationKey,
