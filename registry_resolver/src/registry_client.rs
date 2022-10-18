@@ -22,7 +22,7 @@ impl RegistryClient for GrpcClient {
     async fn create(
         &self,
         did: String,
-        document: Option<pbjson_types::Struct>,
+        document: String,
     ) -> Result<tonic::Response<registry::CreateResponse>, tonic::Status> {
         let mut client = self.inner.to_owned();
 
@@ -46,7 +46,7 @@ pub trait RegistryClient: Send + Sync + std::fmt::Debug {
     async fn create(
         &self,
         did: String,
-        document: Option<pbjson_types::Struct>,
+        document: String,
     ) -> Result<tonic::Response<registry::CreateResponse>, tonic::Status>;
 
     async fn read(

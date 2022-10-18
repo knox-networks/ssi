@@ -33,11 +33,8 @@ where
         did: String,
         document: serde_json::Value,
     ) -> Result<(), ssi_core::error::ResolverError> {
-        let document: pbjson_types::Struct = serde_json::from_value(document)
-            .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?;
-
         self.client
-            .create(did, Some(document))
+            .create(did, document.to_string())
             .await
             .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
@@ -51,14 +48,9 @@ where
             .await
             .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
-        let document = res.into_inner().document.ok_or_else(|| {
-            ssi_core::error::ResolverError::DocumentNotFound(format!(
-                "No document found associated with {}",
-                did
-            ))
-        })?;
+        let document = res.into_inner().document;
 
-        Ok(serde_json::to_value(document)
+        Ok(serde_json::from_str(&document)
             .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?)
     }
 }
@@ -98,10 +90,6 @@ mod tests {
                 }]
             }
         )
-    }
-
-    fn create_did_struct(doc: serde_json::Value) -> pbjson_types::Struct {
-        serde_json::from_value(doc).unwrap()
     }
 
     fn create_did() -> String {
@@ -144,7 +132,7 @@ mod tests {
                 .expect_create()
                 .with(
                     mockall::predicate::eq(did.clone()),
-                    mockall::predicate::eq(Some(create_did_struct(doc.clone()))),
+                    mockall::predicate::eq(doc.to_string()),
                 )
                 .return_once(|_, _| (res));
         }
@@ -174,20 +162,11 @@ mod tests {
         create_did(),
         Some(Ok(tonic::Response::new(ReadResponse {
             did: create_did(),
-            document: Some(create_did_struct(create_did_doc(create_did()))),
+            document: create_did_doc(create_did()).to_string(),
             metadata: None,
          }))),
         None,
         true
-    )]
-    #[case::no_document(
-        create_did(),
-        Some(Ok(tonic::Response::new(ReadResponse {
-            did: create_did(),
-            document: None,
-            metadata: None,
-         }))),
-         Some(ssi_core::error::ResolverError::DocumentNotFound("No document found associated with did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh".to_string())),        false
     )]
     fn test_read(
         #[case] did: String,
