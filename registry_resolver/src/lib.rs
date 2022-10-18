@@ -111,12 +111,6 @@ mod tests {
         None,
         true
     )]
-    #[case::parsing_failure(
-        create_did(),
-        serde_json::json!("{}"),
-        None,
-        Some(ssi_core::error::ResolverError::InvalidData(r#"invalid type: string "{}", expected google.protobuf.Struct"#.to_string())),        false
-    )]
     fn test_create(
         #[case] did: String,
         #[case] doc: serde_json::Value,
