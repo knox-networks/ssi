@@ -16,7 +16,7 @@ const fn get_method_helper() -> &'static str {
 impl RegistryResolver<registry_client::GrpcClient> {
     pub async fn new(url: impl Into<String>) -> Self {
         println!("<<<<<<<<<<------------------------------->>>>>>>>>>>>  Connecting to registry resolver at {}", url.into());
-        let client = registry_client::GrpcClient::new("https://reg.knoxnetworks.io:5051".to_string()).await;
+        let client = registry_client::GrpcClient::new("http://reg.knoxnetworks.io:5051".to_string()).await;
         RegistryResolver { client }
     }
 }
