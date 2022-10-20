@@ -127,7 +127,7 @@ pub struct DidDocument {
 mod tests {
     use super::*;
     use crate::MockDIDResolver;
-    use assert_json_diff::{assert_json_include};
+    use assert_json_diff::assert_json_include;
     use serde_json::json;
 
     macro_rules! aw {
@@ -206,10 +206,7 @@ mod tests {
                 "capability_invocation":[{
                     "type":"Ed25519VerificationKey2020"}]});
 
-        assert_json_include!(
-            actual: vc,
-            expected: expect
-        );
+        assert_json_include!(actual: vc, expected: expect);
         Ok(())
     }
 
