@@ -132,7 +132,11 @@ mod tests {
 
         let did = create_did();
         let doc = create_did_doc(did.clone()); 
-        let client = GrpcClient::new("http://reg.knoxnetworks.io:5051".into()).await;
+        // let client = GrpcClient::new("http://reg.knoxnetworks.io:5051".into()).await;
+        let client = GrpcClient::new(" https://reg.sandbox6.knoxnetworks.io:5051".into()).await;
+        // if client.is_err() {
+        //     println!("client error --------------->>>>>>>>>>>> #903 {:?}", client.());
+        // }
         let resolver = RegistryResolver {
             client: client,
         };
