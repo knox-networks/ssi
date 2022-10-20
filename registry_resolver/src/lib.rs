@@ -33,11 +33,12 @@ where
         did: String,
         document: serde_json::Value,
     ) -> Result<(), ssi_core::error::ResolverError> {
+        println!("create before --------------->>>>>>>>>>>>  #900");
         self.client
             .create(did, document.to_string())
             .await
             .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
-
+            println!("create after --------------->>>>>>>>>>>> #901");
         Ok(())
     }
 

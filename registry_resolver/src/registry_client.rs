@@ -10,6 +10,7 @@ pub struct GrpcClient {
 
 impl GrpcClient {
     pub async fn new(url: String) -> Self {
+        println!("Connecting to --------------->>>>>>>>>>>> {}", url.clone());
         let inner = registry::registry_service_client::RegistryServiceClient::connect(url.clone())
             .await
             .unwrap();
