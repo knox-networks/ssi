@@ -127,7 +127,7 @@ pub struct DidDocument {
 mod tests {
     use super::*;
     use crate::MockDIDResolver;
-    use assert_json_diff::{assert_json_matches, CompareMode, Config};
+    use assert_json_diff::{assert_json_include};
     use serde_json::json;
 
     macro_rules! aw {
@@ -180,47 +180,36 @@ mod tests {
         String::from("123456789")
     }
 
-    #[ignore]
     #[rstest::rstest]
     #[case::creates_successfully()]
     fn test_create_did_doc() -> Result<(), String> {
-        let expect = json!({
-            "@context":[
-                "https://www.w3.org/ns/did/v1",
-                "https://w3id.org/security/suites/ed25519-2020/v1"],
-                "@id":"did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                "assertion_method":[
-                {
-                    "controller":"did:knox:did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                    "id":"did:knox:did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                    "public_key_multibase":"did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                    "type":"Ed25519VerificationKey2020"
-                }],
-                "authentication":[{
-                    "controller":"did:knox:did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                    "id":"did:knox:did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                    "public_key_multibase":"did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                    "type":"Ed25519VerificationKey2020"
-                }],
-                "capability_delegation":[{
-                    "controller":"did:knox:did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                    "id":"did:knox:did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                    "public_key_multibase":"did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                    "type":"Ed25519VerificationKey2020"
-                }],
-                "capability_invocation":[{
-                        "controller":"did:knox:did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                        "id":"did:knox:did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                        "public_key_multibase":"did:knox:z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H#z6MkwFLbMiCDH1J6cWWQRKLzoFCKku2kvNyKUndi5RcAeM8H",
-                        "type":"Ed25519VerificationKey2020"}]});
-
         let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(None).unwrap();
         let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(kp);
         let did_doc = create_did_document(verifier);
         let vc = serde_json::to_value(did_doc).unwrap();
 
-        let config = Config::new(CompareMode::Inclusive);
-        assert_json_matches!(vc, expect, config,);
+        let expect = json!({
+            "@context":[
+                "https://www.w3.org/ns/did/v1",
+                "https://w3id.org/security/suites/ed25519-2020/v1"],
+                "@id":vc["@id"].clone(),
+                "assertion_method":[
+                {
+                    "type":"Ed25519VerificationKey2020"
+                }],
+                "authentication":[{
+                    "type":"Ed25519VerificationKey2020"
+                }],
+                "capability_delegation":[{
+                    "type":"Ed25519VerificationKey2020"
+                }],
+                "capability_invocation":[{
+                    "type":"Ed25519VerificationKey2020"}]});
+
+        assert_json_include!(
+            actual: vc,
+            expected: expect
+        );
         Ok(())
     }
 
