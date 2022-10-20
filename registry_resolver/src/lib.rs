@@ -62,18 +62,18 @@ where
             .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?)
     }
 
-    async fn delete(self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
-        let res = self
-            .client
-            .delete(did.clone())
-            .await
-            .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
+    // async fn delete(self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
+    //     let res = self
+    //         .client
+    //         .delete(did.clone())
+    //         .await
+    //         .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
-        let document = res.into_inner().document;
+    //     let document = res.into_inner().document;
 
-        Ok(serde_json::from_str(&document)
-            .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?)
-    }
+    //     Ok(serde_json::from_str(&document)
+    //         .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?)
+    // }
 }
 
 #[cfg(test)]
@@ -96,7 +96,7 @@ mod tests {
     fn create_did_doc(did: String) -> serde_json::Value {
         serde_json::json!({
                 "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
-                "id":did,
+                "@id":did,
                 "authentication":[
                     {"id":format!("did:knox:{}#{}", did, did),"type":"Ed25519VerificationKey2020","controller":"did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh","publicKeyMultibase":"z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh"
                 }],
@@ -132,8 +132,10 @@ mod tests {
 
         let did = create_did();
         let doc = create_did_doc(did.clone()); 
+        // create_did_doc();
+        // ssi_core::d
         // let client = GrpcClient::new("http://reg.knoxnetworks.io:5051".into()).await;
-        let client = GrpcClient::new(" https://reg.sandbox6.knoxnetworks.io:5051".into()).await;
+        let client = GrpcClient::new(" http://reg.sandbox6.knoxnetworks.io:5051".into()).await;
         // if client.is_err() {
         //     println!("client error --------------->>>>>>>>>>>> #903 {:?}", client.());
         // }
