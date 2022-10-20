@@ -127,7 +127,7 @@ pub struct DidDocument {
 mod tests {
     use super::*;
     use crate::MockDIDResolver;
-    use assert_json_diff::{assert_json_matches, CompareMode, Config, NumericMode};
+    use assert_json_diff::{assert_json_matches, CompareMode, Config};
     use serde_json::json;
 
     macro_rules! aw {
@@ -182,8 +182,8 @@ mod tests {
 
     #[ignore]
     #[rstest::rstest]
-    #[case::creates_successfully(get_did(), true)]
-    fn test_create_did_doc(#[case] did: String, #[case] expect_ok: bool) -> Result<(), String> {
+    #[case::creates_successfully()]
+    fn test_create_did_doc() -> Result<(), String> {
         let expect = json!({
             "@context":[
                 "https://www.w3.org/ns/did/v1",
