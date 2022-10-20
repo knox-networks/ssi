@@ -127,13 +127,8 @@ pub struct DidDocument {
 mod tests {
     use super::*;
     use crate::MockDIDResolver;
+    use assert_json_diff::{assert_json_matches, CompareMode, Config, NumericMode};
     use serde_json::json;
-    use assert_json_diff::{
-        CompareMode,
-        Config,
-        NumericMode,
-        assert_json_matches,
-    };
 
     macro_rules! aw {
         ($e:expr) => {
@@ -223,13 +218,9 @@ mod tests {
         let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(kp);
         let did_doc = create_did_document(verifier);
         let vc = serde_json::to_value(did_doc).unwrap();
-       
+
         let config = Config::new(CompareMode::Inclusive);
-        assert_json_matches!(
-            vc,
-            expect,
-            config,
-        );
+        assert_json_matches!(vc, expect, config,);
         Ok(())
     }
 
