@@ -11,7 +11,7 @@ pub mod proof;
 #[async_trait::async_trait]
 pub trait DIDResolver: Send + Sync + 'static {
     /// Given a `did`, delete the full DID document associated with that matching `did`
-    async fn delete(self, did: String) -> Result<serde_json::Value, error::ResolverError>;
+    // async fn delete(self, did: String) -> Result<serde_json::Value, error::ResolverError>;
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
     /// Return the JSON-LD document representing the DID.
     async fn read(self, did: String) -> Result<serde_json::Value, error::ResolverError>;
