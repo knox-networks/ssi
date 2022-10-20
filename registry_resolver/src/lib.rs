@@ -15,8 +15,7 @@ const fn get_method_helper() -> &'static str {
 
 impl RegistryResolver<registry_client::GrpcClient> {
     pub async fn new(url: impl Into<String>) -> Self {
-        println!("<<<<<<<<<<------------------------------->>>>>>>>>>>>  Connecting to registry resolver at {}", url.into());
-        let client = registry_client::GrpcClient::new("http://reg.knoxnetworks.io:5051".to_string()).await;
+        let client = registry_client::GrpcClient::new(url.into()).await;
         RegistryResolver { client }
     }
 }
@@ -46,6 +45,19 @@ where
         let res = self
             .client
             .read(did.clone())
+            .await
+            .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
+
+        let document = res.into_inner().document;
+
+        Ok(serde_json::from_str(&document)
+            .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?)
+    }
+
+    async fn delete(self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
+        let res = self
+            .client
+            .delete(did.clone())
             .await
             .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
@@ -95,6 +107,46 @@ mod tests {
 
     fn create_did() -> String {
         String::from("did:knox:z6MkfFmsob7fC3MmqU1JVfdBnMbnAw7xm1mrEtPvAoojLcRh")
+    }
+
+    // #[tokio::test]
+    // #[case::success(
+    //     create_did(),
+    //     create_did_doc(create_did()),
+    //     Some(Ok(tonic::Response::new(CreateResponse {}))),
+    //     None,
+    //     true
+    // )]
+
+    #[tokio::test]    
+    async fn test_create_integration() {
+        // aw!(resolver.create(did, doc));
+
+        let did = create_did();
+        let doc = create_did_doc(did.clone()); 
+        let client = GrpcClient::new("http://reg.knoxnetworks.io:5051".into()).await;
+        let resolver = RegistryResolver {
+            client: client,
+        };
+
+        let res = resolver.clone().create(did.clone(), doc).await;
+        assert_eq!(res.is_ok(), true);
+        let read = resolver.read(did).await;
+        assert_eq!(read.is_ok(), true);
+        println!("read {}", read.unwrap());
+        // match res.err() {
+        //     Some(e) => {
+        //         assert_eq!(e, expect_error_kind.unwrap());
+        //     }
+        //     None => assert!(&expect_error_kind.is_none()),
+        // }
+        // let res = aw!(resolver.delete(did));
+        // match res.err() {
+        //     Some(e) => {
+        //         assert_eq!(e, expect_error_kind.clone().unwrap());
+        //     }
+        //     None => assert!(expect_error_kind.is_none()),
+        // }
     }
 
     #[rstest::rstest]

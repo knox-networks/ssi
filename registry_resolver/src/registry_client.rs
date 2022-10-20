@@ -38,6 +38,14 @@ impl RegistryClient for GrpcClient {
         let mut client = self.inner.to_owned();
         return client.read(registry::ReadRequest { did }).await;
     }
+
+    async fn delete(
+        &self,
+        did: String,
+    ) -> Result<tonic::Response<registry::ReadResponse>, tonic::Status> {
+        let mut client = self.inner.to_owned();
+        return client.read(registry::ReadRequest { did }).await;
+    }
 }
 
 #[mockall::automock]
@@ -50,6 +58,11 @@ pub trait RegistryClient: Send + Sync + std::fmt::Debug {
     ) -> Result<tonic::Response<registry::CreateResponse>, tonic::Status>;
 
     async fn read(
+        &self,
+        did: String,
+    ) -> Result<tonic::Response<registry::ReadResponse>, tonic::Status>;
+
+    async fn delete(
         &self,
         did: String,
     ) -> Result<tonic::Response<registry::ReadResponse>, tonic::Status>;
