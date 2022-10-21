@@ -1515,7 +1515,6 @@ dependencies = [
  "sha2 0.10.6",
  "signature",
  "thiserror",
- "tiny-bip39",
  "tokio-test",
 ]
 
