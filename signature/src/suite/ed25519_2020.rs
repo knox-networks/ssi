@@ -98,6 +98,15 @@ fn get_prefixed_public_key(pk: &ed25519_zebra::VerificationKey) -> Vec<u8> {
 }
 
 impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25519KeyPair {
+    fn get_did_method(&self) -> String {
+        DID_PREFIX.to_string()
+    }
+
+    fn get_did(&self) -> String {
+        let encoded_pk = super::PublicKey::get_encoded_public_key(&self.master_public_key);
+        format!("{0}:{1}", DID_PREFIX, encoded_pk)
+    }
+
     fn get_public_key_encoded(&self, relation: crate::suite::VerificationRelation) -> String {
         match relation {
             crate::suite::VerificationRelation::AssertionMethod => {

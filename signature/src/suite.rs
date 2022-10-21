@@ -44,6 +44,9 @@ where
     U: PublicKey,
     Self: Send + Sync + std::fmt::Debug,
 {
+    fn get_did_method(&self) -> String;
+    fn get_did(&self) -> String;
+
     fn get_public_key_encoded(&self, relation: VerificationRelation) -> String
     where
         Self: Sized;
