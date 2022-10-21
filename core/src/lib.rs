@@ -12,9 +12,10 @@ pub mod proof;
 pub trait DIDResolver: Send + Sync + 'static {
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
     /// Return the JSON-LD document representing the DID.
-    async fn read(self, did: String) -> Result<serde_json::Value, error::ResolverError>;
+    async fn read(&self, did: String) -> Result<serde_json::Value, error::ResolverError>;
     /// Given a `did` and the associated DID Document, register the DID Document with the external source used by the DIDResolver.
-    async fn create(self, did: String, doc: serde_json::Value) -> Result<(), error::ResolverError>;
+    async fn create(&self, did: String, doc: serde_json::Value)
+        -> Result<(), error::ResolverError>;
     // Returns the DID Method that the DID Resolver is compatible with. Each resolver can only be compatible with one.
     fn get_method() -> &'static str
     where

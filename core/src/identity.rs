@@ -12,7 +12,7 @@ where
 }
 
 pub async fn create_identity<S>(
-    resolver: impl super::DIDResolver,
+    resolver: &impl super::DIDResolver,
     verifier: impl signature::suite::DIDVerifier<S>,
 ) -> Result<DidDocument, crate::error::Error>
 where
@@ -295,7 +295,7 @@ mod tests {
             )
             .return_once(|_, _| (mock_create_response));
 
-        let res = aw!(create_identity(resolver_mock, verifier));
+        let res = aw!(create_identity(&resolver_mock, verifier));
 
         assert_eq!(res.is_err(), !expect_ok);
         Ok(())
