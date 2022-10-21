@@ -29,7 +29,7 @@ where
     }
 
     async fn create(
-        self,
+        &self,
         did: String,
         document: serde_json::Value,
     ) -> Result<(), ssi_core::error::ResolverError> {
@@ -41,7 +41,7 @@ where
         Ok(())
     }
 
-    async fn read(self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
+    async fn read(&self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
         let res = self
             .client
             .read(did.clone())
