@@ -112,7 +112,10 @@ pub struct KeyMaterial {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DidDocument {
-    context: Vec<String>,
+    #[serde(rename = "@context")]
+    pub context: Vec<String>,
+
+    #[serde(rename = "@id")]
     pub id: String,
     pub authentication: Vec<KeyMaterial>,
     pub capability_invocation: Vec<KeyMaterial>,
@@ -124,6 +127,7 @@ pub struct DidDocument {
 mod tests {
     use super::*;
     use crate::MockDIDResolver;
+    use assert_json_diff::assert_json_eq;
     use serde_json::json;
 
     macro_rules! aw {
@@ -174,6 +178,52 @@ mod tests {
 
     fn get_did() -> String {
         String::from("123456789")
+    }
+
+    #[rstest::rstest]
+    #[case::creates_successfully()]
+    fn test_create_did_doc() -> Result<(), String> {
+        let test_mnemonic =
+            "park remain person kitchen mule spell knee armed position rail grid ankle";
+        let mne = signature::suite::ed25519_2020::Mnemonic {
+            language: signature::suite::ed25519_2020::MnemonicLanguage::English,
+            phrase: test_mnemonic.to_string(),
+        };
+        let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(Some(mne)).unwrap();
+        let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(kp);
+        let did_doc = create_did_document(verifier);
+        let vc = serde_json::to_value(did_doc).unwrap();
+
+        let expect = json!({
+        "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
+        "@id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+        "assertion_method":[{
+            "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+            "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+            "public_key_multibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+            "type":"Ed25519VerificationKey2020"
+            }],
+            "authentication":[{
+                "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "public_key_multibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "type":"Ed25519VerificationKey2020"
+            }],
+            "capability_delegation":[{
+                "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "public_key_multibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "type":"Ed25519VerificationKey2020"
+            }],
+            "capability_invocation":[{
+                "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "public_key_multibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "type":"Ed25519VerificationKey2020"}]
+            });
+
+        assert_json_eq!(vc.to_string(), expect.to_string());
+        Ok(())
     }
 
     #[rstest::rstest]
