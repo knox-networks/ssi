@@ -107,6 +107,7 @@ pub struct KeyMaterial {
     #[serde(rename = "type")]
     pub proof_type: String,
     pub controller: String,
+    #[serde(rename = "publicKeyMultibase")]
     pub public_key_multibase: String,
 }
 
@@ -115,11 +116,14 @@ pub struct DidDocument {
     #[serde(rename = "@context")]
     pub context: Vec<String>,
 
-    #[serde(rename = "@id")]
+    #[serde(rename = "id")]
     pub id: String,
     pub authentication: Vec<KeyMaterial>,
+    #[serde(rename = "capabilityInvocation")]
     pub capability_invocation: Vec<KeyMaterial>,
+    #[serde(rename = "capabilityDelegation")]
     pub capability_delegation: Vec<KeyMaterial>,
+    #[serde(rename = "assertionMethod")]
     pub assertion_method: Vec<KeyMaterial>,
 }
 
