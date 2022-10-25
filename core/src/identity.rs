@@ -200,7 +200,7 @@ mod tests {
 
         let expect = json!({
         "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
-        "@id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+        "id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
         "assertion_method":[{
             "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
             "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
