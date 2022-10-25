@@ -107,6 +107,7 @@ pub struct KeyMaterial {
     #[serde(rename = "type")]
     pub proof_type: String,
     pub controller: String,
+    #[serde(rename = "publicKeyMultibase")]
     pub public_key_multibase: String,
 }
 
@@ -115,11 +116,14 @@ pub struct DidDocument {
     #[serde(rename = "@context")]
     pub context: Vec<String>,
 
-    #[serde(rename = "@id")]
+    #[serde(rename = "id")]
     pub id: String,
     pub authentication: Vec<KeyMaterial>,
+    #[serde(rename = "capabilityInvocation")]
     pub capability_invocation: Vec<KeyMaterial>,
+    #[serde(rename = "capabilityDelegation")]
     pub capability_delegation: Vec<KeyMaterial>,
+    #[serde(rename = "assertionMethod")]
     pub assertion_method: Vec<KeyMaterial>,
 }
 
@@ -196,29 +200,29 @@ mod tests {
 
         let expect = json!({
         "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
-        "@id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-        "assertion_method":[{
+        "id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+        "assertionMethod":[{
             "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
             "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-            "public_key_multibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+            "publicKeyMultibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
             "type":"Ed25519VerificationKey2020"
             }],
             "authentication":[{
                 "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
                 "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-                "public_key_multibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "publicKeyMultibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
                 "type":"Ed25519VerificationKey2020"
             }],
-            "capability_delegation":[{
+            "capabilityDelegation":[{
                 "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
                 "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-                "public_key_multibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "publicKeyMultibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
                 "type":"Ed25519VerificationKey2020"
             }],
-            "capability_invocation":[{
+            "capabilityInvocation":[{
                 "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
                 "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-                "public_key_multibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "publicKeyMultibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
                 "type":"Ed25519VerificationKey2020"}]
             });
 
