@@ -40,7 +40,7 @@ pub struct Credential {
     #[serde(rename = "@context")]
     pub context: Vec<String>,
 
-    #[serde(rename = "@id")]
+    #[serde(rename = "id")]
     pub id: String,
 
     #[serde(rename = "type")]
