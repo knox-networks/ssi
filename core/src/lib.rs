@@ -253,28 +253,36 @@ mod tests {
     fn test_create_presentation() -> Result<(), String> {
         let to = TestObj::new();
         let mut expect_presentation = json!({
-            "@context" : ["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
-            "verifiableCredential":[{"@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],"@id":"https://issuer.oidp.uscis.gov/credentials/83627465","credentialSubject":{"birthCountry":"Bahamas","birthDate":"1958-07-17","commuterClassification":"C1",
-                "familyName":"SMITH",
-                "gender":"Male",
-                "givenName":"JOHN",
-                "id":"did:example:b34ca6cd37bbf23",
-                "image":"data:image/png;base64,iVBORw0KGgo...kJggg==",
-                "lprCategory":"C09",
-                "lprNumber":"999-999-999",
-                "residentSince":"2015-01-01",
-                "type":["PermanentResident","Person"]},
-                "description":"Government of Example Permanent Resident Card.",
-                "expirationDate":"2029-12-03T12:19:52Z","identifier":"83627465",
-                "issuanceDate":"2019-12-03T12:19:52Z",
-                "issuer":"did:example:28394728934792387",
-                "name":"Permanent Resident Card",
-                "proof":{"created":"2022-07-16T05:29:53.207757+00:00",
-                "proof_purpose":"assertionMethod",
-                "proof_type":"Ed25519Signature2018",
-                "proof_value":"z5MWmCHvVpgXSiBN5SKbCNErLN2ncGR2mUMVrUJQaAd41t4CVjk57zBqnwZyH6eCc7HypD9BqbHnWrT4MikoW11Kf",
-                "verification_method":"did:knox:zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU#zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU"},
-                "type":["VerifiableCredential","PermanentResidentCard"]}]});
+        "@context" : ["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+        "verifiableCredential":[
+            {"@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+            "id":"https://issuer.oidp.uscis.gov/credentials/83627465",
+            "credentialSubject":{
+                "birthCountry":"Bahamas",
+                "birthDate":"1958-07-17",
+                "commuterClassification":"C1",
+            "familyName":"SMITH",
+            "gender":"Male",
+            "givenName":"JOHN",
+            "id":"did:example:b34ca6cd37bbf23",
+            "image":"data:image/png;base64,iVBORw0KGgo...kJggg==",
+            "lprCategory":"C09",
+            "lprNumber":"999-999-999",
+            "residentSince":"2015-01-01",
+            "type":["PermanentResident","Person"]},
+            "description":"Government of Example Permanent Resident Card.",
+            "expirationDate":"2029-12-03T12:19:52Z","identifier":"83627465",
+            "issuanceDate":"2019-12-03T12:19:52Z",
+            "issuer":"did:example:28394728934792387",
+            "name":"Permanent Resident Card",
+            "proof":{"created":"2022-07-16T05:29:53.207757+00:00",
+            "proof_purpose":"assertionMethod",
+            "proof_type":"Ed25519Signature2018",
+            "proof_value":"z5MWmCHvVpgXSiBN5SKbCNErLN2ncGR2mUMVrUJQaAd41t4CVjk57zBqnwZyH6eCc7HypD9BqbHnWrT4MikoW11Kf",
+            "verification_method":"did:knox:zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU#zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU"},
+            "type":["VerifiableCredential","PermanentResidentCard"]
+            }]
+        });
         // here we test the presentation
         let signer: signature::suite::ed25519_2020::Ed25519DidSigner =
             signature::suite::ed25519_2020::Ed25519KeyPair::new(None)
