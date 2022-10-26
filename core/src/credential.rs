@@ -40,7 +40,7 @@ pub struct Credential {
     #[serde(rename = "@context")]
     pub context: Vec<String>,
 
-    #[serde(rename = "@id")]
+    #[serde(rename = "id")]
     pub id: String,
 
     #[serde(rename = "type")]
@@ -111,7 +111,7 @@ mod tests {
     fn test_create_credential_from_string() -> Result<(), String> {
         let expect = json!({
             "@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
-            "@id":"https://issuer.oidp.uscis.gov/credentials/83627465",
+            "id":"https://issuer.oidp.uscis.gov/credentials/83627465",
             "type":["VerifiableCredential", "PermanentResidentCard"],
             "issuer": "did:example:28394728934792387",
             "identifier": "83627465",
