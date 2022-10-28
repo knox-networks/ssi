@@ -30,8 +30,24 @@ pub struct CredentialSubject {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct VerifiableCredential {
+    #[serde(rename = "@context")]
+    pub context: Vec<String>,
+
+    #[serde(rename = "id")]
+    pub id: String,
+
+    #[serde(rename = "type")]
+    pub cred_type: Vec<CredentialType>,
+
+    #[serde(rename = "issuanceDate")]
+    pub issuance_date: String,
+
+    #[serde(rename = "credentialSubject")]
+    pub subject: CredentialSubject,
+
     #[serde(flatten)]
-    pub credential: Credential,
+    pub property_set: std::collections::HashMap<String, serde_json::Value>,
+
     pub proof: crate::proof::DataIntegrityProof,
 }
 
