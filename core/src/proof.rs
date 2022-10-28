@@ -6,13 +6,13 @@ mod normalization;
 pub struct DataIntegrityProof {
     #[serde(rename = "type")]
     pub proof_type: String,
-    #[serde(rename = "issuanceDate")]
+    #[serde(rename = "created")]
     pub created: String,
     #[serde(rename = "verificationMethod")]
     pub verification_method: String,
-    #[serde(rename = "verificationPurpose")]
+    #[serde(rename = "proofPurpose")]
     pub proof_purpose: String,
-    #[serde(rename = "verificationValue")]
+    #[serde(rename = "proofValue")]
     pub proof_value: String,
 }
 
