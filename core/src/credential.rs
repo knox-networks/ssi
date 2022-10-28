@@ -86,7 +86,12 @@ impl Credential {
         )?;
 
         Ok(VerifiableCredential {
-            credential: self,
+            context: self.context,
+            id: self.id,
+            cred_type: self.cred_type,
+            issuance_date: self.issuance_date,
+            subject: self.subject,
+            property_set: self.property_set,
             proof,
         })
     }
@@ -96,7 +101,12 @@ impl Credential {
         integrity_proof: crate::proof::DataIntegrityProof,
     ) -> VerifiableCredential {
         VerifiableCredential {
-            credential: self,
+            context: self.context,
+            id: self.id,
+            cred_type: self.cred_type,
+            issuance_date: self.issuance_date,
+            subject: self.subject,
+            property_set: self.property_set,
             proof: integrity_proof,
         }
     }
