@@ -108,6 +108,35 @@ mod tests {
     use serde_json::json;
 
     #[test]
+    fn test_create_verifiable_credential_from_string() -> Result<(), String> {
+        let expect = json!({
+                "@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+                "id":"http://credential_mock:8000/api/credential/z6MkoBjc4GfEWrdAXAchrDrjc7LBuTVNXySswadG3apCKy9P",
+                "type":["VerifiableCredential","PermanentResidentCard"],
+                "issuanceDate":"2022-10-28T19:35:20Z",
+                "issuer":"did:knox:z6Mkv9L4S8FQ3qcu8UqG8NFHt5LKcfzPeLvPJB7uW5vrp3WF",
+                "credentialSubject":{"birthCountry":"Bahamas","birthDate":"1981-04-01","commuterClassification":"C1","familyName":"Kim","gender":"Male",
+                "givenName":"Francis","id":"did:knox:z6MkoBjc4GfEWrdAXAchrDrjc7LBuTVNXySswadG3apCKy9P",
+                "image":"data:image/png;base64,iVBORw0KGgo...kJggg==","lprCategory":"C09","lprNumber":"000-000-204","residentSince":"2015-01-01",
+                "type":["PermanentResident","Person"]},
+                "proof":{
+                    "type":"Ed25519Signature2020","created":"2022-10-28T19:35:20Z",
+                    "verificationMethod":"did:knox:z6Mkv9L4S8FQ3qcu8UqG8NFHt5LKcfzPeLvPJB7uW5vrp3WF#z6Mkv9L4S8FQ3qcu8UqG8NFHt5LKcfzPeLvPJB7uW5vrp3WF",
+                    "proofPurpose":"assertionMethod",
+                    "proofValue":"z4xTXcWHhZY8oXCXTKSw3N9qmRKjQAUUVbNnQz1FqKCAYiGieYohBRcSKGK9YcBuKqyqzjbaohmtMZBAenC9huBJ"
+            }
+        });
+
+        let res = serde_json::from_str::<VerifiableCredential>(&expect.to_string());
+        assert!(res.is_ok());
+        if let Ok(vc) = res {
+            let vc = serde_json::to_value(vc).unwrap();
+            assert_json_eq!(expect, vc);
+        }
+        Ok(())
+    }
+
+    #[test]
     fn test_create_credential_from_string() -> Result<(), String> {
         let expect = json!({
             "@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
