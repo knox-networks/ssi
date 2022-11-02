@@ -21,6 +21,25 @@ pub enum CredentialType {
     BankCard,
 }
 
+impl CredentialType {
+    pub fn as_str(&self) -> &str {
+        match self {
+            CredentialType::Common => "VerifiableCredential",
+            CredentialType::PermanentResidentCard => "PermanentResidentCard",
+            CredentialType::BankCard => "BankCard",
+        }
+    }
+
+    pub fn from_string(cred_type: &str) -> Option<Self> {
+        match cred_type {
+            "BankCard" => Some(CredentialType::BankCard),
+            "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
+            "VerifiableCredential" => Some(CredentialType::Common),
+            _ => None,
+        }
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct CredentialSubject {
     pub id: String,
