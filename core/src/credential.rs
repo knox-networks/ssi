@@ -80,7 +80,7 @@ impl Credential {
         self,
         issuer_signer: &impl signature::suite::DIDSigner<S>,
         relation: signature::suite::VerificationRelation,
-    ) -> Result<VerifiableCredential, Box<dyn std::error::Error>> {
+    ) -> Result<VerifiableCredential, super::error::Error> {
         let serialized_credential = serde_json::to_value(&self)?;
         let proof = crate::proof::create_data_integrity_proof(
             issuer_signer,
