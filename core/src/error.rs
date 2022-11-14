@@ -2,6 +2,12 @@
 pub enum Error {
     #[error("Unknown Error: {0}")]
     Unknown(String),
+
+    #[error("Serde Error: {0}")]
+    Serde(#[from] serde_json::Error),
+
+    #[error("Signature Error: {0}")]
+    Signature(#[from] signature::suite::error::Error),
 }
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]

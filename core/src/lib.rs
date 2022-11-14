@@ -52,7 +52,7 @@ pub trait DocumentBuilder {
         cred_subject: std::collections::HashMap<String, serde_json::Value>,
         property_set: std::collections::HashMap<String, serde_json::Value>,
         id: &str,
-    ) -> Result<credential::Credential, Box<dyn std::error::Error>> {
+    ) -> Result<credential::Credential, error::Error> {
         let context = Self::get_contexts();
 
         Ok(credential::Credential {
@@ -74,7 +74,7 @@ pub trait DocumentBuilder {
     fn create_presentation(
         &self,
         credentials: Vec<credential::VerifiableCredential>,
-    ) -> Result<credential::Presentation, Box<dyn std::error::Error>> {
+    ) -> Result<credential::Presentation, error::Error> {
         let context = Self::get_contexts();
         Ok(credential::Presentation {
             context,
@@ -94,7 +94,7 @@ pub fn verify_data_integrity_proof<S: signature::suite::Signature>(
     _doc: serde_json::Value,
     _resolver: &impl DIDResolver,
     _verifier: &impl signature::suite::DIDVerifier<S>,
-) -> Result<bool, Box<dyn std::error::Error>> {
+) -> Result<bool, error::Error> {
     unimplemented!();
 }
 
@@ -104,7 +104,7 @@ pub fn verify_presentation<S: signature::suite::Signature>(
     _doc: serde_json::Value,
     _resolver: &impl DIDResolver,
     _verifier: &impl signature::suite::DIDVerifier<S>,
-) -> Result<bool, Box<dyn std::error::Error>> {
+) -> Result<bool, error::Error> {
     unimplemented!();
 }
 
