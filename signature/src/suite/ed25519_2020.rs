@@ -353,19 +353,19 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
         match relation {
             super::VerificationRelation::AssertionMethod => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}", encoded_pk)
+                encoded_pk
             }
             super::VerificationRelation::Authentication => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}", encoded_pk)
+                encoded_pk
             }
             super::VerificationRelation::CapabilityInvocation => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}", encoded_pk)
+                encoded_pk
             }
             super::VerificationRelation::CapabilityDelegation => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}", encoded_pk)
+                encoded_pk
             }
         }
     }
