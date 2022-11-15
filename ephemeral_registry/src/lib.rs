@@ -11,13 +11,16 @@ impl ssi_core::DIDResolver for EphemeralResolver {
 
     async fn create(
         &self,
-        did: String,
-        document: serde_json::Value,
+        _did: String,
+        _document: serde_json::Value,
     ) -> Result<(), ssi_core::error::ResolverError> {
         unimplemented!()
     }
 
-    async fn read(&self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
+    async fn read(
+        &self,
+        _did: String,
+    ) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
         unimplemented!()
     }
 }

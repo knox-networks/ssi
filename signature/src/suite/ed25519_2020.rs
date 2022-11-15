@@ -1,8 +1,6 @@
 use super::Signature;
 use sha2::Digest;
 
-const DID_PREFIX: &str = "did:knox";
-
 const ED25519_SIGNATURE_2020: &str = "Ed25519Signature2020";
 const ED25519_VERIFICATION_KEY_2020: &str = "Ed25519VerificationKey2020";
 
@@ -108,7 +106,7 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> f
 
     fn get_did(&self) -> String {
         let encoded_pk = super::PublicKey::get_encoded_public_key(&self.master_public_key);
-        format!("{0}:{1}", self.did_method, encoded_pk)
+        format!("did:{0}:{1}", self.did_method, encoded_pk)
     }
 
     fn get_public_key_encoded(&self, relation: crate::suite::VerificationRelation) -> String {
@@ -160,7 +158,7 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> f
 }
 
 impl Ed25519KeyPair {
-    pub fn new(mnemonic: Option<Mnemonic>) -> Result<Self, error::Error> {
+    pub fn new(did_method: String, mnemonic: Option<Mnemonic>) -> Result<Self, error::Error> {
         let mnemonic =
             mnemonic.unwrap_or_else(|| Self::generate_mnemonic(MnemonicLanguage::English));
         let bip39_mnemonic =
@@ -200,7 +198,7 @@ impl Ed25519KeyPair {
             assertion_method_private_key: sk,
 
             mnemonic,
-            did_method: DID_PREFIX.to_string(),
+            did_method,
         })
     }
 
@@ -231,7 +229,7 @@ impl super::DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     fn get_verification_method(&self, _relation: super::VerificationRelation) -> String {
         let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
 
-        format!("{0}:{1}#{1}", self.did_method, encoded_pk)
+        format!("did:{0}:{1}#{1}", self.did_method, encoded_pk)
     }
 
     fn encode(&self, sig: Ed25519Signature) -> String {
@@ -348,26 +346,26 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
 
     fn get_verification_method(&self, relation: super::VerificationRelation) -> String {
         let encoded_pk = self.get_public_key_by_relation(relation);
-        format!("{0}:{1}#{1}", self.did_method, encoded_pk)
+        format!("did:{0}:{1}#{1}", self.did_method, encoded_pk)
     }
 
     fn get_public_key_by_relation(&self, relation: super::VerificationRelation) -> String {
         match relation {
             super::VerificationRelation::AssertionMethod => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}:{1}#{1}", self.did_method, encoded_pk)
+                format!("{0}", encoded_pk)
             }
             super::VerificationRelation::Authentication => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}:{1}#{1}", self.did_method, encoded_pk)
+                format!("{0}", encoded_pk)
             }
             super::VerificationRelation::CapabilityInvocation => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}:{1}#{1}", self.did_method, encoded_pk)
+                format!("{0}", encoded_pk)
             }
             super::VerificationRelation::CapabilityDelegation => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}:{1}#{1}", self.did_method, encoded_pk)
+                format!("{0}", encoded_pk)
             }
         }
     }
@@ -378,7 +376,7 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
 
     fn get_did(&self) -> String {
         let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-        format!("{0}:{1}", self.did_method, encoded_pk)
+        format!("did:{0}:{1}", self.did_method, encoded_pk)
     }
 
     fn decoded_verify(&self, msg: &[u8], data: String) -> Result<(), super::error::Error> {

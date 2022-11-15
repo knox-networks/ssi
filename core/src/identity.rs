@@ -41,13 +41,7 @@ where
             id: verifier
                 .get_verification_method(signature::suite::VerificationRelation::Authentication),
             proof_type: verifier.get_key_material_type(),
-            controller: format!(
-                "{}:{}",
-                verifier.get_did_method(),
-                verifier.get_public_key_by_relation(
-                    signature::suite::VerificationRelation::Authentication
-                )
-            ),
+            controller: verifier.get_did(),
             public_key_multibase: verifier
                 .get_public_key_by_relation(signature::suite::VerificationRelation::Authentication),
         }],
@@ -56,13 +50,7 @@ where
                 signature::suite::VerificationRelation::CapabilityInvocation,
             ),
             proof_type: verifier.get_key_material_type(),
-            controller: format!(
-                "{}:{}",
-                verifier.get_did_method(),
-                verifier.get_public_key_by_relation(
-                    signature::suite::VerificationRelation::CapabilityInvocation
-                )
-            ),
+            controller: verifier.get_did(),
             public_key_multibase: verifier.get_public_key_by_relation(
                 signature::suite::VerificationRelation::CapabilityInvocation,
             ),
@@ -72,13 +60,7 @@ where
                 signature::suite::VerificationRelation::CapabilityDelegation,
             ),
             proof_type: verifier.get_key_material_type(),
-            controller: format!(
-                "{}:{}",
-                verifier.get_did_method(),
-                verifier.get_public_key_by_relation(
-                    signature::suite::VerificationRelation::CapabilityDelegation
-                )
-            ),
+            controller: verifier.get_did(),
             public_key_multibase: verifier.get_public_key_by_relation(
                 signature::suite::VerificationRelation::CapabilityDelegation,
             ),
@@ -87,13 +69,7 @@ where
             id: verifier
                 .get_verification_method(signature::suite::VerificationRelation::AssertionMethod),
             proof_type: verifier.get_key_material_type(),
-            controller: format!(
-                "{}:{}",
-                verifier.get_did_method(),
-                verifier.get_public_key_by_relation(
-                    signature::suite::VerificationRelation::AssertionMethod
-                )
-            ),
+            controller: verifier.get_did(),
             public_key_multibase: verifier.get_public_key_by_relation(
                 signature::suite::VerificationRelation::AssertionMethod,
             ),
@@ -133,6 +109,8 @@ mod tests {
     use crate::MockDIDResolver;
     use assert_json_diff::assert_json_eq;
     use serde_json::json;
+
+    const TEST_DID_METHOD: &str = "knox";
 
     macro_rules! aw {
         ($e:expr) => {
@@ -193,7 +171,11 @@ mod tests {
             language: signature::suite::ed25519_2020::MnemonicLanguage::English,
             phrase: test_mnemonic.to_string(),
         };
-        let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(Some(mne)).unwrap();
+        let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(
+            TEST_DID_METHOD.to_string(),
+            Some(mne),
+        )
+        .unwrap();
         let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(kp);
         let did_doc = create_did_document(verifier);
         let vc = serde_json::to_value(did_doc).unwrap();
@@ -202,28 +184,29 @@ mod tests {
         "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
         "id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
         "assertionMethod":[{
-            "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-            "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-            "publicKeyMultibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+            "controller":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+            "id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+            "publicKeyMultibase":"z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
             "type":"Ed25519VerificationKey2020"
             }],
             "authentication":[{
-                "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-                "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-                "publicKeyMultibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "controller":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "publicKeyMultibase":"z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
                 "type":"Ed25519VerificationKey2020"
             }],
             "capabilityDelegation":[{
-                "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-                "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-                "publicKeyMultibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "controller":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "publicKeyMultibase":"z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
                 "type":"Ed25519VerificationKey2020"
             }],
             "capabilityInvocation":[{
-                "controller":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-                "id":"did:knox:did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-                "publicKeyMultibase":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
-                "type":"Ed25519VerificationKey2020"}]
+                "controller":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1#z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "publicKeyMultibase":"z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
+                "type":"Ed25519VerificationKey2020"
+            }]
             });
 
         assert_json_eq!(vc.to_string(), expect.to_string());
@@ -245,7 +228,9 @@ mod tests {
             }))
             .return_once(|_| (restore_response));
 
-        let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(None).unwrap();
+        let kp =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new(TEST_DID_METHOD.to_string(), None)
+                .unwrap();
         let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(kp);
         let gn = recover(resolver_mock, verifier);
         let restored_identity = aw!(gn);
@@ -289,7 +274,9 @@ mod tests {
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
-        let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(None).unwrap();
+        let kp =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new(TEST_DID_METHOD.to_string(), None)
+                .unwrap();
         let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(kp);
         resolver_mock
             .expect_create()

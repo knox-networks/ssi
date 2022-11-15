@@ -46,6 +46,8 @@ mod tests {
     use signature::suite::DIDSigner;
     use signature::suite::DIDVerifier;
 
+    const TEST_DID_METHOD: &str = "knox";
+
     #[rstest::rstest]
     #[case::success(
         serde_json::Value::default(),
@@ -55,7 +57,9 @@ mod tests {
         #[case] doc: serde_json::Value,
         #[case] relation: signature::suite::VerificationRelation,
     ) {
-        let kp = signature::suite::ed25519_2020::Ed25519KeyPair::new(None).unwrap();
+        let kp =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new(TEST_DID_METHOD.to_string(), None)
+                .unwrap();
         let signer: signature::suite::ed25519_2020::Ed25519DidSigner = kp.clone().into();
         let verifier: signature::suite::ed25519_2020::Ed25519DidVerifier = kp.into();
         let res = create_data_integrity_proof(&signer, doc.clone(), relation);
