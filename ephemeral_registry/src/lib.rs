@@ -1,14 +1,23 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+const DID_METHOD: &str = "ephemeral";
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[derive(Debug, Clone)]
+pub struct EphemeralResolver {}
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+#[async_trait::async_trait]
+impl ssi_core::DIDResolver for EphemeralResolver {
+    fn get_method() -> &'static str {
+        DID_METHOD
+    }
+
+    async fn create(
+        &self,
+        did: String,
+        document: serde_json::Value,
+    ) -> Result<(), ssi_core::error::ResolverError> {
+        unimplemented!()
+    }
+
+    async fn read(&self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
+        unimplemented!()
     }
 }

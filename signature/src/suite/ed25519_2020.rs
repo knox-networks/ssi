@@ -61,17 +61,21 @@ pub struct Ed25519KeyPair {
     pub(crate) assertion_method_private_key: ed25519_zebra::SigningKey,
 
     pub(crate) mnemonic: Mnemonic,
+
+    pub(crate) did_method: String,
 }
 
 #[derive(Debug)]
 pub struct Ed25519DidVerifier {
     pub public_key: ed25519_zebra::VerificationKey,
+    pub did_method: String,
 }
 
 #[derive(Debug)]
 pub struct Ed25519DidSigner {
     private_key: ed25519_zebra::SigningKey,
     public_key: ed25519_zebra::VerificationKey,
+    did_method: String,
 }
 
 impl AsRef<[u8]> for Ed25519Signature {
@@ -99,12 +103,12 @@ fn get_prefixed_public_key(pk: &ed25519_zebra::VerificationKey) -> Vec<u8> {
 
 impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> for Ed25519KeyPair {
     fn get_did_method(&self) -> String {
-        DID_PREFIX.to_string()
+        self.did_method.clone()
     }
 
     fn get_did(&self) -> String {
         let encoded_pk = super::PublicKey::get_encoded_public_key(&self.master_public_key);
-        format!("{0}:{1}", DID_PREFIX, encoded_pk)
+        format!("{0}:{1}", self.did_method, encoded_pk)
     }
 
     fn get_public_key_encoded(&self, relation: crate::suite::VerificationRelation) -> String {
@@ -196,6 +200,7 @@ impl Ed25519KeyPair {
             assertion_method_private_key: sk,
 
             mnemonic,
+            did_method: DID_PREFIX.to_string(),
         })
     }
 
@@ -226,7 +231,7 @@ impl super::DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     fn get_verification_method(&self, _relation: super::VerificationRelation) -> String {
         let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
 
-        format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
+        format!("{0}:{1}#{1}", self.did_method, encoded_pk)
     }
 
     fn encode(&self, sig: Ed25519Signature) -> String {
@@ -238,6 +243,7 @@ impl From<&Ed25519DidSigner> for Ed25519DidVerifier {
     fn from(signer: &Ed25519DidSigner) -> Self {
         Self {
             public_key: signer.public_key,
+            did_method: signer.did_method.clone(),
         }
     }
 }
@@ -246,6 +252,7 @@ impl From<Ed25519KeyPair> for Ed25519DidVerifier {
     fn from(kp: Ed25519KeyPair) -> Self {
         Self {
             public_key: kp.master_public_key,
+            did_method: kp.did_method,
         }
     }
 }
@@ -255,6 +262,7 @@ impl From<Ed25519KeyPair> for Ed25519DidSigner {
         Self {
             public_key: kp.master_public_key,
             private_key: kp.master_private_key,
+            did_method: kp.did_method,
         }
     }
 }
@@ -340,37 +348,37 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
 
     fn get_verification_method(&self, relation: super::VerificationRelation) -> String {
         let encoded_pk = self.get_public_key_by_relation(relation);
-        format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
+        format!("{0}:{1}#{1}", self.did_method, encoded_pk)
     }
 
     fn get_public_key_by_relation(&self, relation: super::VerificationRelation) -> String {
         match relation {
             super::VerificationRelation::AssertionMethod => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
+                format!("{0}:{1}#{1}", self.did_method, encoded_pk)
             }
             super::VerificationRelation::Authentication => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
+                format!("{0}:{1}#{1}", self.did_method, encoded_pk)
             }
             super::VerificationRelation::CapabilityInvocation => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
+                format!("{0}:{1}#{1}", self.did_method, encoded_pk)
             }
             super::VerificationRelation::CapabilityDelegation => {
                 let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                format!("{0}:{1}#{1}", DID_PREFIX, encoded_pk)
+                format!("{0}:{1}#{1}", self.did_method, encoded_pk)
             }
         }
     }
 
     fn get_did_method(&self) -> String {
-        DID_PREFIX.to_string()
+        self.did_method.clone()
     }
 
     fn get_did(&self) -> String {
         let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-        format!("{0}:{1}", DID_PREFIX, encoded_pk)
+        format!("{0}:{1}", self.did_method, encoded_pk)
     }
 
     fn decoded_verify(&self, msg: &[u8], data: String) -> Result<(), super::error::Error> {
