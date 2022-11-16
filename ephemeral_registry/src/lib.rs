@@ -14,10 +14,11 @@ impl ssi_core::DIDResolver for EphemeralResolver {
 
     async fn create(
         &self,
-        _did: String,
-        _document: serde_json::Value,
+        did: String,
+        document: serde_json::Value,
     ) -> Result<(), ssi_core::error::ResolverError> {
-        unimplemented!()
+        self.registry.write().await.insert(did, document);
+        Ok(())
     }
 
     async fn read(&self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
