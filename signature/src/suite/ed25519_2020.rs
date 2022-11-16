@@ -352,20 +352,16 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
     fn get_public_key_by_relation(&self, relation: super::VerificationRelation) -> String {
         match relation {
             super::VerificationRelation::AssertionMethod => {
-                let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                encoded_pk
+                super::PublicKey::get_encoded_public_key(&self.public_key)
             }
             super::VerificationRelation::Authentication => {
-                let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                encoded_pk
+                super::PublicKey::get_encoded_public_key(&self.public_key)
             }
             super::VerificationRelation::CapabilityInvocation => {
-                let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                encoded_pk
+                super::PublicKey::get_encoded_public_key(&self.public_key)
             }
             super::VerificationRelation::CapabilityDelegation => {
-                let encoded_pk = super::PublicKey::get_encoded_public_key(&self.public_key);
-                encoded_pk
+                super::PublicKey::get_encoded_public_key(&self.public_key)
             }
         }
     }
