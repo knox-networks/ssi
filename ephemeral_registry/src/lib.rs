@@ -27,9 +27,11 @@ impl ssi_core::DIDResolver for EphemeralResolver {
             .read()
             .await
             .get(&did)
-            .ok_or(ssi_core::error::ResolverError::DocumentNotFound(
-                "No document found with did".to_string(),
-            ))?
+            .ok_or_else(|| {
+                ssi_core::error::ResolverError::DocumentNotFound(
+                    "No document found with did".to_string(),
+                )
+            })?
             .clone();
 
         Ok(document)
