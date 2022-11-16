@@ -1,7 +1,10 @@
 const DID_METHOD: &str = "ephemeral";
 
 #[derive(Debug, Clone)]
-pub struct EphemeralResolver {}
+pub struct EphemeralResolver {
+    registry:
+        std::sync::Arc<tokio::sync::RwLock<std::collections::HashMap<String, serde_json::Value>>>,
+}
 
 #[async_trait::async_trait]
 impl ssi_core::DIDResolver for EphemeralResolver {
@@ -17,10 +20,17 @@ impl ssi_core::DIDResolver for EphemeralResolver {
         unimplemented!()
     }
 
-    async fn read(
-        &self,
-        _did: String,
-    ) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
-        unimplemented!()
+    async fn read(&self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
+        let document = self
+            .registry
+            .read()
+            .await
+            .get(&did)
+            .ok_or(ssi_core::error::ResolverError::DocumentNotFound(
+                "No document found with did".to_string(),
+            ))?
+            .clone();
+
+        Ok(document)
     }
 }
