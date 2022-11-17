@@ -1,6 +1,6 @@
 const DID_METHOD: &str = "ephemeral";
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct EphemeralResolver {
     registry:
         std::sync::Arc<tokio::sync::RwLock<std::collections::HashMap<String, serde_json::Value>>>,
@@ -116,7 +116,7 @@ mod tests {
         let secondary_public_key = get_secondary_public_key();
 
         let did = create_did(public_key.clone());
-        let secondary_did = create_did(secondary_public_key.clone());
+        let secondary_did = create_did(secondary_public_key);
 
         let did_doc = create_did_doc(public_key);
         let secondary_did_doc = create_did_doc(secondary_did.clone());
