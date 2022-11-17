@@ -23,7 +23,7 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     signer: &impl signature::suite::DIDSigner<S>,
     doc: serde_json::Value,
     relation: signature::suite::VerificationRelation,
-) -> Result<DataIntegrityProof, Box<dyn std::error::Error>> {
+) -> Result<DataIntegrityProof, super::error::Error> {
     let mut hasher = Sha512::new();
     hasher.update(normalization::normalize(doc));
     let result = hasher.finalize();
