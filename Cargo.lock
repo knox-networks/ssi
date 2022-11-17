@@ -490,6 +490,7 @@ dependencies = [
  "serde_json",
  "ssi_core",
  "tokio",
+ "tokio-test",
 ]
 
 [[package]]
