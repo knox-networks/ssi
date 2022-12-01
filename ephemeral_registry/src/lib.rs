@@ -18,7 +18,7 @@ impl EphemeralResolver {
 
 #[async_trait::async_trait]
 impl ssi_core::DIDResolver for EphemeralResolver {
-    fn get_method() -> &'static str {
+    fn get_method(&self) -> &'static str {
         DID_METHOD
     }
 
