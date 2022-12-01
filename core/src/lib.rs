@@ -17,15 +17,15 @@ pub trait DIDResolver: Send + Sync + 'static {
     async fn create(&self, did: String, doc: serde_json::Value)
         -> Result<(), error::ResolverError>;
     // Returns the DID Method that the DID Resolver is compatible with. Each resolver can only be compatible with one.
-    fn get_method() -> &'static str
+    fn get_method(&self) -> &'static str
     where
         Self: Sized;
     // // Given a `did` and `key` it will construct the proper `verificationMethod` to use as part of the data integrity proof creation process.
-    fn create_verification_method(public_key: String, key_id: String) -> String
+    fn create_verification_method(&self, public_key: String, key_id: String) -> String
     where
         Self: Sized,
     {
-        format!("did:{}:{public_key}#{key_id}", Self::get_method(),)
+        format!("did:{}:{public_key}#{key_id}", self.get_method(),)
     }
 }
 
