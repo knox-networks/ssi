@@ -3,5 +3,6 @@ members = [
 	"core",
 	"registry_resolver",
 	"signature",
-	"ssi"
+	"ssi",
+	"ephemeral_registry",
 ]

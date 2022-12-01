@@ -126,6 +126,8 @@ mod tests {
 
     impl DocumentBuilder for TestObj {}
 
+    const TEST_DID_METHOD: &str = "knox";
+
     fn get_body_subject() -> (HashMap<String, Value>, HashMap<String, Value>) {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
 
@@ -285,7 +287,7 @@ mod tests {
         });
         // here we test the presentation
         let signer: signature::suite::ed25519_2020::Ed25519DidSigner =
-            signature::suite::ed25519_2020::Ed25519KeyPair::new(None)
+            signature::suite::ed25519_2020::Ed25519KeyPair::new(TEST_DID_METHOD.to_string(), None)
                 .unwrap()
                 .into();
 
