@@ -4,5 +4,5 @@ members = [
 	"registry_resolver",
 	"signature",
 	"ssi",
-	"ephemeral_registry",
+	"ephemeral_resolver",
 ]

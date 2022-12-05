@@ -1,5 +1,5 @@
 [package]
-name = "ephemeral_registry"
+name = "ephemeral_resolver"
 version = "0.1.0"
 edition = "2021"
 
