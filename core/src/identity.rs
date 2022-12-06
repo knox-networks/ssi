@@ -12,18 +12,26 @@ where
 }
 
 pub async fn create_identity<S>(
-    resolver: &impl super::DIDResolver,
     verifier: impl signature::suite::DIDVerifier<S>,
 ) -> Result<DidDocument, crate::error::Error>
 where
     S: signature::suite::Signature,
 {
     let did_doc = create_did_document(verifier);
-    let encoded_did_doc = serde_json::to_value(did_doc.clone()).unwrap();
+
+    Ok(did_doc)
+}
+
+pub async fn register_identity(
+    resolver: &impl super::DIDResolver,
+    did_doc: DidDocument,
+) -> Result<DidDocument, crate::error::Error> {
+    let encoded_did_doc = serde_json::to_value(did_doc.clone())?;
     resolver
         .create(did_doc.id.clone(), encoded_did_doc)
         .await
         .map_err(|e| crate::error::Error::Unknown(e.to_string()))?;
+
     Ok(did_doc)
 }
 
@@ -253,42 +261,47 @@ mod tests {
         }
     }
 
+    #[test]
+    fn test_create_identity() {
+        let kp =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new(TEST_DID_METHOD.to_string(), None)
+                .unwrap();
+        let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(kp);
+
+        let _did_doc = aw!(create_identity(verifier)).unwrap();
+    }
+
     #[rstest::rstest]
-    #[case::created_successfully(
+    #[case::successful(
         Ok(()),
-        get_did(),
-        get_json_input_mock(),
         true
     )]
-    #[case::created_error(
+    #[case::create_failure(
         Err(crate::error::ResolverError::Unknown("mock error".to_string())),
-        get_did(),
-        get_json_input_mock(),
         false
     )]
-
-    fn test_create_identity(
+    fn test_register_identity(
         #[case] mock_create_response: Result<(), crate::error::ResolverError>,
-        #[case] _did_doc: String,
-        #[case] _did_document_input_mock: serde_json::Value,
         #[case] expect_ok: bool,
-    ) -> Result<(), String> {
+    ) {
         let mut resolver_mock = MockDIDResolver::default();
         let kp =
             signature::suite::ed25519_2020::Ed25519KeyPair::new(TEST_DID_METHOD.to_string(), None)
                 .unwrap();
         let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(kp);
+
         resolver_mock
             .expect_create()
             .with(
                 mockall::predicate::eq(signature::suite::DIDVerifier::get_did(&verifier)),
                 mockall::predicate::always(),
             )
-            .return_once(|_, _| (mock_create_response));
+            .return_once(|_, _| mock_create_response);
 
-        let res = aw!(create_identity(&resolver_mock, verifier));
+        let did_doc = aw!(create_identity(verifier)).unwrap();
 
-        assert_eq!(res.is_err(), !expect_ok);
-        Ok(())
+        let res = aw!(register_identity(&resolver_mock, did_doc));
+
+        assert_eq!(res.is_ok(), expect_ok);
     }
 }
