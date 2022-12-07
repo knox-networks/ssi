@@ -19,6 +19,7 @@ pub enum CredentialType {
     Common,
     PermanentResidentCard,
     BankCard,
+    BankAccount,
 }
 
 impl CredentialType {
@@ -27,12 +28,14 @@ impl CredentialType {
             CredentialType::Common => "VerifiableCredential",
             CredentialType::PermanentResidentCard => "PermanentResidentCard",
             CredentialType::BankCard => "BankCard",
+            CredentialType::BankAccount => "BankAccount",
         }
     }
 
     pub fn from_string(cred_type: &str) -> Option<Self> {
         match cred_type {
             "BankCard" => Some(CredentialType::BankCard),
+            "BankAccount" => Some(CredentialType::BankAccount),
             "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
             "VerifiableCredential" => Some(CredentialType::Common),
             _ => None,
