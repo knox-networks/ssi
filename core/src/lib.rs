@@ -36,11 +36,18 @@ impl Clone for MockDIDResolver {
 }
 
 pub trait DocumentBuilder {
-    fn get_contexts() -> credential::VerificationContext {
-        vec![
-            credential::BASE_CREDENDIAL_CONTEXT.to_string(),
-            credential::EXAMPLE_CREDENTIAL_CONTEXT.to_string(),
-        ]
+    fn get_contexts(cred_type: &credential::CredentialType) -> credential::VerificationContext {
+        match cred_type {
+            credential::CredentialType::BankAccount => {
+                vec![
+                    credential::BASE_CREDENDIAL_CONTEXT.to_string(),
+                    credential::BANK_ACCOUNT_CREDENTIAL_CONTEXT.to_string(),
+                ]
+            }
+            _ => {
+                vec![credential::BASE_CREDENDIAL_CONTEXT.to_string()]
+            }
+        }
     }
 
     /// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
@@ -53,7 +60,7 @@ pub trait DocumentBuilder {
         property_set: std::collections::HashMap<String, serde_json::Value>,
         id: &str,
     ) -> Result<credential::Credential, error::Error> {
-        let context = Self::get_contexts();
+        let context = Self::get_contexts(&cred_type);
 
         Ok(credential::Credential {
             context,
@@ -75,7 +82,7 @@ pub trait DocumentBuilder {
         &self,
         credentials: Vec<credential::VerifiableCredential>,
     ) -> Result<credential::Presentation, error::Error> {
-        let context = Self::get_contexts();
+        let context = Self::get_contexts(&credential::CredentialType::Common);
         Ok(credential::Presentation {
             context,
             verifiable_credential: credentials,
