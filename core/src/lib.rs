@@ -218,7 +218,6 @@ mod tests {
         let expect_credential = json!({
             "@context": [
             "https://www.w3.org/2018/credentials/v1",
-            "https://www.w3.org/2018/credentials/examples/v1"
           ],
           "id": "https://issuer.oidp.uscis.gov/credentials/83627465",
           "type": ["VerifiableCredential", "PermanentResidentCard"],
