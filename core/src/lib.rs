@@ -261,9 +261,9 @@ mod tests {
     fn test_create_presentation() -> Result<(), String> {
         let to = TestObj::new();
         let mut expect_presentation = json!({
-        "@context" : ["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+        "@context" : ["https://www.w3.org/2018/credentials/v1"],
         "verifiableCredential":[
-            {"@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+            {"@context":["https://www.w3.org/2018/credentials/v1"],
             "id":"https://issuer.oidp.uscis.gov/credentials/83627465",
             "credentialSubject":{
                 "birthCountry":"Bahamas",
