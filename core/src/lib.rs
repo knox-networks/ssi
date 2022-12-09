@@ -36,11 +36,18 @@ impl Clone for MockDIDResolver {
 }
 
 pub trait DocumentBuilder {
-    fn get_contexts() -> credential::VerificationContext {
-        vec![
-            credential::BASE_CREDENDIAL_CONTEXT.to_string(),
-            credential::EXAMPLE_CREDENTIAL_CONTEXT.to_string(),
-        ]
+    fn get_contexts(cred_type: &credential::CredentialType) -> credential::VerificationContext {
+        match cred_type {
+            credential::CredentialType::BankAccount => {
+                vec![
+                    credential::BASE_CREDENDIAL_CONTEXT.to_string(),
+                    credential::BANK_ACCOUNT_CREDENTIAL_CONTEXT.to_string(),
+                ]
+            }
+            _ => {
+                vec![credential::BASE_CREDENDIAL_CONTEXT.to_string()]
+            }
+        }
     }
 
     /// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
@@ -53,7 +60,7 @@ pub trait DocumentBuilder {
         property_set: std::collections::HashMap<String, serde_json::Value>,
         id: &str,
     ) -> Result<credential::Credential, error::Error> {
-        let context = Self::get_contexts();
+        let context = Self::get_contexts(&cred_type);
 
         Ok(credential::Credential {
             context,
@@ -75,7 +82,7 @@ pub trait DocumentBuilder {
         &self,
         credentials: Vec<credential::VerifiableCredential>,
     ) -> Result<credential::Presentation, error::Error> {
-        let context = Self::get_contexts();
+        let context = Self::get_contexts(&credential::CredentialType::Common);
         Ok(credential::Presentation {
             context,
             verifiable_credential: credentials,
@@ -211,7 +218,6 @@ mod tests {
         let expect_credential = json!({
             "@context": [
             "https://www.w3.org/2018/credentials/v1",
-            "https://www.w3.org/2018/credentials/examples/v1"
           ],
           "id": "https://issuer.oidp.uscis.gov/credentials/83627465",
           "type": ["VerifiableCredential", "PermanentResidentCard"],
@@ -255,9 +261,9 @@ mod tests {
     fn test_create_presentation() -> Result<(), String> {
         let to = TestObj::new();
         let mut expect_presentation = json!({
-        "@context" : ["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+        "@context" : ["https://www.w3.org/2018/credentials/v1"],
         "verifiableCredential":[
-            {"@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+            {"@context":["https://www.w3.org/2018/credentials/v1"],
             "id":"https://issuer.oidp.uscis.gov/credentials/83627465",
             "credentialSubject":{
                 "birthCountry":"Bahamas",

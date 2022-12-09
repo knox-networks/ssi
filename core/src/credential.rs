@@ -11,7 +11,8 @@
 pub type VerificationContext = Vec<String>;
 
 pub const BASE_CREDENDIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
-pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/examples/v1";
+pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str =
+    "https://knox-networks.github.io/schema/bankaccount/v1.jsonld";
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum CredentialType {
@@ -161,7 +162,7 @@ mod tests {
     #[test]
     fn test_create_credential_from_string() -> Result<(), String> {
         let expect = json!({
-            "@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],
+            "@context":["https://www.w3.org/2018/credentials/v1"],
             "id":"https://issuer.oidp.uscis.gov/credentials/83627465",
             "type":["VerifiableCredential", "PermanentResidentCard"],
             "issuer": "did:example:28394728934792387",
