@@ -1,0 +1,13 @@
+[package]
+name = "ssi_ffi"
+version = "0.1.0"
+
+[lib]
+name = "ssi_ffi"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+safer-ffi = { version = "0.0.7", features = ["proc_macros", "log", "out-refs"] }
+
+[features]
+c-headers = ["safer-ffi/headers"]
