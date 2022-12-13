@@ -1,5 +1,5 @@
 
-pub mod proxy;
+pub mod registry;
 
 /// The following test function is necessary for the header generation.
 #[cfg(feature = "c-headers")]

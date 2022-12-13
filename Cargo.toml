@@ -5,4 +5,5 @@ members = [
 	"signature",
 	"ssi",
 	"ephemeral_resolver",
+	"ffi"
 ]

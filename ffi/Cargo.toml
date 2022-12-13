@@ -1,13 +1,14 @@
 [package]
-name = "ssi_ffi"
+name = "ffi_ssi"
 version = "0.1.0"
-
-[lib]
-name = "ssi_ffi"
-crate-type = ["cdylib", "staticlib"]
+edition = "2021"
 
 [dependencies]
 safer-ffi = { version = "0.0.7", features = ["proc_macros", "log", "out-refs"] }
+registry_resolver = {path = "../registry_resolver"}
+ephemeral_resolver = {path = "../ephemeral_resolver"}
+tokio = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
 
 [features]
 c-headers = ["safer-ffi/headers"]
