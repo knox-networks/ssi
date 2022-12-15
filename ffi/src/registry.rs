@@ -5,7 +5,7 @@ use serde::*;
 use crate::error::{MaybeRustError, Reportable, Try};
 
 #[ffi_export]
-fn registry_create_did(
+pub (crate) fn registry_create_did(
     rust_error: MaybeRustError,
     address: repr_c::String,
     did: repr_c::String,
