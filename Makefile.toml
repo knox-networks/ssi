@@ -1,0 +1,219 @@
+##
+## Build FFI C-Header
+##
+[tasks.ffi]
+workspace = false
+dependencies = [
+    "ffi-build",
+    "ffi-header",
+    "ffi-x86_64-apple-darwin",
+    "ffi-i686-linux-android",
+    "ffi-x86_64-linux-android",
+    "ffi-aarch64-linux-android",
+    "ffi-armv7-linux-androideabi",
+    # TODO implement for macos-latest issue
+    # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources=
+    # "ffi-aarch64-apple-ios", 
+    # "ffi-armv7-apple-ios",
+    # "ffi-armv7s-apple-ios",
+    # "ffi-x86_64-apple-ios",
+    # "ffi-i386-apple-ios",
+]
+
+##
+## Build FFI C-Header
+##
+[tasks.ffi-build]
+workspace = false
+command = "cargo"
+args = ["build", "-p", "ffi_ssi", "--release"]
+
+##
+## Create the directory for FFI headers if it does not exist
+## (otherwise the generation fails)
+##
+[tasks.ffi-header-mkdir]
+workspace = false
+command = "mkdir"
+args = ["-p", "./ffi/headers"]
+
+##
+## Build FFI C-Header
+##
+[tasks.ffi-header]
+dependencies = ["ffi-header-mkdir"]
+workspace = false
+command = "cargo"
+args = ["test", "--manifest-path", "./ffi/Cargo.toml", "--features", "c-headers", "--", "generate_headers"]
+
+##
+## Build FFI library for the default target
+##
+[tasks.ffi-dylib-default]
+workspace = false
+command = "cargo"
+args = ["build", "--manifest-path", "./ffi/Cargo.toml"]
+
+
+##
+## Add the dynamic library dir to the path on Linux.
+##
+[tasks.ffi-add-library-path]
+linux_alias = "ffi-add-library-path-linux"
+
+[tasks.ffi-add-library-path-linux]
+command = "sudo"
+args = ["ldconfig", "${CARGO_MAKE_WORKING_DIRECTORY}/target/debug/"]
+
+##
+## Build FFI C tests
+##
+[tasks.ffi-test-builder]
+dependencies = ["ffi-header", "ffi-dylib-default", "ffi-add-library-path"]
+workspace = false
+plugin="command-wrapper"
+command = "cc"
+args = [
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Wpointer-arith",
+    "-Wcast-align",
+    "-Wwrite-strings",
+    "-Wswitch-default",
+    "-Wunreachable-code",
+    "-Winit-self",
+    "-Wmissing-field-initializers",
+    "-Wno-unknown-pragmas",
+    "-Wstrict-prototypes",
+    "-Wundef",
+    "-Wold-style-definition",
+    "./ffi/tests-c/main.c",
+    "./ffi/src-unity/unity.c",
+    "-L./target/debug/",
+    "-lmonetae_ffi",
+    "-o./target/debug/ffi-test"
+]
+
+##
+## Run FFI C tests
+##
+[tasks.ffi-test]
+dependencies = ["ffi-test-builder"]
+workspace = false
+command = "./target/debug/ffi-test"
+
+##
+## Build FFI Dynamic Libraries
+##
+[tasks.ffi-dylibs-builder]
+workspace = false
+command = "cross"
+args = [
+    "build", 
+    "--release", 
+    "--target", 
+    "${BUILD_TARGET}",
+    "--features", 
+    "static", 
+    "--package",
+    "ffi_ssi"
+]
+
+##
+## Build FFI x86_64-apple-darwin
+##
+[tasks.ffi-x86_64-apple-darwin]
+workspace = false
+command = "cargo"
+args = [
+    "build",
+    "--release",
+    "--target",
+    "x86_64-apple-darwin",
+    "--features",
+    "static",
+    "--package",
+    "ffi_ssi"
+]
+
+##
+## Build FFI x86_64-linux-android
+##
+[tasks.ffi-x86_64-linux-android]
+extend = "ffi-dylibs-builder"
+env = { BUILD_TARGET = "x86_64-linux-android"}
+
+##
+## Build FFI armv7-linux-androideabi
+##
+[tasks.ffi-armv7-linux-androideabi]
+extend = "ffi-dylibs-builder"
+env = { BUILD_TARGET = "armv7-linux-androideabi"}
+
+##
+## Build FFI aarch64-linux-android
+##
+[tasks.ffi-aarch64-linux-android]
+extend = "ffi-dylibs-builder"
+env = { BUILD_TARGET = "aarch64-linux-android"}
+
+##
+## Build FFI i686-linux-android
+##
+[tasks.ffi-i686-linux-android]
+extend = "ffi-dylibs-builder"
+env = { BUILD_TARGET = "i686-linux-android"}
+
+##
+## Build FFI 
+##
+[tasks.ffi-aarch64-apple-ios]
+extend = "ffi-dylibs-builder"
+env = { BUILD_TARGET = "aarch64-apple-ios"}
+
+##
+## Build FFI 
+##
+[tasks.ffi-armv7-apple-ios]
+extend = "ffi-dylibs-builder"
+env = { BUILD_TARGET = "armv7-apple-ios"}
+
+##
+## Build FFI 
+##
+[tasks.ffi-armv7s-apple-ios]
+extend = "ffi-dylibs-builder"
+env = { BUILD_TARGET = "armv7s-apple-ios"}
+
+##
+## Build FFI 
+##
+[tasks.ffi-x86_64-apple-ios]
+extend = "ffi-dylibs-builder"
+env = { BUILD_TARGET = "x86_64-apple-ios"}
+
+##
+## Build FFI 
+##
+[tasks.ffi-i386-apple-ios]
+extend = "ffi-dylibs-builder"
+env = { BUILD_TARGET = "i386-apple-ios"}
+
+
+##
+## Build FFI Dynamic libraries in parallel
+# "ffi-aarch64-apple-ios", 
+# "ffi-armv7-apple-ios", 
+# "ffi-armv7s-apple-ios", 
+# "ffi-x86_64-apple-ios", 
+# "ffi-i386-apple-ios", 
+##
+[tasks.ffi-dylibs]
+run_task = { name = [
+    "ffi-x86_64-apple-darwin",
+    "ffi-x86_64-linux-android", 
+    "ffi-i686-linux-android",
+    "ffi-armv7-linux-androideabi", 
+    "ffi-aarch64-linux-android", 
+    ], parallel = true }

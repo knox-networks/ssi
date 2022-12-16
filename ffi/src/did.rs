@@ -1,45 +1,60 @@
 use safer_ffi::prelude::*;
-use registry_resolver::RegistryResolver;
+use signature::suite::ed25519_2020::Mnemonic;
 use tokio::runtime::Runtime;
-use serde::*;
 use crate::error::{MaybeRustError, Reportable, Try};
 
 #[ffi_export]
-fn create_identity(
+pub fn create_identity(
     rust_error: MaybeRustError,
     did_method: repr_c::String,
     mnemonic_input: repr_c::String,
 ) -> repr_c::String {
-    // create_did_doc functionality
-    let mut mnemonic: Option<String>;
-    if len(mnemonic_input) == 0 {
-        mnemonic = Some(mnemonic_input);
+    // create_did_doc
+    let mnemonic_option: Option<Mnemonic>;
+    if mnemonic_input.to_string().len() == 0 {
+        mnemonic_option = None;
     } else {
-        mnemonic = None;
+        let mm = signature::suite::ed25519_2020::Mnemonic{
+            language: signature::suite::ed25519_2020::MnemonicLanguage::English,
+            phrase: mnemonic_input.to_string(),
+        };
+        mnemonic_option = Some(mm);
     }
-    let some = rust_error
+    let result = rust_error
         .try_(||{
-                let keypair = ssi::signature::suite::ed25519_2020::Ed25519KeyPair::new(
+                let keypair = signature::suite::ed25519_2020::Ed25519KeyPair::new(
                     did_method.to_string(),
-                    mnemonic,
-                );
-                let verifier = ssi::signature::suite::ed25519_2020::Ed25519DidVerifier::from(keypair);
+                    mnemonic_option,
+                ).unwrap();
+                let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(keypair);
                 let rt = Runtime::new().report("failed to create runtime").expect("unable to launch runtime");
-                let did_doc = rt.block_on(ssi::identity::create_identity(verifier).await)?;
+                let did_doc = 
+                rt.block_on(async move {
+                    ssi_core::identity::create_identity(verifier).await
+                });
                 Ok(did_doc)
             }
-        ).is_some();
-        if some {
-            return did_doc;
-        }
-}
+        );
 
-#[ffi_export]
-fn register_identity(
-    rust_error: MaybeRustError,
-    address: repr_c::String,
-    did: repr_c::String,
-    document: repr_c::String,
-) -> repr_c::String {
-    return crate::registry::registry_create_did(rust_error, address, did, document);
+        if result.is_some() {
+            let r = result.unwrap();
+            if r.is_ok() {
+                let did_doc = r.unwrap();
+                return repr_c::String::from(serde_json::to_string(&did_doc).unwrap());
+            } else {
+                return safer_ffi::String::from("".to_string());
+            }
+        } else {
+            return safer_ffi::String::from("".to_string());
+        }
+        
 }
+// #[ffi_export]
+// pub fn register_identity(
+//     rust_error: MaybeRustError,
+//     address: repr_c::String,
+//     did: repr_c::String,
+//     document: repr_c::String,
+// ) -> repr_c::String {
+//     return crate::registry::registry_create_did(rust_error, address, did, document);
+// }
