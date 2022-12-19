@@ -509,20 +509,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ffi_ssi"
-version = "0.3.0"
-dependencies = [
- "ephemeral_resolver",
- "registry_resolver",
- "safer-ffi",
- "serde",
- "serde_json",
- "signature",
- "ssi_core",
- "tokio",
-]
-
-[[package]]
 name = "fixedbitset"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1689,6 +1675,21 @@ dependencies = [
  "registry_resolver",
  "signature",
  "ssi_core",
+]
+
+[[package]]
+name = "ssi-ffi"
+version = "0.3.0"
+dependencies = [
+ "ephemeral_resolver",
+ "registry_resolver",
+ "safer-ffi",
+ "serde",
+ "serde_json",
+ "signature",
+ "ssi_core",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]

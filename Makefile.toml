@@ -6,11 +6,13 @@ workspace = false
 dependencies = [
     "ffi-build",
     "ffi-header",
-    "ffi-x86_64-apple-darwin",
-    "ffi-i686-linux-android",
-    "ffi-x86_64-linux-android",
-    "ffi-aarch64-linux-android",
-    "ffi-armv7-linux-androideabi",
+# temporatily disabled 
+    # "ffi-x86_64-apple-darwin",
+    # "ffi-i686-linux-android",
+    # "ffi-x86_64-linux-android",
+    # "ffi-aarch64-linux-android",
+    # "ffi-armv7-linux-androideabi",
+# eof temporatily disabled 
     # TODO implement for macos-latest issue
     # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources=
     # "ffi-aarch64-apple-ios", 
@@ -26,7 +28,7 @@ dependencies = [
 [tasks.ffi-build]
 workspace = false
 command = "cargo"
-args = ["build", "-p", "ffi_ssi", "--release"]
+args = ["build", "-p", "ssi-ffi", "--release"]
 
 ##
 ## Create the directory for FFI headers if it does not exist
@@ -91,7 +93,7 @@ args = [
     "./ffi/tests-c/main.c",
     "./ffi/src-unity/unity.c",
     "-L./target/debug/",
-    "-lmonetae_ffi",
+    "-lssi_ffi",
     "-o./target/debug/ffi-test"
 ]
 
@@ -117,7 +119,7 @@ args = [
     "--features", 
     "static", 
     "--package",
-    "ffi_ssi"
+    "ssi_ffi"
 ]
 
 ##
@@ -134,7 +136,7 @@ args = [
     "--features",
     "static",
     "--package",
-    "ffi_ssi"
+    "ssi_ffi"
 ]
 
 ##
@@ -217,3 +219,23 @@ run_task = { name = [
     "ffi-armv7-linux-androideabi", 
     "ffi-aarch64-linux-android", 
     ], parallel = true }
+
+[plugins.impl.command-wrapper]
+script = '''
+wrapper = get_env CARGO_MAKE_CMD_WRAPPER
+command = set ${task.command}
+if is_defined wrapper
+    command = set ${wrapper}
+    args = array ${task.command} 
+    args = array_concat ${args} ${task.args}
+else
+    args = set ${task.args}
+end
+args_string = array_join ${args} " "
+
+echo Execute command: \n${command}
+for i in ${args}
+    echo "  ${i}"
+end
+exec --fail-on-error ${command} %{args_string}
+'''

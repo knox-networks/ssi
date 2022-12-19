@@ -1,7 +1,11 @@
 [package]
-name = "ffi_ssi"
+name = "ssi-ffi"
 version.workspace = true
 edition.workspace = true
+
+[lib]
+name = "ssi_ffi"
+crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 serde_json = "1.0.81"
@@ -12,6 +16,7 @@ signature = { path = "../signature" }
 ephemeral_resolver = {path = "../ephemeral_resolver"}
 tokio = { workspace = true }
 serde = { version = "1.0", features = ["derive"] }
+tracing = { workspace = true }
 
 [features]
 c-headers = ["safer-ffi/headers"]

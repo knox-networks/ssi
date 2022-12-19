@@ -2,8 +2,8 @@ use safer_ffi::prelude::*;
 use signature::suite::ed25519_2020::Mnemonic;
 use tokio::runtime::Runtime;
 use crate::error::{MaybeRustError, Reportable, Try};
-// use ssi_core::identity::DidDocument;
-// #[allow(dead_code)]
+use tracing::*;
+
 
 #[derive_ReprC]
 #[ReprC::opaque]
@@ -20,7 +20,14 @@ pub fn create_identity(
     mnemonic_input: char_p::Ref<'_>,
 ) -> Option<repr_c::Box<DidDocument>>{
     // create_did_doc
+    let _span = error_span!("ffi_ssi").entered();
     let mnemonic_option: Option<Mnemonic>;
+    println!("create_identity launched");
+    info!(
+        did_method=?did_method, 
+        mnemonic_input=?mnemonic_input,
+        "ffi create_identity called with params");
+
     if mnemonic_input.to_string().len() == 0 {
         mnemonic_option = None;
     } else {
@@ -43,16 +50,21 @@ pub fn create_identity(
                 rt.block_on(async move {
                     ssi_core::identity::create_identity(verifier).await
                 });
+                println!("create_identity response {:?}", did_doc);
+                debug!("create_identity response {:?}", did_doc);
                 Ok(did_doc)
             }
         );
 
         if result.is_some() {
+            println!("create_identity launched {:?}", result);
+            debug!("create_identity unpacking result {:?}", result);
             let r = result.unwrap();
             return Some(repr_c::Box::new(DidDocument{
                 backend: r.unwrap(),
             }));
         } 
+        debug!("create_identity None result");
         None 
 }
 

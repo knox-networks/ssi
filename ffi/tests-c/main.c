@@ -19,26 +19,21 @@ void tearDown(void) {
 }
 
 void test_create_did_doc(void) {
-    // did_method: repr_c::String,
-    // mnemonic_input: repr_c::String
-    // Vec_uint8_t did_doc = "DID_METHOD";
     char did_doc[] = "DID_METHOD";
-    // Vec_uint8_t address = "";
     char address[] = "";
-    // incoming parameters: =====>>> path: char_p::Ref<'_> 
-    DidDocument_t *did_doc = create_identity(NULL, did_doc, address);
-    TEST_ASSERT_NOT_NULL(did_doc);
-    // return did_doc;
+    printf("test_create_did_doc");
+    DidDocument_t *did_doc_rsp = create_identity(NULL, did_doc, address);
+    TEST_ASSERT_NOT_NULL(did_doc_rsp);
 }
 
-void test_push_did_doc(void) {
-    Vec_uint8_t did_doc = test_create_did_doc();
-    // address, did, document
-    registry_create_did(NULL, address, "did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ", did_doc)
-}
+// void test_push_did_doc(void) {
+//     Vec_uint8_t did_doc = test_create_did_doc();
+//     // address, did, document
+//     registry_create_did(NULL, address, "did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ", did_doc)
+// }
 
 int main(void) {
     UNITY_BEGIN();
-    RUN_TEST(test_push_did_doc);
+    RUN_TEST(test_create_did_doc);
     return UNITY_END();
 }

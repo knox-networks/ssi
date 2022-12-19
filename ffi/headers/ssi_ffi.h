@@ -7,8 +7,8 @@
  *                                         *
  *******************************************/
 
-#ifndef __RUST_FFI_SSI__
-#define __RUST_FFI_SSI__
+#ifndef __RUST_SSI_FFI__
+#define __RUST_SSI_FFI__
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,6 +19,16 @@ typedef struct RustError {
     char * error_str;
 
 } RustError_t;
+
+typedef struct DidDocument DidDocument_t;
+
+DidDocument_t * create_identity (
+    RustError_t * rust_error,
+    char const * did_method,
+    char const * mnemonic_input);
+
+void free_rust_error (
+    RustError_t rust_error);
 
 
 #include <stddef.h>
@@ -46,17 +56,9 @@ bool registry_create_did (
     Vec_uint8_t did,
     Vec_uint8_t document);
 
-Vec_uint8_t create_identity (
-    RustError_t * rust_error,
-    Vec_uint8_t did_method,
-    Vec_uint8_t mnemonic_input);
-
-void free_rust_error (
-    RustError_t rust_error);
-
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* __RUST_FFI_SSI__ */
+#endif /* __RUST_SSI_FFI__ */
