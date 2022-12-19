@@ -2,13 +2,23 @@ use safer_ffi::prelude::*;
 use signature::suite::ed25519_2020::Mnemonic;
 use tokio::runtime::Runtime;
 use crate::error::{MaybeRustError, Reportable, Try};
+// use ssi_core::identity::DidDocument;
+// #[allow(dead_code)]
 
+#[derive_ReprC]
+#[ReprC::opaque]
+#[derive(Clone)]
+pub struct DidDocument {
+    pub(crate) backend: ssi_core::identity::DidDocument,
+}
+
+// path: char_p::Ref<'_>
 #[ffi_export]
 pub fn create_identity(
     rust_error: MaybeRustError,
-    did_method: repr_c::String,
-    mnemonic_input: repr_c::String,
-) -> repr_c::String {
+    did_method: char_p::Ref<'_>,
+    mnemonic_input: char_p::Ref<'_>,
+) -> Option<repr_c::Box<DidDocument>>{
     // create_did_doc
     let mnemonic_option: Option<Mnemonic>;
     if mnemonic_input.to_string().len() == 0 {
@@ -22,8 +32,9 @@ pub fn create_identity(
     }
     let result = rust_error
         .try_(||{
+                let did_mt = did_method.to_string(); 
                 let keypair = signature::suite::ed25519_2020::Ed25519KeyPair::new(
-                    did_method.to_string(),
+                    did_mt,
                     mnemonic_option,
                 ).unwrap();
                 let verifier = signature::suite::ed25519_2020::Ed25519DidVerifier::from(keypair);
@@ -38,23 +49,10 @@ pub fn create_identity(
 
         if result.is_some() {
             let r = result.unwrap();
-            if r.is_ok() {
-                let did_doc = r.unwrap();
-                return repr_c::String::from(serde_json::to_string(&did_doc).unwrap());
-            } else {
-                return safer_ffi::String::from("".to_string());
-            }
-        } else {
-            return safer_ffi::String::from("".to_string());
-        }
-        
+            return Some(repr_c::Box::new(DidDocument{
+                backend: r.unwrap(),
+            }));
+        } 
+        None 
 }
-// #[ffi_export]
-// pub fn register_identity(
-//     rust_error: MaybeRustError,
-//     address: repr_c::String,
-//     did: repr_c::String,
-//     document: repr_c::String,
-// ) -> repr_c::String {
-//     return crate::registry::registry_create_did(rust_error, address, did, document);
-// }
+
