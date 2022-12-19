@@ -31,30 +31,13 @@ void free_rust_error (
     RustError_t rust_error);
 
 
-#include <stddef.h>
-#include <stdint.h>
-
-/** \brief
- *  Same as [`Vec<T>`][`rust::Vec`], but with guaranteed `#[repr(C)]` layout
- */
-typedef struct Vec_uint8 {
-
-    uint8_t * ptr;
-
-    size_t len;
-
-    size_t cap;
-
-} Vec_uint8_t;
-
-
 #include <stdbool.h>
 
 bool registry_create_did (
     RustError_t * rust_error,
-    Vec_uint8_t address,
-    Vec_uint8_t did,
-    Vec_uint8_t document);
+    char const * address,
+    char const * did,
+    DidDocument_t * document);
 
 
 #ifdef __cplusplus
