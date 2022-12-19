@@ -1,7 +1,6 @@
-
-pub mod registry;
 pub mod did;
 mod error;
+pub mod registry;
 
 /// The following test function is necessary for the header generation.
 #[cfg(feature = "c-headers")]
