@@ -90,15 +90,15 @@ mod tests {
         )
     }
 
-    #[ignore = "registry contract check disabled"]
-    #[test]
-    fn test_create_did_integration() {
+    // #[ignore = "registry contract check disabled"]
+    #[tokio::test]
+    async fn test_create_did_integration() {
         let did_doc = create_did();
         let address = "https://reg.knoxnetworks.io:443";
-        let resolver = aw!(RegistryResolver::new(address.to_string()));
+        let resolver = RegistryResolver::new(address.to_string()).await;
         let document_serialized = create_did_doc(did_doc.clone());
-        let result = aw!(resolver.create(did_doc.to_string(), document_serialized));
-        // println!("result {:?}", result);
+        let result = resolver.create(did_doc.to_string(), document_serialized).await;
+        println!("result {:?}", result);
         assert!(result.is_ok())
     }
 

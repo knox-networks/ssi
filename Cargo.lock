@@ -1550,6 +1550,8 @@ dependencies = [
  "serde",
  "serde_json",
  "ssi_core",
+ "tokio",
+ "tokio-stream",
  "tokio-test",
  "tonic",
 ]
