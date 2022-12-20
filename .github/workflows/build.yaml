@@ -39,3 +39,7 @@ jobs:
       - name: Test
         run: |-
           cargo test
+
+      - name: Run FFI tests
+        run: |-
+          cargo make ffi-test
