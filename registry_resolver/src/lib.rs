@@ -57,12 +57,12 @@ where
 
 #[cfg(test)]
 mod tests {
-    use ssi_core::DIDResolver;
-    use super::*;
+
     use crate::{
         registry_client::{registry::CreateResponse, registry::ReadResponse, MockRegistryClient},
         RegistryResolver,
     };
+    use ssi_core::DIDResolver;
 
     macro_rules! aw {
         ($e:expr) => {
@@ -90,15 +90,16 @@ mod tests {
         )
     }
 
-    // #[ignore = "registry contract check disabled"]
+    #[ignore = "registry contract test disabled"]
     #[tokio::test]
     async fn test_create_did_integration() {
         let did_doc = create_did();
         let address = "https://reg.knoxnetworks.io:443";
         let resolver = RegistryResolver::new(address.to_string()).await;
         let document_serialized = create_did_doc(did_doc.clone());
-        let result = resolver.create(did_doc.to_string(), document_serialized).await;
-        println!("result {:?}", result);
+        let result = resolver
+            .create(did_doc.to_string(), document_serialized)
+            .await;
         assert!(result.is_ok())
     }
 
