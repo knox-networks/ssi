@@ -21,7 +21,7 @@ void tearDown(void) {
 DidDocument_t* test_create_did_doc(void) {
     char did_method[] = "DID_METHOD";
     char mnemonic[] = "";
-    printf("test_create_did_doc");
+    printf("test_create_did_doc launched");
     DidDocument_t *did_doc_rsp = create_identity(NULL, did_method, mnemonic);
     TEST_ASSERT_NOT_NULL(did_doc_rsp);
     return did_doc_rsp;
@@ -29,7 +29,8 @@ DidDocument_t* test_create_did_doc(void) {
 
 void test_push_did_doc_integration(void) {
     DidDocument_t *did_document = test_create_did_doc();
-    char address[] = "";
+    printf("test_create_did_doc did_document received");
+    char address[] = "https://reg.knoxnetworks.io:443";
     char did[] = "did:knox:zFCxaFZ4twBFG8P2hBvzheaRdsSshqEngn9r4nuQwEMfJ";
     bool created = registry_create_did(NULL, address, did, did_document);
     TEST_ASSERT_TRUE(created);

@@ -11,7 +11,6 @@ pub struct DidDocument {
     pub(crate) backend: ssi_core::identity::DidDocument,
 }
 
-// path: char_p::Ref<'_>
 #[ffi_export]
 pub fn create_identity(
     rust_error: MaybeRustError,
