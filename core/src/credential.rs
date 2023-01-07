@@ -11,8 +11,7 @@
 pub type VerificationContext = Vec<String>;
 
 pub const BASE_CREDENDIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
-pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str =
-    "105-add-context-based-validation-to-vc-vp-creation";
+pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum CredentialType {

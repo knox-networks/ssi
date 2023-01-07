@@ -119,21 +119,22 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 mod tests {
     use super::*;
     use assert_json_diff::assert_json_eq;
+    use iref::IriBuf;
+    use json_ld::{syntax::Parse, JsonLdProcessor};
+    use locspan::Span;
     use serde_json::json;
+    use static_iref::iri;
     use std::{collections::HashMap, vec};
 
     use serde_json::Value;
-    struct TestObj {}
-
-    impl TestObj {
-        pub fn new() -> Self {
-            Self {}
-        }
-    }
-
-    impl DocumentBuilder for TestObj {}
 
     const TEST_DID_METHOD: &str = "knox";
+
+    macro_rules! aw {
+        ($e:expr) => {
+            tokio_test::block_on($e)
+        };
+    }
 
     fn get_body_subject() -> (HashMap<String, Value>, HashMap<String, Value>) {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
@@ -214,7 +215,7 @@ mod tests {
 
     #[test]
     fn test_create_credential() -> Result<(), String> {
-        let to = TestObj::new();
+        let to = DefaultDocumentBuilder {};
         let expect_credential = json!({
             "@context": [
             "https://www.w3.org/2018/credentials/v1",
@@ -259,7 +260,7 @@ mod tests {
 
     #[test]
     fn test_create_presentation() -> Result<(), String> {
-        let to = TestObj::new();
+        let to = DefaultDocumentBuilder {};
         let mut expect_presentation = json!({
         "@context" : ["https://www.w3.org/2018/credentials/v1"],
         "verifiableCredential":[
@@ -330,5 +331,65 @@ mod tests {
 
         assert_json_eq!(expect_presentation, presentation_json);
         Ok(())
+    }
+
+    #[test]
+    fn test_context_adherance() {
+        let builder = DefaultDocumentBuilder {};
+        let cred_subject = std::collections::HashMap::new();
+        let optional_properties = std::collections::HashMap::new();
+        let credential_id = "12345";
+
+        let credential = builder
+            .create_credential(
+                credential::CredentialType::BankAccount,
+                cred_subject,
+                optional_properties,
+                credential_id,
+            )
+            .unwrap();
+
+        // Create a "remote" document by parsing a file manually.
+        let input = json_ld::RemoteDocument::new(
+            // We use `IriBuf` as IRI type.
+            Some(iri!("https://example.com/sample.jsonld").to_owned()),
+            // Optional content type.
+            Some("application/ld+json".parse().unwrap()),
+            // Parse the file.
+            json_ld::syntax::Value::parse_str(
+                r#"
+                {
+                    "@context": {
+                        "name": "http://xmlns.com/foaf/0.1/name"
+                    },
+                    "@id": "https://www.rust-lang.org",
+                    "name": "Rust Programming Language"
+                }"#,
+                |span| span, // keep the source `Span` of each element as metadata.
+            )
+            .expect("unable to parse file"),
+        );
+
+        // Use `NoLoader` as we won't need to load any remote document.
+        let mut loader = json_ld::NoLoader::<IriBuf, Span>::new();
+
+        // Expand the "remote" document.
+        let expanded = aw!(input.expand(&mut loader)).expect("expansion failed");
+
+        for object in expanded.into_value() {
+            if let Some(id) = object.id() {
+                let name = object
+                    .as_node()
+                    .unwrap()
+                    .get_any(&iri!("http://xmlns.com/foaf/0.1/name"))
+                    .unwrap()
+                    .as_str()
+                    .unwrap();
+
+                println!("id: {id}");
+                println!("name: {name}");
+            }
+        }
+        // assert!(false);
     }
 }
