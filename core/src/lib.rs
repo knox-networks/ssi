@@ -115,17 +115,9 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 #[cfg(test)]
 mod tests {
 
-    #[derive(Clone, Debug)]
-    pub enum SerdeJsonFragment<'a> {
-        Key(&'a str),
-        Value(&'a serde_json::Value),
-    }
-
     use super::*;
     use assert_json_diff::assert_json_eq;
-    use iref::IriBuf;
     use json_ld::{syntax::Parse, JsonLdProcessor};
-    use locspan::Span;
     use serde_json::json;
     use static_iref::iri;
     use std::{collections::HashMap, vec};
