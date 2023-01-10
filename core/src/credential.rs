@@ -19,6 +19,7 @@ pub enum CredentialType {
     Common,
     PermanentResidentCard,
     BankCard,
+    #[serde(rename = "BankAccountCredential")]
     BankAccount,
 }
 
@@ -65,6 +66,8 @@ pub struct Credential {
 
     #[serde(rename = "issuanceDate")]
     pub issuance_date: String,
+
+    pub issuer: String,
 
     #[serde(rename = "credentialSubject")]
     pub subject: CredentialSubject,

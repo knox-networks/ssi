@@ -59,6 +59,7 @@ pub trait DocumentBuilder {
         cred_subject: std::collections::HashMap<String, serde_json::Value>,
         property_set: std::collections::HashMap<String, serde_json::Value>,
         id: &str,
+        issuer: String,
     ) -> Result<credential::Credential, error::Error> {
         let context = Self::get_contexts(&cred_type);
 
@@ -67,6 +68,7 @@ pub trait DocumentBuilder {
             id: id.to_string(),
             cred_type: vec![credential::CredentialType::Common, cred_type],
             issuance_date: chrono::Utc::now().to_rfc3339(),
+            issuer,
             subject: cred_subject,
             property_set,
         })
@@ -119,6 +121,7 @@ mod tests {
     use assert_json_diff::assert_json_eq;
     use json_ld::{syntax::Parse, JsonLdProcessor};
     use serde_json::json;
+    use signature::suite::KeyPair;
     use static_iref::iri;
     use std::{collections::HashMap, vec};
 
@@ -211,7 +214,10 @@ mod tests {
 
     #[test]
     fn test_create_credential() -> Result<(), String> {
-        let to = DefaultDocumentBuilder {};
+        let kp =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new("test".to_string(), None).unwrap();
+        let issuer = kp.get_did();
+        let builder = DefaultDocumentBuilder {};
         let expect_credential = json!({
             "@context": [
             "https://www.w3.org/2018/credentials/v1",
@@ -241,11 +247,12 @@ mod tests {
 
         let (kv_body, kv_subject) = get_body_subject();
 
-        let vc = to.create_credential(
+        let vc = builder.create_credential(
             credential::CredentialType::PermanentResidentCard,
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
+            issuer,
         );
 
         assert!(vc.is_ok());
@@ -256,7 +263,10 @@ mod tests {
 
     #[test]
     fn test_create_presentation() -> Result<(), String> {
-        let to = DefaultDocumentBuilder {};
+        let kp =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new("test".to_string(), None).unwrap();
+        let issuer = kp.get_did();
+        let builder = DefaultDocumentBuilder {};
         let mut expect_presentation = json!({
         "@context" : ["https://www.w3.org/2018/credentials/v1"],
         "verifiableCredential":[
@@ -296,11 +306,12 @@ mod tests {
 
         let (kv_body, kv_subject) = get_body_subject();
 
-        let vc = to.create_credential(
+        let vc = builder.create_credential(
             credential::CredentialType::PermanentResidentCard,
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
+            issuer,
         );
 
         assert!(vc.is_ok());
@@ -315,7 +326,7 @@ mod tests {
 
         let verifiable_credential = credential.into_verifiable_credential(proof.unwrap());
         let credentials = vec![verifiable_credential];
-        let interim_presentation = to
+        let interim_presentation = builder
             .create_presentation(credentials)
             .expect("unable to create presentation from credentials");
 
@@ -331,6 +342,9 @@ mod tests {
 
     #[test]
     fn test_context_adherance() {
+        let kp =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new("test".to_string(), None).unwrap();
+        let issuer = kp.get_did();
         let builder = DefaultDocumentBuilder {};
         let mut cred_subject = std::collections::HashMap::new();
         cred_subject.insert("accountId".to_string(), serde_json::json!("1111111"));
@@ -375,6 +389,7 @@ mod tests {
                 cred_subject,
                 optional_properties,
                 credential_id,
+                issuer,
             )
             .unwrap();
 
