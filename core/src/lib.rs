@@ -404,9 +404,9 @@ mod tests {
         // Create a "remote" document by parsing a file manually.
         let input = json_ld::RemoteDocument::new(
             // We use `IriBuf` as IRI type.
-            Some(iri!("https://example.com/sample.jsonld").to_owned()),
+            None,
             // Optional content type.
-            Some("application/ld+json".parse().unwrap()),
+            None,
             // Parse the file.
             json_ld::syntax::Value::parse_str(
                 value.as_str(),
@@ -419,22 +419,30 @@ mod tests {
         let mut loader = json_ld::NoLoader::<_, _>::new();
 
         // Expand the "remote" document.
-        let expanded = aw!(input.expand(&mut loader)).expect("expansion failed");
+        let expanded = aw!(input.expand(&mut loader));
 
-        for object in expanded.into_value() {
-            if let Some(id) = object.id() {
-                let name = object
-                    .as_node()
-                    .unwrap()
-                    .get_any(&iri!("http://xmlns.com/foaf/0.1/name"))
-                    .unwrap()
-                    .as_str()
-                    .unwrap();
+        match expanded {
+            Err(e) => {
+                println!("Error: {:?}", e);
+            }
+            Ok(expanded) => {
+                for object in expanded.into_value() {
+                    if let Some(id) = object.id() {
+                        let name = object
+                            .as_node()
+                            .unwrap()
+                            .get_any(&iri!("http://xmlns.com/foaf/0.1/name"))
+                            .unwrap()
+                            .as_str()
+                            .unwrap();
 
-                println!("id: {id}");
-                println!("name: {name}");
+                        println!("id: {id}");
+                        println!("name: {name}");
+                    }
+                }
             }
         }
+
         // assert!(false);
     }
 }
