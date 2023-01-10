@@ -67,10 +67,7 @@ pub trait DocumentBuilder {
             id: id.to_string(),
             cred_type: vec![credential::CredentialType::Common, cred_type],
             issuance_date: chrono::Utc::now().to_rfc3339(),
-            subject: credential::CredentialSubject {
-                id: id.to_string(),
-                property_set: cred_subject,
-            },
+            subject: cred_subject,
             property_set,
         })
     }
@@ -117,6 +114,13 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 
 #[cfg(test)]
 mod tests {
+
+    #[derive(Clone, Debug)]
+    pub enum SerdeJsonFragment<'a> {
+        Key(&'a str),
+        Value(&'a serde_json::Value),
+    }
+
     use super::*;
     use assert_json_diff::assert_json_eq;
     use iref::IriBuf;
@@ -336,7 +340,40 @@ mod tests {
     #[test]
     fn test_context_adherance() {
         let builder = DefaultDocumentBuilder {};
-        let cred_subject = std::collections::HashMap::new();
+        let mut cred_subject = std::collections::HashMap::new();
+        cred_subject.insert("accountId".to_string(), serde_json::json!("1111111"));
+        cred_subject.insert("type".to_string(), serde_json::json!(["BankAccount"]));
+        cred_subject.insert(
+            "address".to_string(),
+            serde_json::json!({
+                "type": ["PostalAddress"],
+                "streetAddress": "19 Knox St",
+                "addressLocality": "Toronto",
+                "addressRegion": "ON",
+                "addressCountry": "Canada",
+                "postalCode": "M3B 1A2"
+            }),
+        );
+        cred_subject.insert(
+            "routingInfo".to_string(),
+            serde_json::json!({
+                "type":["RoutingInfo"],
+                "code": "GBDSC",
+                "value": "042962"
+            }),
+        );
+        cred_subject.insert(
+            "id".to_string(),
+            serde_json::json!("did:knox:z6Mk2cd21e9abe57fae7...31073da1b522790e63834fe17a4c2be"),
+        );
+
+        cred_subject.insert("givenName".to_string(), serde_json::json!("Alice"));
+        cred_subject.insert("familyName".to_string(), serde_json::json!("Smith"));
+        cred_subject.insert(
+            "iban".to_string(),
+            serde_json::json!("GB74GSLD04296280001319"),
+        );
+        cred_subject.insert("BIC11".to_string(), serde_json::json!("TDOMCATTTOR"));
         let optional_properties = std::collections::HashMap::new();
         let credential_id = "12345";
 
@@ -349,6 +386,10 @@ mod tests {
             )
             .unwrap();
 
+        let value = serde_json::to_value(credential).unwrap().to_string();
+
+        println!("{value}");
+
         // Create a "remote" document by parsing a file manually.
         let input = json_ld::RemoteDocument::new(
             // We use `IriBuf` as IRI type.
@@ -357,21 +398,14 @@ mod tests {
             Some("application/ld+json".parse().unwrap()),
             // Parse the file.
             json_ld::syntax::Value::parse_str(
-                r#"
-                {
-                    "@context": {
-                        "name": "http://xmlns.com/foaf/0.1/name"
-                    },
-                    "@id": "https://www.rust-lang.org",
-                    "name": "Rust Programming Language"
-                }"#,
+                value.as_str(),
                 |span| span, // keep the source `Span` of each element as metadata.
             )
-            .expect("unable to parse file"),
+            .expect("Error creating remote document"),
         );
 
         // Use `NoLoader` as we won't need to load any remote document.
-        let mut loader = json_ld::NoLoader::<IriBuf, Span>::new();
+        let mut loader = json_ld::NoLoader::<_, _>::new();
 
         // Expand the "remote" document.
         let expanded = aw!(input.expand(&mut loader)).expect("expansion failed");

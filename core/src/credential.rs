@@ -43,12 +43,7 @@ impl CredentialType {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub struct CredentialSubject {
-    pub id: String,
-    #[serde(flatten)]
-    pub property_set: std::collections::HashMap<String, serde_json::Value>,
-}
+pub type CredentialSubject = std::collections::HashMap<String, serde_json::Value>;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct VerifiableCredential {
