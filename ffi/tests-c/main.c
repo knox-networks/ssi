@@ -29,8 +29,9 @@ DidDocument_t* test_create_did_doc(void) {
 
 void test_push_did_doc_integration(void) {
     DidDocument_t *did_document = test_create_did_doc();
-    printf("test_create_did_doc did_document received");
-    char address[] = "https://reg.knoxnetworks.io:443";
+    printf("\n test_create_did_doc did_document received \n");
+    // char address[] = "https://reg.knoxnetworks.io:443";
+    char address[] = "https://reg.sandbox5.knoxnetworks.io";
     char did[] = "did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4";
     bool created = registry_create_did(NULL, address, did, did_document);
     TEST_ASSERT_TRUE(created);

@@ -20,10 +20,12 @@ typedef struct RustError {
 
 } RustError_t;
 
-void free_rust_error (
-    RustError_t rust_error);
-
 typedef struct DidDocument DidDocument_t;
+
+DidDocument_t * create_identity (
+    RustError_t * rust_error,
+    char const * did_method,
+    char const * mnemonic_input);
 
 
 #include <stdbool.h>
@@ -34,10 +36,8 @@ bool registry_create_did (
     char const * did,
     DidDocument_t * document);
 
-DidDocument_t * create_identity (
-    RustError_t * rust_error,
-    char const * did_method,
-    char const * mnemonic_input);
+void free_rust_error (
+    RustError_t rust_error);
 
 
 #ifdef __cplusplus

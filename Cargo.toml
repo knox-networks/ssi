@@ -35,7 +35,7 @@ thiserror = "1.0.37"
 tiny-bip39 = "0.8.2"
 tokio = { version = "1.21.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1.8"
-tonic = "0.8.2"
+tonic = { version = "0.8.2", features = ["tls", "tls-roots", "tls-webpki-roots"] }
 tonic-health = "0.7.1"
 tracing = "0.1.34"
 tracing-error = "0.2.0"
