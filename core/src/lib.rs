@@ -400,8 +400,6 @@ mod tests {
 
         let value = serde_json::to_value(credential).unwrap().to_string();
 
-        println!("{value}");
-
         // Create a "remote" document by parsing a file manually.
         let input = json_ld::RemoteDocument::new(
             // We use `IriBuf` as IRI type.
@@ -428,22 +426,17 @@ mod tests {
             }
             Ok(expanded) => {
                 for object in expanded.into_value() {
-                    if let Some(id) = object.id() {
-                        let name = object
+                    if let Some(_id) = object.id() {
+                        let _name = object
                             .as_node()
                             .unwrap()
                             .get_any(&iri!("http://xmlns.com/foaf/0.1/name"))
                             .unwrap()
                             .as_str()
                             .unwrap();
-
-                        println!("id: {id}");
-                        println!("name: {name}");
                     }
                 }
             }
         }
-
-        // assert!(false);
     }
 }
