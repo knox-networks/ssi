@@ -27,6 +27,10 @@ jobs:
           rustup component add rustfmt
           rustup component add clippy
 
+      - name: Installing Make
+        run: |-
+          cargo install cargo-make
+
       - name: Linting
         run: |-
           cargo fmt --check --all
@@ -42,5 +46,4 @@ jobs:
 
       - name: Run FFI tests
         run: |
-          source .env.cachepot.local
-          CARGO_MAKE_CMD_WRAPPER=cachepot cargo make ffi-test
+          cargo make ffi-test
