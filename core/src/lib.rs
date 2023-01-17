@@ -59,6 +59,7 @@ pub trait DocumentBuilder {
         cred_subject: std::collections::HashMap<String, serde_json::Value>,
         property_set: std::collections::HashMap<String, serde_json::Value>,
         id: &str,
+        issuer: String,
     ) -> Result<credential::Credential, error::Error> {
         let context = Self::get_contexts(&cred_type);
 
@@ -67,10 +68,8 @@ pub trait DocumentBuilder {
             id: id.to_string(),
             cred_type: vec![credential::CredentialType::Common, cred_type],
             issuance_date: chrono::Utc::now().to_rfc3339(),
-            subject: credential::CredentialSubject {
-                id: id.to_string(),
-                property_set: cred_subject,
-            },
+            issuer,
+            subject: cred_subject,
             property_set,
         })
     }
@@ -117,23 +116,24 @@ pub fn verify_presentation<S: signature::suite::Signature>(
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
     use assert_json_diff::assert_json_eq;
+    use json_ld::{syntax::Parse, JsonLdProcessor};
     use serde_json::json;
+    use signature::suite::KeyPair;
+    use static_iref::iri;
     use std::{collections::HashMap, vec};
 
     use serde_json::Value;
-    struct TestObj {}
-
-    impl TestObj {
-        pub fn new() -> Self {
-            Self {}
-        }
-    }
-
-    impl DocumentBuilder for TestObj {}
 
     const TEST_DID_METHOD: &str = "knox";
+
+    macro_rules! aw {
+        ($e:expr) => {
+            tokio_test::block_on($e)
+        };
+    }
 
     fn get_body_subject() -> (HashMap<String, Value>, HashMap<String, Value>) {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
@@ -214,7 +214,10 @@ mod tests {
 
     #[test]
     fn test_create_credential() -> Result<(), String> {
-        let to = TestObj::new();
+        let kp =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new("test".to_string(), None).unwrap();
+        let issuer = kp.get_did();
+        let builder = DefaultDocumentBuilder {};
         let expect_credential = json!({
             "@context": [
             "https://www.w3.org/2018/credentials/v1",
@@ -244,11 +247,12 @@ mod tests {
 
         let (kv_body, kv_subject) = get_body_subject();
 
-        let vc = to.create_credential(
+        let vc = builder.create_credential(
             credential::CredentialType::PermanentResidentCard,
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
+            issuer,
         );
 
         assert!(vc.is_ok());
@@ -259,36 +263,43 @@ mod tests {
 
     #[test]
     fn test_create_presentation() -> Result<(), String> {
-        let to = TestObj::new();
+        let kp =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new("test".to_string(), None).unwrap();
+        let issuer = kp.get_did();
+        let builder = DefaultDocumentBuilder {};
         let mut expect_presentation = json!({
         "@context" : ["https://www.w3.org/2018/credentials/v1"],
         "verifiableCredential":[
-            {"@context":["https://www.w3.org/2018/credentials/v1"],
+            {
+            "@context":["https://www.w3.org/2018/credentials/v1"],
             "id":"https://issuer.oidp.uscis.gov/credentials/83627465",
+            "type":["VerifiableCredential","PermanentResidentCard"],
             "credentialSubject":{
                 "birthCountry":"Bahamas",
                 "birthDate":"1958-07-17",
                 "commuterClassification":"C1",
-            "familyName":"SMITH",
-            "gender":"Male",
-            "givenName":"JOHN",
-            "id":"did:example:b34ca6cd37bbf23",
-            "image":"data:image/png;base64,iVBORw0KGgo...kJggg==",
-            "lprCategory":"C09",
-            "lprNumber":"999-999-999",
-            "residentSince":"2015-01-01",
-            "type":["PermanentResident","Person"]},
+                "familyName":"SMITH",
+                "gender":"Male",
+                "givenName":"JOHN",
+                "id":"did:example:b34ca6cd37bbf23",
+                "image":"data:image/png;base64,iVBORw0KGgo...kJggg==",
+                "lprCategory":"C09",
+                "lprNumber":"999-999-999",
+                "residentSince":"2015-01-01",
+                "type":["PermanentResident","Person"]
+            },
             "description":"Government of Example Permanent Resident Card.",
             "expirationDate":"2029-12-03T12:19:52Z","identifier":"83627465",
             "issuanceDate":"2019-12-03T12:19:52Z",
             "issuer":"did:example:28394728934792387",
             "name":"Permanent Resident Card",
-            "proof":{"created":"2022-07-16T05:29:53.207757+00:00",
-            "proof_purpose":"assertionMethod",
-            "proof_type":"Ed25519Signature2018",
-            "proof_value":"z5MWmCHvVpgXSiBN5SKbCNErLN2ncGR2mUMVrUJQaAd41t4CVjk57zBqnwZyH6eCc7HypD9BqbHnWrT4MikoW11Kf",
-            "verification_method":"did:knox:zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU#zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU"},
-            "type":["VerifiableCredential","PermanentResidentCard"]
+            "proof":{
+                "created":"2022-07-16T05:29:53.207757+00:00",
+                "proof_purpose":"assertionMethod",
+                "proof_type":"Ed25519Signature2018",
+                "proof_value":"z5MWmCHvVpgXSiBN5SKbCNErLN2ncGR2mUMVrUJQaAd41t4CVjk57zBqnwZyH6eCc7HypD9BqbHnWrT4MikoW11Kf",
+                "verification_method":"did:knox:zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU#zHRY3o2SDaGrVjLABw3CdderfhiSfVfX1husev7KdSwdU"
+            },
             }]
         });
         // here we test the presentation
@@ -299,11 +310,12 @@ mod tests {
 
         let (kv_body, kv_subject) = get_body_subject();
 
-        let vc = to.create_credential(
+        let vc = builder.create_credential(
             credential::CredentialType::PermanentResidentCard,
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
+            issuer,
         );
 
         assert!(vc.is_ok());
@@ -318,7 +330,7 @@ mod tests {
 
         let verifiable_credential = credential.into_verifiable_credential(proof.unwrap());
         let credentials = vec![verifiable_credential];
-        let interim_presentation = to
+        let interim_presentation = builder
             .create_presentation(credentials)
             .expect("unable to create presentation from credentials");
 
@@ -330,5 +342,101 @@ mod tests {
 
         assert_json_eq!(expect_presentation, presentation_json);
         Ok(())
+    }
+
+    #[ignore = "Expand issue remains unresolved"]
+    #[test]
+    fn test_context_adherance() {
+        let kp =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new("test".to_string(), None).unwrap();
+        let issuer = kp.get_did();
+        let builder = DefaultDocumentBuilder {};
+        let mut cred_subject = std::collections::HashMap::new();
+        cred_subject.insert("accountId".to_string(), serde_json::json!("1111111"));
+        cred_subject.insert("type".to_string(), serde_json::json!(["BankAccount"]));
+        cred_subject.insert(
+            "address".to_string(),
+            serde_json::json!({
+                "type": ["PostalAddress"],
+                "streetAddress": "19 Knox St",
+                "addressLocality": "Toronto",
+                "addressRegion": "ON",
+                "addressCountry": "Canada",
+                "postalCode": "M3B 1A2"
+            }),
+        );
+        cred_subject.insert(
+            "routingInfo".to_string(),
+            serde_json::json!({
+                "type":["RoutingInfo"],
+                "code": "GBDSC",
+                "value": "042962"
+            }),
+        );
+        cred_subject.insert(
+            "id".to_string(),
+            serde_json::json!("did:knox:z6Mk2cd21e9abe57fae7...31073da1b522790e63834fe17a4c2be"),
+        );
+
+        cred_subject.insert("givenName".to_string(), serde_json::json!("Alice"));
+        cred_subject.insert("familyName".to_string(), serde_json::json!("Smith"));
+        cred_subject.insert(
+            "iban".to_string(),
+            serde_json::json!("GB74GSLD04296280001319"),
+        );
+        cred_subject.insert("BIC11".to_string(), serde_json::json!("TDOMCATTTOR"));
+        let optional_properties = std::collections::HashMap::new();
+        let credential_id = "12345";
+
+        let credential = builder
+            .create_credential(
+                credential::CredentialType::BankAccount,
+                cred_subject,
+                optional_properties,
+                credential_id,
+                issuer,
+            )
+            .unwrap();
+
+        let value = serde_json::to_value(credential).unwrap().to_string();
+
+        // Create a "remote" document by parsing a file manually.
+        let input = json_ld::RemoteDocument::new(
+            // We use `IriBuf` as IRI type.
+            None,
+            // Optional content type.
+            None,
+            // Parse the file.
+            json_ld::syntax::Value::parse_str(
+                value.as_str(),
+                |span| span, // keep the source `Span` of each element as metadata.
+            )
+            .expect("Error creating remote document"),
+        );
+
+        // Use `NoLoader` as we won't need to load any remote document.
+        let mut loader = json_ld::NoLoader::<_, _>::new();
+
+        // Expand the "remote" document.
+        let expanded = aw!(input.expand(&mut loader));
+
+        match expanded {
+            Err(e) => {
+                println!("Error: {:?}", e);
+            }
+            Ok(expanded) => {
+                for object in expanded.into_value() {
+                    if let Some(_id) = object.id() {
+                        let _name = object
+                            .as_node()
+                            .unwrap()
+                            .get_any(&iri!("http://xmlns.com/foaf/0.1/name"))
+                            .unwrap()
+                            .as_str()
+                            .unwrap();
+                    }
+                }
+            }
+        }
     }
 }

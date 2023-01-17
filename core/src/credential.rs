@@ -11,8 +11,7 @@
 pub type VerificationContext = Vec<String>;
 
 pub const BASE_CREDENDIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
-pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str =
-    "https://knox-networks.github.io/schema/bankaccount/v1.jsonld";
+pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum CredentialType {
@@ -20,6 +19,7 @@ pub enum CredentialType {
     Common,
     PermanentResidentCard,
     BankCard,
+    #[serde(rename = "BankAccountCredential")]
     BankAccount,
 }
 
@@ -29,14 +29,14 @@ impl CredentialType {
             CredentialType::Common => "VerifiableCredential",
             CredentialType::PermanentResidentCard => "PermanentResidentCard",
             CredentialType::BankCard => "BankCard",
-            CredentialType::BankAccount => "BankAccount",
+            CredentialType::BankAccount => "BankAccountCredential",
         }
     }
 
     pub fn from_string(cred_type: &str) -> Option<Self> {
         match cred_type {
             "BankCard" => Some(CredentialType::BankCard),
-            "BankAccount" => Some(CredentialType::BankAccount),
+            "BankAccountCredential" => Some(CredentialType::BankAccount),
             "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
             "VerifiableCredential" => Some(CredentialType::Common),
             _ => None,
@@ -44,12 +44,7 @@ impl CredentialType {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub struct CredentialSubject {
-    pub id: String,
-    #[serde(flatten)]
-    pub property_set: std::collections::HashMap<String, serde_json::Value>,
-}
+pub type CredentialSubject = std::collections::HashMap<String, serde_json::Value>;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct VerifiableCredential {
@@ -71,6 +66,8 @@ pub struct Credential {
 
     #[serde(rename = "issuanceDate")]
     pub issuance_date: String,
+
+    pub issuer: String,
 
     #[serde(rename = "credentialSubject")]
     pub subject: CredentialSubject,

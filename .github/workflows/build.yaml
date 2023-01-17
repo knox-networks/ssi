@@ -41,5 +41,6 @@ jobs:
           cargo test
 
       - name: Run FFI tests
-        run: |-
-          cargo make ffi-test
+        run: |
+          source .env.cachepot.local
+          CARGO_MAKE_CMD_WRAPPER=cachepot cargo make ffi-test
