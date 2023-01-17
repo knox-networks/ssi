@@ -11,5 +11,5 @@ fn create_vc(
     did: repr_c::String,
     document: repr_c::String,
 ) -> repr_c::String {
-
+    unimplemented!("create_vc unimplemented")
 }

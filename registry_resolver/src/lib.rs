@@ -1,5 +1,3 @@
-use serde_json::to_string;
-
 mod registry_client;
 pub const DID_METHOD: &str = "knox";
 
@@ -35,12 +33,8 @@ where
         did: String,
         document: serde_json::Value,
     ) -> Result<(), ssi_core::error::ResolverError> {
-        let doc = r#"{
-            "did": "did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4",
-            "document": "{\"@context\":[\"https://www.w3.org/ns/did/v1\",\"https://w3id.org/security/suites/ed25519-2020/v1\"],\"assertionMethod\":[{\"controller\":\"did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"id\":\"did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4#z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"publicKeyMultibase\":\"z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"type\":\"Ed25519VerificationKey2020\"}],\"authentication\":[{\"controller\":\"did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"id\":\"did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4#z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"publicKeyMultibase\":\"z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"type\":\"Ed25519VerificationKey2020\"}],\"capabilityDelegation\":[{\"controller\":\"did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"id\":\"did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4#z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"publicKeyMultibase\":\"z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"type\":\"Ed25519VerificationKey2020\"}],\"capabilityInvocation\":[{\"controller\":\"did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"id\":\"did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4#z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"publicKeyMultibase\":\"z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\",\"type\":\"Ed25519VerificationKey2020\"}],\"id\":\"did:knox:z4nmbV2RC3Th1DLPRYVkJUSzv3HSegexgUcvS3WTZGfU4\"}"
-          }"#.to_string();
         self.client
-            .create(did, doc)
+            .create(did, document.to_string())
             .await
             .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
@@ -96,19 +90,16 @@ mod tests {
         )
     }
 
-    // #[ignore = "registry contract test disabled"]
+    #[ignore = "registry contract test disabled"]
     #[tokio::test]
     async fn test_create_did_integration() {
         let did_doc = create_did();
-        // let address = "https://127.0.0.1:5051";
-        // let address = "https://reg.sandbox5.knoxnetworks.io:443";
         let address = "https://reg.sandbox5.knoxnetworks.io";
         let resolver = RegistryResolver::new(address.to_string()).await;
         let document_serialized = create_did_doc(did_doc.clone());
         let result = resolver
             .create(did_doc.to_string(), document_serialized)
             .await;
-        println!("result is ok {:?}", result.is_ok());
         assert!(result.is_ok())
     }
 
