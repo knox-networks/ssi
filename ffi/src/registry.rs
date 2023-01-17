@@ -21,7 +21,6 @@ pub fn registry_create_did(
             let resolver = registry_resolver::RegistryResolver::new(address.to_string()).await;
             let document_serialized = serde_json::to_value(dd.backend.clone()).unwrap();
             let result = resolver.create(did.to_string(), document_serialized).await;
-            println!("resolver response {:?}", result);
             Ok(result)
         })
     });
