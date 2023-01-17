@@ -27,9 +27,6 @@ DidDocument_t * create_identity (
     char const * did_method,
     char const * mnemonic_input);
 
-void free_rust_error (
-    RustError_t rust_error);
-
 
 #include <stdbool.h>
 
@@ -38,6 +35,9 @@ bool registry_create_did (
     char const * address,
     char const * did,
     DidDocument_t * document);
+
+void free_rust_error (
+    RustError_t rust_error);
 
 
 #ifdef __cplusplus

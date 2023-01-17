@@ -6,13 +6,12 @@ workspace = false
 dependencies = [
     "ffi-build",
     "ffi-header",
-# temporatily disabled 
-    # "ffi-x86_64-apple-darwin",
-    # "ffi-i686-linux-android",
-    # "ffi-x86_64-linux-android",
-    # "ffi-aarch64-linux-android",
-    # "ffi-armv7-linux-androideabi",
-# eof temporatily disabled 
+    "ffi-x86_64-apple-darwin",
+    "ffi-i686-linux-android",
+    "ffi-x86_64-linux-android",
+    "ffi-aarch64-linux-android",
+    "ffi-armv7-linux-androideabi",
+
     # TODO implement for macos-latest issue
     # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources=
     # "ffi-aarch64-apple-ios", 
