@@ -26,3 +26,6 @@ async-std = "1.12.0"
 iref = "2.2.2"
 static-iref = "2.0.0"
 locspan = "0.7.13"
+
+[features]
+static = []

@@ -13,3 +13,6 @@ tiny-bip39 = "0.8.2"
 thiserror = "1.0.30"
 serde = { version = "1.0", features = ["derive"] }
 sha2 = "0.10.2"
+
+[features]
+static = []

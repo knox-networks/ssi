@@ -20,3 +20,4 @@ tracing = { workspace = true }
 
 [features]
 c-headers = ["safer-ffi/headers"]
+static = ["registry_resolver/static", "signature/static", "ssi_core/static", "ephemeral_resolver/static"]
