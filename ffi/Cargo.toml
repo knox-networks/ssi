@@ -16,6 +16,8 @@ signature = { path = "../signature" }
 tokio = { workspace = true }
 serde = { version = "1.0", features = ["derive"] }
 tracing = { workspace = true }
+tracing-subscriber = { version = "0.3.11", features = ["env-filter", "fmt", "json"] }
+tracing-error.workspace = true
 
 [features]
 c-headers = ["safer-ffi/headers"]

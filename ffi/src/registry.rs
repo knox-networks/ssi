@@ -11,7 +11,12 @@ pub fn registry_create_did(
     did: char_p::Ref<'_>,
     document: Option<repr_c::Box<crate::did::DidDocument>>,
 ) -> bool {
-    let _span = info_span!("registry_create_did").entered();
+    let r = crate::logger::init_logger("DEBUG");
+    if r.is_err() {
+        println!("unable to init logging");
+        return false;
+    }
+    info!("registry_create_did called");
     let rt = Runtime::new()
         .report("failed to create runtime")
         .expect("unable to launch runtime");
