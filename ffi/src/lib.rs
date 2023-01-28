@@ -1,14 +1,13 @@
 pub mod did;
 mod error;
-pub mod registry;
 mod logger;
+pub mod registry;
 
-use std::sync::{Once};
+use std::sync::Once;
 static START: Once = Once::new();
+
 pub fn init() {
-    START.call_once(|| {
-        logger::init_logger("DEBUG").expect("logger initialized succesfully")
-    });
+    START.call_once(|| logger::init_logger("DEBUG").expect("logger initialized succesfully"));
 }
 
 /// The following test function is necessary for the header generation.
