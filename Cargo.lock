@@ -1952,6 +1952,7 @@ dependencies = [
  "serde_json",
  "signature",
  "ssi_core",
+ "thiserror",
  "tokio",
  "tracing",
  "tracing-error",

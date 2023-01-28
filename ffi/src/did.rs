@@ -17,12 +17,7 @@ pub fn create_identity(
     did_method: char_p::Ref<'_>,
     mnemonic_input: char_p::Ref<'_>,
 ) -> Option<repr_c::Box<DidDocument>> {
-
-    let r = crate::logger::init_logger("DEBUG");
-    if r.is_err() {
-        println!("unable to init logging");
-        return None;
-    }
+    super::init();
     info!(
         did_method=?did_method, 
         mnemonic_input=?mnemonic_input,

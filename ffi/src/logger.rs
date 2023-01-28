@@ -3,24 +3,13 @@ use tracing_subscriber::{
 };
 
 pub fn init_logger(level: &str) -> Result<(), tracing_subscriber::util::TryInitError> {
+    println!("logger initialization");
     let level_filter = level.parse::<LevelFilter>().expect("Level error can be parsed");
     let mut layers = Vec::new();
-    let mut filter = EnvFilter::builder()
+    let filter = EnvFilter::builder()
             .with_env_var("RUST_LOG")
             .with_default_directive(level_filter.into())
             .from_env_lossy();
-    // disable logging for h2 and type unless filter
-    // // is set to trace
-    // if level_filter != LevelFilter::TRACE {
-    //     filter = filter
-    //         .add_directive("h2=warn".parse()?)
-    //         .add_directive("sled::pagecache=info".parse()?)
-    //         .add_directive("tower::buffer::worker=info".parse()?)
-    //         .add_directive("hyper::proto=info".parse()?)
-    //         // TODO this is still a problem:
-    //         // https://github.com/knox-networks/core/issues/758
-    //         .add_directive("hyper::server::server::new_svc=info".parse()?);
-    // }
     
     // Initialize stdout output;
     let stdout_layer = fmt::layer()
