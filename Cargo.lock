@@ -2339,6 +2339,7 @@ dependencies = [
 name = "ssi-ffi"
 version = "0.3.0"
 dependencies = [
+ "ephemeral_resolver",
  "registry_resolver",
  "safer-ffi",
  "serde",
