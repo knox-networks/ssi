@@ -13,6 +13,12 @@ pub fn free_rust_error(rust_error: RustError) {
     drop(rust_error.error_str)
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum FFIError {
+    #[error(transparent)]
+    InitLoggerError(#[from] tracing_subscriber::util::TryInitError),
+}
+
 /*
 The C side usage is as follows:
 ```

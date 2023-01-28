@@ -17,8 +17,7 @@ pub fn create_identity(
     did_method: char_p::Ref<'_>,
     mnemonic_input: char_p::Ref<'_>,
 ) -> Option<repr_c::Box<DidDocument>> {
-    // create_did_doc
-    let _span = error_span!("ffi_ssi").entered();
+    super::init();
     info!(
         did_method=?did_method, 
         mnemonic_input=?mnemonic_input,
