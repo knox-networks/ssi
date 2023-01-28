@@ -3,7 +3,6 @@ use tracing_subscriber::{
 };
 
 pub fn init_logger(level: &str) -> Result<(), tracing_subscriber::util::TryInitError> {
-    println!("logger initialization");
     let level_filter = level
         .parse::<LevelFilter>()
         .expect("Level error can be parsed");
