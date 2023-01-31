@@ -27,6 +27,10 @@ jobs:
           rustup component add rustfmt
           rustup component add clippy
 
+      - name: Installing Make
+        run: |-
+          cargo install cargo-make
+
       - name: Linting
         run: |-
           cargo fmt --check --all
@@ -39,3 +43,7 @@ jobs:
       - name: Test
         run: |-
           cargo test
+
+      - name: Run FFI tests
+        run: |
+          cargo make ffi-test

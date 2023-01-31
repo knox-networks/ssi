@@ -1,0 +1,27 @@
+[package]
+name = "ssi-ffi"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "ssi_ffi"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+serde_json = "1.0.81"
+safer-ffi = { version = "0.0.7", features = ["proc_macros", "log", "out-refs"] }
+registry_resolver = {path = "../registry_resolver"}
+ssi_core = { path = "../core" }
+signature = { path = "../signature" }
+ephemeral_resolver = { path = "../ephemeral_resolver" }
+
+tokio = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
+tracing = { workspace = true }
+tracing-subscriber = { version = "0.3.11", features = ["env-filter", "fmt", "json"] }
+tracing-error.workspace = true
+thiserror = { workspace = true }
+
+[features]
+c-headers = ["safer-ffi/headers"]
+static = ["registry_resolver/static", "signature/static", "ssi_core/static", "ephemeral_resolver/static"]
