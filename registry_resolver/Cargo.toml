@@ -26,3 +26,7 @@ tokio-test = "0.4.2"
 
 [features]
 static = []
+
+[build-dependencies]
+protofetch = "0.0.20"
+tonic-build = "0.8.4"

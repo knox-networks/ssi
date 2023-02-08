@@ -1,0 +1,10 @@
+name = "repository name"
+description = "this is a repository"
+proto_out_dir = "proto"
+
+[registry-mgmt]
+protocol = "ssh"
+url = "github.com/knox-networks/gomono"
+revision = "5344438ead0d7577194426238ffd1151d6a96405"
+allow_policies = ["registry-mgmt/protos/registry_api/v1/registry.proto"]
+prune = true

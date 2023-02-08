@@ -1,0 +1,21 @@
+module_name = 'repository name'
+proto_out_dir = 'proto'
+
+[[dependencies]]
+commit_hash = '5344438ead0d7577194426238ffd1151d6a96405'
+
+[dependencies.coordinate]
+forge = 'github.com'
+organization = 'knox-networks'
+protocol = 'ssh'
+repository = 'gomono'
+
+[dependencies.name]
+value = 'registry-mgmt'
+
+[dependencies.rules]
+prune = false
+transitive = false
+[[dependencies.rules.allow_policies.policies]]
+kind = 'File'
+path = '/registry-mgmt/protos/registry_api/v1/registry.proto'
