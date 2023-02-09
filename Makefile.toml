@@ -132,10 +132,8 @@ args = [
     "--release",
     "--target",
     "x86_64-apple-darwin",
-    "--features",
-    "static",
     "--package",
-    "ssi_ffi"
+    "ssi-ffi"
 ]
 
 ##

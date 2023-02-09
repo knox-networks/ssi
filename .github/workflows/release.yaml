@@ -1,0 +1,152 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      build_ffi:
+        description: 'Build ffi'
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  SERVICES: authority custodial-wallet emissary faucet gateway issuer overload-agent overload-orchestrator treasury
+  S3_CACHE_BUCKET: knox.us-east-2.build-cache
+  aws_region: us-east-2
+  cluster_name: demo-knoxcore
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Tag from Git Ref
+        id: vars
+        run: |
+          DATE_SHA="$(date +"%Y.%m.%d").${GITHUB_SHA::8}"
+          # Trim "v" prefix from GITHUB_REF for proper artifact versioning...
+          TRIMMED_TAG=${GITHUB_REF_NAME#"v"}
+
+          {
+            echo "image_tag=${DATE_SHA}";
+            echo "release_tag=${TRIMMED_TAG}";
+          } | tee "$GITHUB_OUTPUT"
+
+      - name: Get tasks to run
+        id: tasks
+        run: |
+          # The `workflow_dispatch.inputs` values are null when this workflow is
+          # executed outside of the workflow_dispatch flow, and thus the values
+          # echoed after the || here are the actual default values for automated
+          # execution, while the defaults defined above just indicate which
+          # checkboxes are checked by default in the UI when executing manually.
+          build_ffi=$([ -n "${{ inputs.build_ffi }}" ] && echo "${{ inputs.build_ffi }}" || echo "false")
+
+          {
+            echo "build_ffi=$build_ffi";
+          } | tee "$GITHUB_OUTPUT"
+
+    outputs:
+      image_tag: ${{ steps.vars.outputs.image_tag }}
+      release_tag: ${{ steps.vars.outputs.release_tag }}
+      aws_region: ${{ env.aws_region }}
+      cluster_name: ${{ env.cluster_name }}
+      build_ffi: ${{ steps.tasks.outputs.build_ffi }}
+
+
+  build_fbs_header:
+    if: ${{ needs.init.outputs.build_ffi == 'true' }}
+    needs: init
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - uses: swatinem/rust-cache@v2
+        with:
+          prefix-key: "v0-rust"
+          cache-on-failure: "false"
+          cache-targets: "false"
+          cache-directories: |
+            ~/.cache/cachepot/
+            ~/.local
+          key: bjv3
+        timeout-minutes: 5
+        continue-on-error: true
+      - uses: ./.github/actions/rust-cache
+        with:
+          rust-toolchain: rustfmt, clippy
+      - uses: ./.github/actions/cache
+        with:
+          key: ${{ runner.os }}-build
+      - name: Authenticate AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
+          aws-region: us-east-2
+      - name: Install deps
+        run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc buf
+      - run: |
+          sudo chown -R "$USER:$USER" "/home/$USER"
+      - name: Generate FFI Header
+        run: |
+          source .env.cachepot.local
+          cargo make ffi-header
+      - name: Stage Release
+        env:
+          IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
+        run: |
+          mkdir ./stage_release_ssi
+          mv ./ffi/headers/ssi_ffi.h ./stage_release_ssi
+
+  build_ffi:
+    if: ${{ needs.init.outputs.build_ffi == 'true' }}
+    needs: [init, build_fbs_header]
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        arch:
+          - i686-linux-android
+          - x86_64-linux-android
+          - aarch64-linux-android
+          - armv7-linux-androideabi
+    steps:
+      - uses: actions/checkout@v3
+      - uses: swatinem/rust-cache@v2
+        with:
+          prefix-key: "v0-rust"
+          cache-on-failure: "false"
+          cache-targets: "false"
+          cache-directories: |
+            ~/.cache/cachepot/
+            ~/.local
+          key: bjv3
+        timeout-minutes: 5
+        continue-on-error: true
+      - uses: ./.github/actions/rust-cache
+        with:
+          rust-toolchain: rustfmt, clippy
+      - name: Authenticate AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
+          aws-region: us-east-2
+
+      - run: |
+          sudo chown -R "$USER:$USER" "/home/$USER"
+      - name: Build Cross-Platform FFI
+        run: |
+          ./container/deps.sh --force cross cargo-make protoc buf
+          cargo make ffi-${{ matrix.arch }}
+
+      - name: Stage Release
+        env:
+          IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
+        run: |
+          mv "target/${{ matrix.arch }}/release/libssi_ffi.so" \
+            "./stage_release_ssi/libssi_ffi-${{ matrix.arch }}.so"
+          aws s3 sync ./stage_release_ssi "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/stage_release_ssi"
+
