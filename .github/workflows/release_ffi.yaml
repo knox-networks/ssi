@@ -3,6 +3,7 @@ name: Release
 on:
   release:
     types: [published]
+  push:
   workflow_dispatch:
     inputs:
       build_ffi:
@@ -16,7 +17,6 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  SERVICES: authority custodial-wallet emissary faucet gateway issuer overload-agent overload-orchestrator treasury
   S3_CACHE_BUCKET: knox.us-east-2.build-cache
   aws_region: us-east-2
   cluster_name: demo-knoxcore
@@ -62,7 +62,7 @@ jobs:
   build_fbs_header:
     if: ${{ needs.init.outputs.build_ffi == 'true' }}
     needs: init
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: swatinem/rust-cache@v2
@@ -70,9 +70,9 @@ jobs:
           prefix-key: "v0-rust"
           cache-on-failure: "false"
           cache-targets: "false"
-          cache-directories: |
-            ~/.cache/cachepot/
-            ~/.local
+          # cache-directories: |
+          #   ~/.cache/cachepot/
+          #   ~/.local
           key: bjv3
         timeout-minutes: 5
         continue-on-error: true
@@ -87,13 +87,12 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
           aws-region: us-east-2
-      - name: Install deps
-        run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc buf
+      # - name: Install deps
+      #   run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc buf
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
       - name: Generate FFI Header
         run: |
-          source .env.cachepot.local
           cargo make ffi-header
       - name: Stage Release
         env:
@@ -105,7 +104,7 @@ jobs:
   build_ffi:
     if: ${{ needs.init.outputs.build_ffi == 'true' }}
     needs: [init, build_fbs_header]
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         arch:
