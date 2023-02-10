@@ -17,6 +17,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
+  SERVICES: ssi
   S3_CACHE_BUCKET: knox.us-east-2.build-cache
   aws_region: us-east-2
   cluster_name: demo-knoxcore
@@ -65,30 +66,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: swatinem/rust-cache@v2
-        with:
-          prefix-key: "v0-rust"
-          cache-on-failure: "false"
-          cache-targets: "false"
-          # cache-directories: |
-          #   ~/.cache/cachepot/
-          #   ~/.local
-          key: bjv3
-        timeout-minutes: 5
-        continue-on-error: true
-      - uses: ./.github/actions/rust-cache
-        with:
-          rust-toolchain: rustfmt, clippy
-      - uses: ./.github/actions/cache
-        with:
-          key: ${{ runner.os }}-build
       - name: Authenticate AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
           aws-region: us-east-2
-      # - name: Install deps
-      #   run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc buf
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
       - name: Generate FFI Header
@@ -114,20 +96,6 @@ jobs:
           - armv7-linux-androideabi
     steps:
       - uses: actions/checkout@v3
-      - uses: swatinem/rust-cache@v2
-        with:
-          prefix-key: "v0-rust"
-          cache-on-failure: "false"
-          cache-targets: "false"
-          cache-directories: |
-            ~/.cache/cachepot/
-            ~/.local
-          key: bjv3
-        timeout-minutes: 5
-        continue-on-error: true
-      - uses: ./.github/actions/rust-cache
-        with:
-          rust-toolchain: rustfmt, clippy
       - name: Authenticate AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
