@@ -73,6 +73,19 @@ jobs:
           aws-region: us-east-2
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
+      - name: Setup | Rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: 1.64
+      - name: Installing Make
+        run: |-
+          cargo install cargo-make
+      - name: Check PWD
+        run: |-
+          pwd
+      - name: LS 
+        run: |-
+          ls -la
       - name: Generate FFI Header
         run: |
           cargo make ffi-header
@@ -101,7 +114,6 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
           aws-region: us-east-2
-
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
       - name: Build Cross-Platform FFI
