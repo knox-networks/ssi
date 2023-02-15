@@ -16,12 +16,17 @@ pub fn registry_create_did(
     let rt = Runtime::new()
         .report("failed to create runtime")
         .expect("unable to launch runtime");
-    let dd = document.unwrap();
+    let boxed_did_doc = document.unwrap();
     let rsp = rust_error.try_(|| {
         rt.block_on(async move {
             debug!("entering block_on runtime state");
             let resolver = registry_resolver::RegistryResolver::new(address.to_string()).await;
-            let document_serialized = serde_json::to_value(dd.backend.clone()).unwrap();
+            let document_serialized = serde_json::to_value(boxed_did_doc.backend.clone())
+                .expect("DID document serialized to serde value");
+            info!(
+                "DID document serialized to serde value {:?}",
+                document_serialized.clone().as_str()
+            );
             let result = resolver.create(did.to_string(), document_serialized).await;
             info!("resolver response {:?}", result);
             Ok(result)
