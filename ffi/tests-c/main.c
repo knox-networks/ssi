@@ -26,6 +26,13 @@ DidDocument_t* test_create_did_doc(void) {
     return did_doc_rsp;
 }
 
+void test_create_did_doc_vecs(void) {
+    char did_method[] = "DID_METHOD";
+    char mnemonic[] = "";
+    Vec_uint8_t *did_doc_rsp = create_identity_vec(NULL, did_method, mnemonic);
+    TEST_ASSERT_NOT_NULL(did_doc_rsp);
+}
+
 void test_push_did_doc_integration(void) {
     DidDocument_t *did_document = test_create_did_doc();
     printf("\n test_create_did_doc did_document received \n");
@@ -37,6 +44,7 @@ void test_push_did_doc_integration(void) {
 
 int main(void) {
     UNITY_BEGIN();
+    RUN_TEST(test_create_did_doc_vecs);
     RUN_TEST(test_push_did_doc_integration);
     return UNITY_END();
 }

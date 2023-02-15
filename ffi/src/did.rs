@@ -56,3 +56,33 @@ pub fn create_identity(
     debug!("create_identity None result");
     None
 }
+
+#[ffi_export]
+pub fn create_identity_vec(
+    rust_error: MaybeRustError,
+    did_method: char_p::Ref<'_>,
+    mnemonic_input: char_p::Ref<'_>,
+) -> Option<repr_c::Box<safer_ffi::vec::Vec<u8>>> {
+    let t_identity = create_identity(rust_error, did_method, mnemonic_input);
+    info!(
+        did_method=?did_method,
+        "creating bytes vector did_doc representation");
+    if let Some(did_doc) = t_identity {
+        info!("did_doc received");
+        let did_doc_vector = serde_json::to_vec(&did_doc.backend);
+
+        if did_doc_vector.is_ok() {
+            info!("did_doc converted to vector");
+            let did_doc_c_vec: safer_ffi::vec::Vec<u8> =
+                did_doc_vector.expect("unrapping did doc_vector").into();
+            info!("did_doc converted to safer_ffi::vec::Vec<u8>");
+            return Some(repr_c::Box::new(did_doc_c_vec));
+        }
+    }
+    None
+}
+
+#[ffi_export]
+pub fn free_identity_did_doc(did_doc: repr_c::Box<DidDocument>) {
+    drop(did_doc)
+}
