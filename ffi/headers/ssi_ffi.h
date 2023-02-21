@@ -20,6 +20,9 @@ typedef struct RustError {
 
 } RustError_t;
 
+void free_rust_error (
+    RustError_t rust_error);
+
 typedef struct DidDocument DidDocument_t;
 
 
@@ -30,9 +33,6 @@ bool registry_create_did (
     char const * address,
     char const * did,
     DidDocument_t * document);
-
-void free_rust_error (
-    RustError_t rust_error);
 
 DidDocument_t * create_identity (
     RustError_t * rust_error,

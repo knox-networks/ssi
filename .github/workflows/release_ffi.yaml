@@ -71,6 +71,14 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
           aws-region: us-east-2
+      - name: Pull flatbuffers and protocolbuffers
+        env:
+          IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
+        run: |
+          SYNC_DIRS=(stage_release promissory/src/schema proto/src/gen)
+          for dir in "${SYNC_DIRS[@]}"; do
+            aws s3 sync "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/$dir" "./$dir"
+          done
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
       - name: Setup | Rust
