@@ -115,10 +115,8 @@ args = [
     "--release", 
     "--target", 
     "${BUILD_TARGET}",
-    "--features", 
-    "static", 
     "--package",
-    "ssi_ffi"
+    "ssi-ffi"
 ]
 
 ##

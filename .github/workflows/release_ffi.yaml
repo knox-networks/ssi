@@ -173,8 +173,6 @@ jobs:
           aws-region: us-east-2
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
-      - run: |
-          sudo chmod a+X ./container/deps.sh
 
       # - name: Pull flatbuffers and protocolbuffers
       #   env:
@@ -187,6 +185,7 @@ jobs:
 
       - name: Build Cross-Platform FFI
         run: |
+          ./container/deps.sh --force cross cargo-make protoc buf
           cargo make ffi-${{ matrix.arch }}
 
       - name: Stage Release
