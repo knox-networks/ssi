@@ -143,9 +143,11 @@ jobs:
       - name: Installing Make
         run: |-
           cargo install cargo-make
-      # - name: Generate FFI Header
-      #   run: |
-      #     cargo make ffi-header
+          
+      - name: Generate FFI Header
+        run: |
+          cargo make ffi-header
+
       - name: Stage Release
         env:
           IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
@@ -171,17 +173,47 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
           aws-region: us-east-2
+
+      - name: buf download & set up
+        run: |
+          ./container/deps.sh --force cross cargo-make protoc buf
+
+      # - name: buf download & set up
+      #   run: |
+      #     cd registry_resolver
+      #     buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
+
+      # - name: build registry_resolver
+      #   run: |
+      #     cd registry_resolver
+      #     cargo build
+
+      - name: Pull flatbuffers and protocolbuffers
+        env:
+          IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
+        run: |
+          SYNC_DIRS=(stage_release registry_resolver/src/gen)
+          for dir in "${SYNC_DIRS[@]}"; do
+            aws s3 sync "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/$dir" "./$dir"
+          done
+
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
 
-      # - name: Pull flatbuffers and protocolbuffers
-      #   env:
-      #     IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
-      #   run: |
-      #     SYNC_DIRS=(stage_release promissory/src/schema proto/src/gen)
-      #     for dir in "${SYNC_DIRS[@]}"; do
-      #       aws s3 sync "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/$dir" "./$dir"
-      #     done
+      - name: Registry Resolver test build
+        run: |
+          cd registry_resolver
+          buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
+          cargo build
+
+      - name: Test cross build with cargo
+        run: |
+          cargo build --release --target aarch64-linux-android --package ssi-ffi
+
+      - name: Cross Build test 
+        run: |
+          ./container/deps.sh --force cross cargo-make protoc buf
+          cross build --release --target aarch64-linux-android --package ssi-ffi
 
       - name: Build Cross-Platform FFI
         run: |
