@@ -121,31 +121,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      # - uses: ./.github/actions/rust-cache
+      #   with:
+      #     rust-toolchain: rustfmt, clippy
+      # - uses: ./.github/actions/cache
+      #   with:
+      #     key: ${{ runner.os }}-build
       - name: Authenticate AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
           aws-region: us-east-2
-      - name: Pull flatbuffers and protocolbuffers
-        env:
-          IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
-        run: |
-          SYNC_DIRS=(stage_release promissory/src/schema proto/src/gen)
-          for dir in "${SYNC_DIRS[@]}"; do
-            aws s3 sync "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/$dir" "./$dir"
-          done
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
+      - name: Install deps
+        run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc buf
+      - run: |
+          sudo chown -R "$USER:$USER" "/home/$USER"
+      - name: Generate FFI Header
+        run: |
+          cargo make ffi-header
       - name: Setup | Rust
         uses: ATiltedTree/setup-rust@v1
         with:
           rust-version: 1.64
-      - name: Installing Make
+     
+      - name: Rustup Check
         run: |-
-          cargo install cargo-make
-          
-      - name: Generate FFI Header
-        run: |
+          rustup show
+
+      - run: |
+          cargo make ffi-build
+
+      - run: |
           cargo make ffi-header
 
       - name: Stage Release
