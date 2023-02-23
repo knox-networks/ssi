@@ -158,6 +158,9 @@ jobs:
         run: |
           mkdir ./stage_release_ssi
           mv ./ffi/headers/ssi_ffi.h ./stage_release_ssi
+      - run: rustup target add aarch64-linux-android
+      - run: rustup show
+      - run: rustup default stable-aarch64-linux-android
 
   build_ffi:
     if: ${{ needs.init.outputs.build_ffi == 'true' }}
@@ -212,11 +215,11 @@ jobs:
       #     buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
       #     cargo build
 
-      # - name: Test cross build with cargo
-      #   run: |
-      #     cargo build --release --target aarch64-linux-android --package ssi-ffi
-
-      - run: cargo make ffi
+      # - run: cargo make ffi
+           
+      - name: Test cross build with cargo
+        run: |
+          cargo build --release --target aarch64-linux-android --package ssi-ffi
 
       - name: Cross Build test 
         run: |
