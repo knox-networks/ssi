@@ -141,11 +141,7 @@ jobs:
       - name: Generate FFI Header
         run: |
           cargo make ffi-header
-      - name: Setup | Rust
-        uses: ATiltedTree/setup-rust@v1
-        with:
-          rust-version: 1.64
-     
+   
       - name: Rustup Check
         run: |-
           rustup show
@@ -185,6 +181,8 @@ jobs:
       - name: buf download & set up
         run: |
           ./container/deps.sh --force cross cargo-make protoc buf
+      - run: ls -la 
+      - run: ls -la ./ffi/headers
 
       # - name: buf download & set up
       #   run: |
@@ -208,15 +206,17 @@ jobs:
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
 
-      - name: Registry Resolver test build
-        run: |
-          cd registry_resolver
-          buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
-          cargo build
+      # - name: Registry Resolver test build
+      #   run: |
+      #     cd registry_resolver
+      #     buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
+      #     cargo build
 
-      - name: Test cross build with cargo
-        run: |
-          cargo build --release --target aarch64-linux-android --package ssi-ffi
+      # - name: Test cross build with cargo
+      #   run: |
+      #     cargo build --release --target aarch64-linux-android --package ssi-ffi
+
+      - run: cargo make ffi
 
       - name: Cross Build test 
         run: |
@@ -226,7 +226,7 @@ jobs:
       - name: Build Cross-Platform FFI
         run: |
           ./container/deps.sh --force cross cargo-make protoc buf
-          cargo make ffi-${{ matrix.arch }}
+      # cargo make ffi-${{ matrix.arch }}
 
       - name: Stage Release
         env:
