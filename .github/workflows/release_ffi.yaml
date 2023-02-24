@@ -138,14 +138,7 @@ jobs:
         run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc buf
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
-      - name: Generate FFI Header
-        run: |
-          cargo make ffi-header
-   
-      - name: Rustup Check
-        run: |-
-          rustup show
-
+      
       - run: |
           cargo make ffi-build
 
@@ -158,9 +151,6 @@ jobs:
         run: |
           mkdir ./stage_release_ssi
           mv ./ffi/headers/ssi_ffi.h ./stage_release_ssi
-      - run: rustup target add aarch64-linux-android
-      - run: rustup show
-      - run: rustup default stable-aarch64-linux-android
 
   build_ffi:
     if: ${{ needs.init.outputs.build_ffi == 'true' }}
@@ -184,8 +174,7 @@ jobs:
       - name: buf download & set up
         run: |
           ./container/deps.sh --force cross cargo-make protoc buf
-      - run: ls -la 
-      - run: ls -la ./ffi/headers
+      - run: which buf
 
       # - name: buf download & set up
       #   run: |
@@ -217,9 +206,9 @@ jobs:
 
       # - run: cargo make ffi
            
-      - name: Test cross build with cargo
-        run: |
-          cargo build --release --target aarch64-linux-android --package ssi-ffi
+      # - name: Test cross build with cargo
+      #   run: |
+      #     cargo build --release --target aarch64-linux-android --package ssi-ffi
 
       - name: Cross Build test 
         run: |
