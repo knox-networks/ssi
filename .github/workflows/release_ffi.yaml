@@ -171,11 +171,6 @@ jobs:
           role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
           aws-region: us-east-2
 
-      - name: buf download & set up
-        run: |
-          ./container/deps.sh --force cross cargo-make protoc buf
-      - run: which buf
-
       # - name: buf download & set up
       #   run: |
       #     cd registry_resolver
@@ -210,9 +205,12 @@ jobs:
       #   run: |
       #     cargo build --release --target aarch64-linux-android --package ssi-ffi
 
-      - name: Cross Build test 
+      - name: buf download & set up
         run: |
           ./container/deps.sh --force cross cargo-make protoc buf
+      - run: which buf
+      - name: Cross Build test 
+        run: |
           cross build --release --target aarch64-linux-android --package ssi-ffi
 
       - name: Build Cross-Platform FFI
