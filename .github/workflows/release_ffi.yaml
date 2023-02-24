@@ -144,6 +144,9 @@ jobs:
 
       - run: |
           cargo make ffi-header
+      
+      - run: which buf
+      - run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
 
       - name: Stage Release
         env:
@@ -208,7 +211,6 @@ jobs:
       - name: buf download & set up
         run: |
           ./container/deps.sh --force cross cargo-make protoc buf
-      - run: which buf
       - name: Cross Build test 
         run: |
           cross build --release --target aarch64-linux-android --package ssi-ffi
