@@ -140,7 +140,11 @@ jobs:
           sudo chown -R "$USER:$USER" "/home/$USER"
 
       - run: which buf
+        
       - run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
+      - run: ls -la ./registry_resolver/src/
+      - run: chmod -R 0777 ./registry_resolver/src/gen
+      - run: ls -la ./registry_resolver/src/gen/
       
       - run: |
           cargo make ffi-build
@@ -211,6 +215,11 @@ jobs:
       - name: buf download & set up
         run: |
           ./container/deps.sh --force cross cargo-make protoc buf
+      # - run: ls -la ./registry_resolver/src/gen/
+      - run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
+      - run: ls -la ./registry_resolver/src/
+      - run: chmod -R 0777 ./registry_resolver/src/gen
+      - run: ls -la ./registry_resolver/src/gen/
       - name: Cross Build test 
         run: |
           cross build --release --target aarch64-linux-android --package ssi-ffi
