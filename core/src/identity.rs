@@ -40,7 +40,10 @@ where
     S: signature::suite::Signature,
 {
     DidDocument {
-        context: vec!["https://www.w3.org/ns/did/v1".to_string()],
+        context: vec![
+            "https://www.w3.org/ns/did/v1".to_string(),
+            "https://w3id.org/security/suites/ed25519-2020/v1".to_string(),
+        ],
         id: verifier.get_did(),
         authentication: vec![KeyMaterial {
             id: verifier
@@ -186,7 +189,7 @@ mod tests {
         let vc = serde_json::to_value(did_doc).unwrap();
 
         let expect = json!({
-        "@context":["https://www.w3.org/ns/did/v1"],
+        "@context":["https://www.w3.org/ns/did/v1", "https://w3id.org/security/suites/ed25519-2020/v1"],
         "id":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
         "assertionMethod":[{
             "controller":"did:knox:z6MkmgYPyjwqrMyHYBFfEcetAAoW7A9njsC4ToZ1WnjAgRL1",
