@@ -237,6 +237,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
         run: |
+          chmod +w "target/${{ matrix.arch }}/release/libssi_ffi.so"
           mv "target/${{ matrix.arch }}/release/libssi_ffi.so" \
             "./stage_release_ssi/libssi_ffi-${{ matrix.arch }}.so"
           aws s3 sync ./stage_release_ssi "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/stage_release_ssi"
