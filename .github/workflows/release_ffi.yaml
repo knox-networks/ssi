@@ -229,6 +229,10 @@ jobs:
           ./container/deps.sh --force cross cargo-make protoc buf
       # cargo make ffi-${{ matrix.arch }}
 
+      - run: ls -la "target/"
+      - run: ls -la "target/${{ matrix.arch }}/"
+      - run: ls -la "target/${{ matrix.arch }}/release/"
+        
       - name: Stage Release
         env:
           IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
