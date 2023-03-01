@@ -224,16 +224,18 @@ jobs:
         run: |
           cross build --release --target ${{ matrix.arch }} --package ssi-ffi
 
-      - name: Build Cross-Platform FFI
-        run: |
-          ./container/deps.sh --force cross cargo-make protoc buf
-      # cargo make ffi-${{ matrix.arch }}
+      # - name: Build Cross-Platform FFI
+      #   run: |
+      #     ./container/deps.sh --force cross cargo-make protoc buf
+      # # cargo make ffi-${{ matrix.arch }}
 
       - run: ls -la "target/"
       - run: ls -la "target/${{ matrix.arch }}/"
       - run: ls -la "target/${{ matrix.arch }}/release/"
       - run: chmod a+w "target/${{ matrix.arch }}/release/libssi_ffi.so"
       - run: ls -la "target/${{ matrix.arch }}/release/"
+      - run: mkdir ./stage_release_ssi
+      - run: chmod a+w ./stage_release_ssi
       
       - name: Stage Release
         env:
@@ -241,5 +243,5 @@ jobs:
         run: |
           mv "target/${{ matrix.arch }}/release/libssi_ffi.so" \
             "./stage_release_ssi/libssi_ffi-${{ matrix.arch }}.so"
-          aws s3 sync ./stage_release_ssi "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/stage_release_ssi"
+          aws s3 sync ./stage_release_ssi "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/stage_release"
 
