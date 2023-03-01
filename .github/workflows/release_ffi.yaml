@@ -222,7 +222,7 @@ jobs:
       - run: ls -la ./registry_resolver/src/gen/
       - name: Cross Build test 
         run: |
-          cross build --release --target aarch64-linux-android --package ssi-ffi
+          cross build --release --target ${{ matrix.arch }} --package ssi-ffi
 
       - name: Build Cross-Platform FFI
         run: |
@@ -232,12 +232,13 @@ jobs:
       - run: ls -la "target/"
       - run: ls -la "target/${{ matrix.arch }}/"
       - run: ls -la "target/${{ matrix.arch }}/release/"
-        
+      - run: chmod a+w "target/${{ matrix.arch }}/release/libssi_ffi.so"
+      - run: ls -la "target/${{ matrix.arch }}/release/"
+      
       - name: Stage Release
         env:
           IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
         run: |
-          chmod +w "target/${{ matrix.arch }}/release/libssi_ffi.so"
           mv "target/${{ matrix.arch }}/release/libssi_ffi.so" \
             "./stage_release_ssi/libssi_ffi-${{ matrix.arch }}.so"
           aws s3 sync ./stage_release_ssi "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/stage_release_ssi"
