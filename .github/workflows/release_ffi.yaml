@@ -190,7 +190,7 @@ jobs:
 
       - name: Build Cross-Platform FFI 
         run: |
-          cross build --release --target ${{ matrix.arch }} --package ssi-ffi --features ci-ffi-build
+          cross build --release --target ${{ matrix.arch }} --package ssi-ffi
 
       - run: chmod a+w "target/${{ matrix.arch }}/release/libssi_ffi.so"
       - run: mkdir ./stage_release_ssi
