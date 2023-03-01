@@ -121,12 +121,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      # - uses: ./.github/actions/rust-cache
-      #   with:
-      #     rust-toolchain: rustfmt, clippy
-      # - uses: ./.github/actions/cache
-      #   with:
-      #     key: ${{ runner.os }}-build
       - name: Authenticate AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -142,9 +136,7 @@ jobs:
       - run: which buf
         
       - run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
-      - run: ls -la ./registry_resolver/src/
       - run: chmod -R 0777 ./registry_resolver/src/gen
-      - run: ls -la ./registry_resolver/src/gen/
       
       - run: |
           cargo make ffi-build
@@ -178,16 +170,6 @@ jobs:
           role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
           aws-region: us-east-2
 
-      # - name: buf download & set up
-      #   run: |
-      #     cd registry_resolver
-      #     buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
-
-      # - name: build registry_resolver
-      #   run: |
-      #     cd registry_resolver
-      #     cargo build
-
       - name: Pull flatbuffers and protocolbuffers
         env:
           IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
@@ -200,40 +182,17 @@ jobs:
       - run: |
           sudo chown -R "$USER:$USER" "/home/$USER"
 
-      # - name: Registry Resolver test build
-      #   run: |
-      #     cd registry_resolver
-      #     buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
-      #     cargo build
-
-      # - run: cargo make ffi
-           
-      # - name: Test cross build with cargo
-      #   run: |
-      #     cargo build --release --target aarch64-linux-android --package ssi-ffi
-
       - name: buf download & set up
         run: |
           ./container/deps.sh --force cross cargo-make protoc buf
-      # - run: ls -la ./registry_resolver/src/gen/
       - run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
-      - run: ls -la ./registry_resolver/src/
       - run: chmod -R 0777 ./registry_resolver/src/gen
-      - run: ls -la ./registry_resolver/src/gen/
-      - name: Cross Build test 
+
+      - name: Build Cross-Platform FFI 
         run: |
           cross build --release --target ${{ matrix.arch }} --package ssi-ffi
 
-      # - name: Build Cross-Platform FFI
-      #   run: |
-      #     ./container/deps.sh --force cross cargo-make protoc buf
-      # # cargo make ffi-${{ matrix.arch }}
-
-      - run: ls -la "target/"
-      - run: ls -la "target/${{ matrix.arch }}/"
-      - run: ls -la "target/${{ matrix.arch }}/release/"
       - run: chmod a+w "target/${{ matrix.arch }}/release/libssi_ffi.so"
-      - run: ls -la "target/${{ matrix.arch }}/release/"
       - run: mkdir ./stage_release_ssi
       - run: chmod a+w ./stage_release_ssi
       
