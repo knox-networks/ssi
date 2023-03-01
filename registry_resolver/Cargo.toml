@@ -26,3 +26,4 @@ tokio-test = "0.4.2"
 
 [features]
 static = []
+ci_ffi_build=[]
