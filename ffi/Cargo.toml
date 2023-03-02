@@ -10,7 +10,7 @@ crate-type = ["cdylib", "staticlib"]
 [dependencies]
 serde_json = "1.0.81"
 safer-ffi = { version = "0.0.7", features = ["proc_macros", "log", "out-refs"] }
-registry_resolver = {path = "../registry_resolver"}
+registry_resolver = {path = "../registry_resolver", features = ["ci_ffi_build"], optional = true}
 ssi_core = { path = "../core" }
 signature = { path = "../signature" }
 ephemeral_resolver = { path = "../ephemeral_resolver" }
@@ -24,4 +24,5 @@ thiserror = { workspace = true }
 
 [features]
 c-headers = ["safer-ffi/headers"]
+ci_ffi_build=["registry_resolver"]
 static = ["registry_resolver/static", "signature/static", "ssi_core/static", "ephemeral_resolver/static"]
