@@ -11,7 +11,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if !status.success() {
             return Err(String::from_utf8_lossy(&stderr).into());
         }
+        Ok(())
     }
 
-    Ok(())
+    #[cfg(feature = "ci_ffi_build")] {
+        Ok(())
+    }
 }
