@@ -40,6 +40,31 @@ DidDocument_t * create_identity (
     char const * mnemonic_input);
 
 
+#include <stddef.h>
+#include <stdint.h>
+
+/** \brief
+ *  Same as [`Vec<T>`][`rust::Vec`], but with guaranteed `#[repr(C)]` layout
+ */
+typedef struct Vec_uint8 {
+
+    uint8_t * ptr;
+
+    size_t len;
+
+    size_t cap;
+
+} Vec_uint8_t;
+
+Vec_uint8_t * create_identity_vec (
+    RustError_t * rust_error,
+    char const * did_method,
+    char const * mnemonic_input);
+
+void free_identity_did_doc (
+    DidDocument_t * did_doc);
+
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
