@@ -14,7 +14,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
 
-    #[cfg(feature = "ci_ffi_build")] {
+    #[cfg(feature = "ci_ffi_build")]
+    {
         Ok(())
     }
 }
