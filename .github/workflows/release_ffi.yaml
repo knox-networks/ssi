@@ -186,7 +186,7 @@ jobs:
         run: |
           ./container/deps.sh --force cross cargo-make protoc buf
       - run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
-      - run: chmod -R 0777 ./registry_resolver/src/gen
+      - run: chmod -R a+w ./registry_resolver/src/gen
 
       - name: Build Cross-Platform FFI 
         run: |
