@@ -59,62 +59,6 @@ jobs:
       cluster_name: ${{ env.cluster_name }}
       build_ffi: ${{ steps.tasks.outputs.build_ffi }}
 
-  musl_build:
-    if: ${{ needs.init.outputs.musl_build == 'true' }}
-    needs: init
-    runs-on: self-hosted
-    steps:
-      - run: sudo chown -R "$USER:$USER" /home/ubuntu/actions-runner/
-
-      - uses: actions/checkout@v3
-      - uses: swatinem/rust-cache@v2
-        with:
-          prefix-key: "v0-rust"
-          cache-on-failure: "false"
-          cache-targets: "false"
-          cache-directories: |
-            ~/.cache/cachepot/
-            ~/.local
-          key: bjv3
-        timeout-minutes: 5
-        continue-on-error: true
-      - uses: ./.github/actions/rust-cache
-        with:
-          rust-toolchain: rustfmt, clippy
-      - uses: ./.github/actions/cache
-        with:
-          key: ${{ runner.os }}-build
-
-      - name: Authenticate AWS CLI
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
-          aws-region: us-east-2
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - uses: bufbuild/buf-setup-action@v1.8.0
-        with:
-          github_token: ${{ github.token }}
-
-      - name: Install deps
-        run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc buf
-      - name: Build Release
-        env:
-          IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
-        run: |
-          source .env.cachepot.local
-          ./container/build.sh musl-build
-      - name: Stage Release
-        env:
-          IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
-        run: |
-          # shellcheck disable=SC2086
-          ./container/build.sh stage-release $SERVICES cli
-          aws s3 sync ./stage_release "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/stage_release"
-
   build_fbs_header:
     if: ${{ needs.init.outputs.build_ffi == 'true' }}
     needs: init
