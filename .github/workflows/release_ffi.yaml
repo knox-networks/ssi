@@ -185,16 +185,19 @@ jobs:
       - name: buf download & set up
         run: |
           ./container/deps.sh --force cross cargo-make protoc buf
-      - run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
-      - run: chmod -R g+w ./registry_resolver/src/gen
+      - name: buf generate
+        run: |
+          cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
 
       - name: Build Cross-Platform FFI 
         run: |
           cross build --features registry_resolver/ci_ffi_build --release --target ${{ matrix.arch }} --package ssi-ffi
 
-      - run: chmod a+w "target/${{ matrix.arch }}/release/libssi_ffi.so"
-      - run: mkdir ./stage_release_ssi
-      - run: chmod a+w ./stage_release_ssi
+      - name: Prepare to Stage Release
+        run: |
+          chmod g+w "target/${{ matrix.arch }}/release/libssi_ffi.so"
+          mkdir ./stage_release_ssi
+          chmod g+w ./stage_release_ssi
       
       - name: Stage Release
         env:
