@@ -31,14 +31,14 @@ jobs:
         run: |-
           cargo install cargo-make
 
+      - name: Build
+        run: |-
+          cargo build
+
       - name: Linting
         run: |-
           cargo fmt --check --all
           cargo clippy --all-targets --all-features -- -D warnings
-
-      - name: Build
-        run: |-
-          cargo build
 
       - name: Test
         run: |-

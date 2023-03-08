@@ -1,8 +1,9 @@
-name: Release
+name: Build FFI
 
 on:
   release:
     types: [published]
+  push:
   workflow_dispatch:
     inputs:
       build_ffi:
@@ -16,7 +17,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  SERVICES: authority custodial-wallet emissary faucet gateway issuer overload-agent overload-orchestrator treasury
+  SERVICES: ssi
   S3_CACHE_BUCKET: knox.us-east-2.build-cache
   aws_region: us-east-2
   cluster_name: demo-knoxcore
@@ -58,43 +59,28 @@ jobs:
       cluster_name: ${{ env.cluster_name }}
       build_ffi: ${{ steps.tasks.outputs.build_ffi }}
 
-
   build_fbs_header:
     if: ${{ needs.init.outputs.build_ffi == 'true' }}
     needs: init
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: swatinem/rust-cache@v2
-        with:
-          prefix-key: "v0-rust"
-          cache-on-failure: "false"
-          cache-targets: "false"
-          cache-directories: |
-            ~/.cache/cachepot/
-            ~/.local
-          key: bjv3
-        timeout-minutes: 5
-        continue-on-error: true
-      - uses: ./.github/actions/rust-cache
-        with:
-          rust-toolchain: rustfmt, clippy
-      - uses: ./.github/actions/cache
-        with:
-          key: ${{ runner.os }}-build
       - name: Authenticate AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
           aws-region: us-east-2
+      - run: sudo chown -R "$USER:$USER" "/home/$USER"
       - name: Install deps
         run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc buf
-      - run: |
-          sudo chown -R "$USER:$USER" "/home/$USER"
-      - name: Generate FFI Header
-        run: |
-          source .env.cachepot.local
-          cargo make ffi-header
+      - run: sudo chown -R "$USER:$USER" "/home/$USER"        
+      - run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
+      - run: chmod -R 0777 ./registry_resolver/src/gen
+      
+      - run: cargo make ffi-build
+
+      - run: cargo make ffi-header
+
       - name: Stage Release
         env:
           IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
@@ -105,7 +91,7 @@ jobs:
   build_ffi:
     if: ${{ needs.init.outputs.build_ffi == 'true' }}
     needs: [init, build_fbs_header]
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         arch:
@@ -115,38 +101,42 @@ jobs:
           - armv7-linux-androideabi
     steps:
       - uses: actions/checkout@v3
-      - uses: swatinem/rust-cache@v2
-        with:
-          prefix-key: "v0-rust"
-          cache-on-failure: "false"
-          cache-targets: "false"
-          cache-directories: |
-            ~/.cache/cachepot/
-            ~/.local
-          key: bjv3
-        timeout-minutes: 5
-        continue-on-error: true
-      - uses: ./.github/actions/rust-cache
-        with:
-          rust-toolchain: rustfmt, clippy
       - name: Authenticate AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::578672650824:role/github-actions-knox-app
           aws-region: us-east-2
 
-      - run: |
-          sudo chown -R "$USER:$USER" "/home/$USER"
-      - name: Build Cross-Platform FFI
+      - name: Pull flatbuffers and protocolbuffers
+        env:
+          IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
         run: |
-          ./container/deps.sh --force cross cargo-make protoc buf
-          cargo make ffi-${{ matrix.arch }}
+          SYNC_DIRS=(stage_release registry_resolver/src/gen)
+          for dir in "${SYNC_DIRS[@]}"; do
+            aws s3 sync "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/$dir" "./$dir"
+          done
 
+      - run: sudo chown -R "$USER:$USER" "/home/$USER"
+
+      - name: buf download & set up
+        run: ./container/deps.sh --force cross cargo-make protoc buf
+      - name: buf generate
+        run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
+
+      - name: Build Cross-Platform FFI 
+        run: cross build --features registry_resolver/ci_ffi_build --release --target ${{ matrix.arch }} --package ssi-ffi
+
+      - name: Prepare to Stage Release
+        run: |
+          chmod g+w "target/${{ matrix.arch }}/release/libssi_ffi.so"
+          mkdir ./stage_release_ssi
+          chmod g+w ./stage_release_ssi
+      
       - name: Stage Release
         env:
           IMAGE_TAG: ${{ needs.init.outputs.image_tag }}
         run: |
           mv "target/${{ matrix.arch }}/release/libssi_ffi.so" \
             "./stage_release_ssi/libssi_ffi-${{ matrix.arch }}.so"
-          aws s3 sync ./stage_release_ssi "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/stage_release_ssi"
+          aws s3 sync ./stage_release_ssi "s3://$S3_CACHE_BUCKET/$IMAGE_TAG/stage_release"
 
