@@ -235,6 +235,17 @@ impl super::DIDSigner<Ed25519Signature> for Ed25519DidSigner {
     fn encode(&self, sig: Ed25519Signature) -> String {
         multibase::encode(multibase::Base::Base58Btc, sig)
     }
+
+    fn relational_sign(
+        &self,
+        msg: &[u8],
+        relation: super::VerificationRelation,
+    ) -> Result<Ed25519Signature, super::error::Error> {
+        let private_key = self.get_private_key_by_relation(relation);
+
+        let res: [u8; 64] = private_key.sign(msg).into();
+        Ed25519Signature::from_bytes(&res)
+    }
 }
 
 impl From<&Ed25519DidSigner> for Ed25519DidVerifier {
@@ -320,24 +331,11 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
                 })?;
 
         let sig = ed25519_zebra::Signature::from(sig_bytes);
-        match relation {
-            super::VerificationRelation::AssertionMethod => self
-                .public_key
-                .verify(&sig, msg)
-                .map_err(|e| super::error::Error::Verify(e.to_string())),
-            super::VerificationRelation::Authentication => self
-                .public_key
-                .verify(&sig, msg)
-                .map_err(|e| super::error::Error::Verify(e.to_string())),
-            super::VerificationRelation::CapabilityInvocation => self
-                .public_key
-                .verify(&sig, msg)
-                .map_err(|e| super::error::Error::Verify(e.to_string())),
-            super::VerificationRelation::CapabilityDelegation => self
-                .public_key
-                .verify(&sig, msg)
-                .map_err(|e| super::error::Error::Verify(e.to_string())),
-        }
+        let public_key = self.get_public_key_by_relation(relation);
+
+        public_key
+            .verify(&sig, msg)
+            .map_err(|e| super::error::Error::Verify(e.to_string()))
     }
 
     fn get_key_material_type(&self) -> String {
@@ -345,25 +343,12 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
     }
 
     fn get_verification_method(&self, relation: super::VerificationRelation) -> String {
-        let encoded_pk = self.get_public_key_by_relation(relation);
+        let encoded_pk = self.get_encoded_public_key_by_relation(relation);
         format!("did:{0}:{1}#{1}", self.did_method, encoded_pk)
     }
 
-    fn get_public_key_by_relation(&self, relation: super::VerificationRelation) -> String {
-        match relation {
-            super::VerificationRelation::AssertionMethod => {
-                super::PublicKey::get_encoded_public_key(&self.public_key)
-            }
-            super::VerificationRelation::Authentication => {
-                super::PublicKey::get_encoded_public_key(&self.public_key)
-            }
-            super::VerificationRelation::CapabilityInvocation => {
-                super::PublicKey::get_encoded_public_key(&self.public_key)
-            }
-            super::VerificationRelation::CapabilityDelegation => {
-                super::PublicKey::get_encoded_public_key(&self.public_key)
-            }
-        }
+    fn get_encoded_public_key_by_relation(&self, relation: super::VerificationRelation) -> String {
+        super::PublicKey::get_encoded_public_key(self.get_public_key_by_relation(relation))
     }
 
     fn get_did_method(&self) -> String {
@@ -378,5 +363,33 @@ impl super::DIDVerifier<Ed25519Signature> for Ed25519DidVerifier {
     fn decoded_verify(&self, msg: &[u8], data: String) -> Result<(), super::error::Error> {
         let decoded_sig = self.decode(data)?;
         self.verify(msg, &decoded_sig)
+    }
+}
+
+impl Ed25519DidVerifier {
+    fn get_public_key_by_relation(
+        &self,
+        relation: super::VerificationRelation,
+    ) -> &ed25519_zebra::VerificationKey {
+        match relation {
+            super::VerificationRelation::AssertionMethod => &self.public_key,
+            super::VerificationRelation::Authentication => &self.public_key,
+            super::VerificationRelation::CapabilityInvocation => &self.public_key,
+            super::VerificationRelation::CapabilityDelegation => &self.public_key,
+        }
+    }
+}
+
+impl Ed25519DidSigner {
+    fn get_private_key_by_relation(
+        &self,
+        relation: crate::suite::VerificationRelation,
+    ) -> ed25519_zebra::SigningKey {
+        match relation {
+            crate::suite::VerificationRelation::AssertionMethod => self.private_key,
+            crate::suite::VerificationRelation::Authentication => self.private_key,
+            crate::suite::VerificationRelation::CapabilityInvocation => self.private_key,
+            crate::suite::VerificationRelation::CapabilityDelegation => self.private_key,
+        }
     }
 }
