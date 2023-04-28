@@ -82,6 +82,21 @@ where
         self.encode(signature)
     }
 
+    fn encoded_relational_sign(
+        &self,
+        data: &[u8],
+        relation: VerificationRelation,
+    ) -> Result<String, error::Error> {
+        let signature = self.relational_sign(data, relation)?;
+        Ok(self.encode(signature))
+    }
+
+    fn relational_sign(
+        &self,
+        msg: &[u8],
+        relation: VerificationRelation,
+    ) -> Result<S, error::Error>;
+
     fn try_encoded_sign(&self, data: &[u8]) -> Result<String, error::Error> {
         let signature = self.try_sign(data)?;
         Ok(self.encode(signature))
@@ -121,5 +136,5 @@ where
     fn get_did(&self) -> String;
     fn get_key_material_type(&self) -> String;
     fn get_verification_method(&self, relation: VerificationRelation) -> String;
-    fn get_public_key_by_relation(&self, relation: VerificationRelation) -> String;
+    fn get_encoded_public_key_by_relation(&self, relation: VerificationRelation) -> String;
 }

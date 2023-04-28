@@ -50,8 +50,9 @@ where
                 .get_verification_method(signature::suite::VerificationRelation::Authentication),
             proof_type: verifier.get_key_material_type(),
             controller: verifier.get_did(),
-            public_key_multibase: verifier
-                .get_public_key_by_relation(signature::suite::VerificationRelation::Authentication),
+            public_key_multibase: verifier.get_encoded_public_key_by_relation(
+                signature::suite::VerificationRelation::Authentication,
+            ),
         }],
         capability_invocation: vec![KeyMaterial {
             id: verifier.get_verification_method(
@@ -59,7 +60,7 @@ where
             ),
             proof_type: verifier.get_key_material_type(),
             controller: verifier.get_did(),
-            public_key_multibase: verifier.get_public_key_by_relation(
+            public_key_multibase: verifier.get_encoded_public_key_by_relation(
                 signature::suite::VerificationRelation::CapabilityInvocation,
             ),
         }],
@@ -69,7 +70,7 @@ where
             ),
             proof_type: verifier.get_key_material_type(),
             controller: verifier.get_did(),
-            public_key_multibase: verifier.get_public_key_by_relation(
+            public_key_multibase: verifier.get_encoded_public_key_by_relation(
                 signature::suite::VerificationRelation::CapabilityDelegation,
             ),
         }],
@@ -78,7 +79,7 @@ where
                 .get_verification_method(signature::suite::VerificationRelation::AssertionMethod),
             proof_type: verifier.get_key_material_type(),
             controller: verifier.get_did(),
-            public_key_multibase: verifier.get_public_key_by_relation(
+            public_key_multibase: verifier.get_encoded_public_key_by_relation(
                 signature::suite::VerificationRelation::AssertionMethod,
             ),
         }],
