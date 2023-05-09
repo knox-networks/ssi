@@ -19,7 +19,6 @@ pub enum CredentialType {
     Common,
     PermanentResidentCard,
     BankCard,
-    #[serde(rename = "BankAccountCredential")]
     BankAccount,
 }
 
@@ -29,14 +28,14 @@ impl CredentialType {
             CredentialType::Common => "VerifiableCredential",
             CredentialType::PermanentResidentCard => "PermanentResidentCard",
             CredentialType::BankCard => "BankCard",
-            CredentialType::BankAccount => "BankAccountCredential",
+            CredentialType::BankAccount => "BankAccount",
         }
     }
 
     pub fn from_string(cred_type: &str) -> Option<Self> {
         match cred_type {
             "BankCard" => Some(CredentialType::BankCard),
-            "BankAccountCredential" => Some(CredentialType::BankAccount),
+            "BankAccount" => Some(CredentialType::BankAccount),
             "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
             "VerifiableCredential" => Some(CredentialType::Common),
             _ => None,
