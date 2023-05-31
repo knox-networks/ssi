@@ -31,12 +31,12 @@ impl RegistryClient for GrpcClient {
             .await;
     }
 
-    async fn read(
+    async fn resolve(
         &self,
         did: String,
-    ) -> Result<tonic::Response<registry::ReadResponse>, tonic::Status> {
+    ) -> Result<tonic::Response<registry::ResolveResponse>, tonic::Status> {
         let mut client = self.inner.to_owned();
-        return client.read(registry::ReadRequest { did }).await;
+        return client.resolve(registry::ResolveRequest { did }).await;
     }
 }
 
@@ -49,10 +49,10 @@ pub trait RegistryClient: Send + Sync + std::fmt::Debug {
         document: String,
     ) -> Result<tonic::Response<registry::CreateResponse>, tonic::Status>;
 
-    async fn read(
+    async fn resolve(
         &self,
         did: String,
-    ) -> Result<tonic::Response<registry::ReadResponse>, tonic::Status>;
+    ) -> Result<tonic::Response<registry::ResolveResponse>, tonic::Status>;
 }
 
 impl Clone for MockRegistryClient {

@@ -44,7 +44,7 @@ where
     async fn read(&self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
         let res = self
             .client
-            .read(did.clone())
+            .resolve(did.clone())
             .await
             .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
@@ -59,7 +59,9 @@ where
 mod tests {
 
     use crate::{
-        registry_client::{registry::CreateResponse, registry::ReadResponse, MockRegistryClient},
+        registry_client::{
+            registry::CreateResponse, registry::ResolveResponse, MockRegistryClient,
+        },
         RegistryResolver,
     };
     use ssi_core::DIDResolver;
@@ -165,7 +167,7 @@ mod tests {
     )]
     #[case::success(
         create_did(),
-        Some(Ok(tonic::Response::new(ReadResponse {
+        Some(Ok(tonic::Response::new(ResolveResponse {
             did: create_did(),
             document: create_did_doc(create_did()).to_string(),
             metadata: None,
@@ -175,14 +177,14 @@ mod tests {
     )]
     fn test_read(
         #[case] did: String,
-        #[case] mock_read_response: Option<Result<tonic::Response<ReadResponse>, tonic::Status>>,
+        #[case] mock_read_response: Option<Result<tonic::Response<ResolveResponse>, tonic::Status>>,
         #[case] expect_error_kind: Option<ssi_core::error::ResolverError>,
         #[case] expect_ok: bool,
     ) {
         let mut mock_client = MockRegistryClient::default();
         if let Some(res) = mock_read_response {
             mock_client
-                .expect_read()
+                .expect_resolve()
                 .with(mockall::predicate::eq(did.clone()))
                 .return_once(|_| res);
         }
