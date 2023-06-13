@@ -11,6 +11,14 @@ pub struct DidDocument {
     pub(crate) backend: ssi_core::identity::DidDocument,
 }
 
+#[derive_ReprC]
+#[ReprC::opaque]
+#[derive(Clone)]
+pub struct KeyPair {
+    #[allow(dead_code)]
+    pub(crate) backend: signature::suite::ed25519_2020::Ed25519KeyPair,
+}
+
 #[ffi_export]
 pub fn create_identity(
     rust_error: MaybeRustError,
@@ -85,4 +93,64 @@ pub fn create_identity_vec(
 #[ffi_export]
 pub fn free_identity_did_doc(did_doc: repr_c::Box<DidDocument>) {
     drop(did_doc)
+}
+
+#[ffi_export]
+pub fn create_keypair(
+    rust_error: MaybeRustError,
+    did_method: char_p::Ref<'_>,
+) -> Option<repr_c::Box<KeyPair>> {
+    super::init();
+
+    let res = rust_error.try_(|| {
+        let keypair =
+            signature::suite::ed25519_2020::Ed25519KeyPair::new(did_method.to_string(), None)
+                .unwrap();
+        Ok(keypair)
+    });
+
+    match res {
+        Some(keypair) => {
+            debug!("create_keypair unpacking result {:?}", keypair);
+            let r = keypair;
+            return Some(repr_c::Box::new(KeyPair { backend: r }));
+        }
+        None => {
+            debug!("create_keypair None result");
+            return None;
+        }
+    }
+}
+
+#[ffi_export]
+pub fn recover_keypair(
+    rust_error: MaybeRustError,
+    did_method: char_p::Ref<'_>,
+    mnemonic_input: char_p::Ref<'_>,
+) -> Option<repr_c::Box<KeyPair>> {
+    super::init();
+
+    let res = rust_error.try_(|| {
+        let keypair = signature::suite::ed25519_2020::Ed25519KeyPair::new(
+            did_method.to_string(),
+            Some(Mnemonic {
+                language: signature::suite::ed25519_2020::MnemonicLanguage::English,
+                phrase: mnemonic_input.to_string(),
+            }),
+        )
+        .unwrap();
+        Ok(keypair)
+    });
+
+    match res {
+        Some(keypair) => {
+            debug!("create_keypair unpacking result {:?}", keypair);
+            let r = keypair;
+            return Some(repr_c::Box::new(KeyPair { backend: r }));
+        }
+        None => {
+            debug!("create_keypair None result");
+            return None;
+        }
+    }
 }
