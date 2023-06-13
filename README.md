@@ -11,6 +11,11 @@ You can utilize `ssi` by importing it via GitHub through the main branch. At the
 ssi = { git = "https://github.com/knox-networks/ssi", branch = "main" }
 ```
 
+### FFI
+In order to build and run the FFI examples you will need to have the following installed:
+```
+cargo install --force cargo-make
+```
 
 ## Usage
 
@@ -21,6 +26,12 @@ The tests can be run without any previous pre-configuration or pre-installation 
 
 ```rust
 cargo test
+```
+
+### FFI Tests
+
+```sh
+cargo make ffi-test
 ```
 
 ### Spec Adherence

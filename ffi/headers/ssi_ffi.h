@@ -20,9 +20,6 @@ typedef struct RustError {
 
 } RustError_t;
 
-void free_rust_error (
-    RustError_t rust_error);
-
 typedef struct DidDocument DidDocument_t;
 
 
@@ -33,6 +30,9 @@ bool registry_create_did (
     char const * address,
     char const * did,
     DidDocument_t * document);
+
+void free_rust_error (
+    RustError_t rust_error);
 
 DidDocument_t * create_identity (
     RustError_t * rust_error,
@@ -63,6 +63,17 @@ Vec_uint8_t * create_identity_vec (
 
 void free_identity_did_doc (
     DidDocument_t * did_doc);
+
+typedef struct KeyPair KeyPair_t;
+
+KeyPair_t * create_keypair (
+    RustError_t * rust_error,
+    char const * did_method);
+
+KeyPair_t * recover_keypair (
+    RustError_t * rust_error,
+    char const * did_method,
+    char const * mnemonic_input);
 
 
 #ifdef __cplusplus
