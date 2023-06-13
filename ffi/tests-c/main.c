@@ -53,6 +53,12 @@ void test_create_key_pair(void)
     TEST_ASSERT_NOT_NULL(key_pair);
 }
 
+void test_recover_key_pair(void)
+{
+    KeyPair_t *key_pair_recovered = recover_keypair(NULL, "DID_METHOD", "become family fame will sting grain turn south sick song sunny miracle cloud unfold climb giant useful crunch near need vast regret stadium language");
+    TEST_ASSERT_NOT_NULL(key_pair_recovered);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
