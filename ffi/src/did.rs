@@ -113,11 +113,11 @@ pub fn create_keypair(
         Some(keypair) => {
             debug!("create_keypair unpacking result {:?}", keypair);
             let r = keypair;
-            return Some(repr_c::Box::new(KeyPair { backend: r }));
+            Some(repr_c::Box::new(KeyPair { backend: r }))
         }
         None => {
             debug!("create_keypair None result");
-            return None;
+            None
         }
     }
 }
@@ -146,11 +146,11 @@ pub fn recover_keypair(
         Some(keypair) => {
             debug!("create_keypair unpacking result {:?}", keypair);
             let r = keypair;
-            return Some(repr_c::Box::new(KeyPair { backend: r }));
+            Some(repr_c::Box::new(KeyPair { backend: r }))
         }
         None => {
             debug!("create_keypair None result");
-            return None;
+            None
         }
     }
 }
