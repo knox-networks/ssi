@@ -10,4 +10,5 @@
 **/*.rs.bk
 
 gen
+result
 .vscode

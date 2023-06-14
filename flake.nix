@@ -22,11 +22,9 @@
         # darwin/macOS conditionals
         macBuildInputs = lib.optionals pkgs.stdenv.isDarwin [
           pkgs.libiconv
-        ];
-        macSDKBuildInputs = lib.optionals pkgs.stdenv.isDarwin [
-          pkgs.libiconv
           pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
         ];
+
         src = lib.cleanSourceWith {
           src = ./.; # The original, unfiltered source
           filter = path: type:
@@ -43,18 +41,23 @@
 
           buildInputs = [
             pkgs.protobuf
-          ] ++ macSDKBuildInputs;
+          ] ++ macBuildInputs;
           doCheck = false;
         };
 
         # buildLocalPackage allows reuse of inputs and package name
         ssi = craneLib.buildPackage {
           inherit src cargoArtifacts;
-          pname = "${package}";
+          pname = "ssi";
+
+          preBuild = ''
+            export HOME=$(mktemp -d)
+          '';
 
           buildInputs = [
             pkgs.protobuf
-          ] ++ macSDKBuildInputs;
+            pkgs.buf
+          ] ++ macBuildInputs;
           doCheck = false;
         };
 
@@ -66,14 +69,11 @@
         };
 
         # $ nix build
-        # $ nix build '.#gateway'
+        # $ nix build '.#ssi'
         packages = {
-          # default = integration
           default = ssi;
           ssi = ssi;
         };
-
-
       });
 }
 
