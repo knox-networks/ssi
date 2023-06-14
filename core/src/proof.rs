@@ -84,7 +84,7 @@ mod tests {
                     .decoded_relational_verify(&comparison, proof.proof_value, relation)
                     .is_ok());
             }
-            Err(e) => panic!("{:?}", e),
+            Err(e) => panic!("{e:?}"),
         }
     }
 }
