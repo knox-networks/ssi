@@ -1,5 +1,5 @@
+#[cfg(not(feature = "static"))]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    #[cfg(not(feature = "ci_ffi_build"))]
     {
         let package_path = "buf.build/knox-networks/registry-mgmt";
         let commit = "d65b89f5f58c4e2ca3d64401cf81b220";
@@ -12,9 +12,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Ok(())
     }
+}
 
-    #[cfg(feature = "ci_ffi_build")]
-    {
-        Ok(())
-    }
+#[cfg(feature = "static")]
+fn main() {
+    println!("cargo:warning=Ignoring build step for generating proto bindings");
 }

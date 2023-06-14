@@ -1,0 +1,5 @@
+!.github/
+!**/gen/
+!.ignore
+.git/
+Cargo.lock
