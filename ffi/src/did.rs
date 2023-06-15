@@ -1,6 +1,5 @@
 use crate::error::{MaybeRustError, Reportable, Try};
 use safer_ffi::prelude::*;
-use signature::suite::ed25519_2020::Mnemonic;
 use signature::suite::KeyPair;
 use tokio::runtime::Runtime;
 use tracing::*;
@@ -54,15 +53,16 @@ pub fn create_identity(
         mnemonic_input=?mnemonic_input,
         "ffi create_identity called with params");
 
-    let mnemonic_option: Option<Mnemonic> = if mnemonic_input.to_string().is_empty() {
-        None
-    } else {
-        let mm = signature::suite::ed25519_2020::Mnemonic {
-            language: signature::suite::ed25519_2020::MnemonicLanguage::English,
-            phrase: mnemonic_input.to_string(),
+    let mnemonic_option: Option<signature::suite::ed25519_2020::Mnemonic> =
+        if mnemonic_input.to_string().is_empty() {
+            None
+        } else {
+            let mm = signature::suite::ed25519_2020::Mnemonic {
+                language: signature::suite::ed25519_2020::MnemonicLanguage::English,
+                phrase: mnemonic_input.to_string(),
+            };
+            Some(mm)
         };
-        Some(mm)
-    };
     let result = rust_error.try_(|| {
         let did_mt = did_method.to_string();
         let keypair =
@@ -156,7 +156,7 @@ pub fn recover_keypair(
     let res = rust_error.try_(|| {
         let keypair = signature::suite::ed25519_2020::Ed25519KeyPair::new(
             did_method.to_string(),
-            Some(Mnemonic {
+            Some(signature::suite::ed25519_2020::Mnemonic {
                 language: signature::suite::ed25519_2020::MnemonicLanguage::English,
                 phrase: mnemonic_input.to_string(),
             }),
