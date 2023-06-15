@@ -16,6 +16,14 @@ pub enum MnemonicLanguage {
     English,
 }
 
+impl std::fmt::Display for MnemonicLanguage {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            MnemonicLanguage::English => write!(f, "english"),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Mnemonic {
     pub language: MnemonicLanguage,
@@ -110,18 +118,25 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> f
     }
 
     fn get_public_key_encoded(&self, relation: crate::suite::VerificationRelation) -> String {
+        let public_key = self.get_public_key_by_relation(relation);
+        super::PublicKey::get_encoded_public_key(&public_key)
+    }
+
+    fn get_public_key_by_relation(
+        &self,
+        relation: super::VerificationRelation,
+    ) -> ed25519_zebra::VerificationKey
+    where
+        Self: Sized,
+    {
         match relation {
-            crate::suite::VerificationRelation::AssertionMethod => {
-                super::PublicKey::get_encoded_public_key(&self.assertion_method_public_key)
+            super::VerificationRelation::AssertionMethod => self.assertion_method_public_key,
+            super::VerificationRelation::Authentication => self.authetication_public_key,
+            super::VerificationRelation::CapabilityInvocation => {
+                self.capability_invocation_public_key
             }
-            crate::suite::VerificationRelation::Authentication => {
-                super::PublicKey::get_encoded_public_key(&self.authetication_public_key)
-            }
-            crate::suite::VerificationRelation::CapabilityInvocation => {
-                super::PublicKey::get_encoded_public_key(&self.capability_invocation_public_key)
-            }
-            crate::suite::VerificationRelation::CapabilityDelegation => {
-                super::PublicKey::get_encoded_public_key(&self.capability_delegation_public_key)
+            super::VerificationRelation::CapabilityDelegation => {
+                self.capability_delegation_public_key
             }
         }
     }

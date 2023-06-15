@@ -1,6 +1,7 @@
 use crate::error::{MaybeRustError, Reportable, Try};
 use safer_ffi::prelude::*;
 use signature::suite::ed25519_2020::Mnemonic;
+use signature::suite::KeyPair;
 use tokio::runtime::Runtime;
 use tracing::*;
 
@@ -12,11 +13,33 @@ pub struct DidDocument {
 }
 
 #[derive_ReprC]
-#[ReprC::opaque]
-#[derive(Clone)]
-pub struct KeyPair {
-    #[allow(dead_code)]
-    pub(crate) backend: signature::suite::ed25519_2020::Ed25519KeyPair,
+#[repr(C)]
+#[derive(Debug, Clone)]
+pub struct FFICompatEd25519KeyPair {
+    pub(crate) master_public_key: [u8; 32],
+    pub(crate) master_private_key: [u8; 32],
+
+    pub(crate) authetication_public_key: [u8; 32],
+    pub(crate) authetication_private_key: [u8; 32],
+
+    pub(crate) capability_invocation_public_key: [u8; 32],
+    pub(crate) capability_invocation_private_key: [u8; 32],
+
+    pub(crate) capability_delegation_public_key: [u8; 32],
+    pub(crate) capability_delegation_private_key: [u8; 32],
+
+    pub(crate) assertion_method_public_key: [u8; 32],
+    pub(crate) assertion_method_private_key: [u8; 32],
+    pub(crate) mnemonic: FFICompatMnemonic,
+    pub(crate) did_method: char_p::Box,
+}
+
+#[derive_ReprC]
+#[repr(C)]
+#[derive(Debug, Clone)]
+pub struct FFICompatMnemonic {
+    pub language: char_p::Box,
+    pub phrase: char_p::Box,
 }
 
 #[ffi_export]
@@ -99,7 +122,7 @@ pub fn free_identity_did_doc(did_doc: repr_c::Box<DidDocument>) {
 pub fn create_keypair(
     rust_error: MaybeRustError,
     did_method: char_p::Ref<'_>,
-) -> Option<repr_c::Box<KeyPair>> {
+) -> Option<repr_c::Box<FFICompatEd25519KeyPair>> {
     super::init();
 
     let res = rust_error.try_(|| {
@@ -113,7 +136,7 @@ pub fn create_keypair(
         Some(keypair) => {
             debug!("create_keypair unpacking result {:?}", keypair);
             let r = keypair;
-            Some(repr_c::Box::new(KeyPair { backend: r }))
+            Some(repr_c::Box::new(create_ffi_keypair(r)))
         }
         None => {
             debug!("create_keypair None result");
@@ -127,7 +150,7 @@ pub fn recover_keypair(
     rust_error: MaybeRustError,
     did_method: char_p::Ref<'_>,
     mnemonic_input: char_p::Ref<'_>,
-) -> Option<repr_c::Box<KeyPair>> {
+) -> Option<repr_c::Box<FFICompatEd25519KeyPair>> {
     super::init();
 
     let res = rust_error.try_(|| {
@@ -146,11 +169,61 @@ pub fn recover_keypair(
         Some(keypair) => {
             debug!("create_keypair unpacking result {:?}", keypair);
             let r = keypair;
-            Some(repr_c::Box::new(KeyPair { backend: r }))
+            Some(repr_c::Box::new(create_ffi_keypair(r)))
         }
         None => {
             debug!("create_keypair None result");
             None
         }
+    }
+}
+
+fn create_ffi_keypair(
+    kp: signature::suite::ed25519_2020::Ed25519KeyPair,
+) -> FFICompatEd25519KeyPair {
+    let r = kp;
+    let mnemonic = r.get_mnemonic();
+    let language = mnemonic.language.to_string();
+    let phrase = mnemonic.phrase;
+    FFICompatEd25519KeyPair {
+        master_public_key: r.get_master_public_key().into(),
+        master_private_key: r.get_master_private_key().into(),
+        authetication_public_key: r
+            .get_public_key_by_relation(signature::suite::VerificationRelation::Authentication)
+            .into(),
+        authetication_private_key: r
+            .get_private_key_by_relation(signature::suite::VerificationRelation::Authentication)
+            .into(),
+        capability_invocation_public_key: r
+            .get_public_key_by_relation(
+                signature::suite::VerificationRelation::CapabilityInvocation,
+            )
+            .into(),
+        capability_invocation_private_key: r
+            .get_private_key_by_relation(
+                signature::suite::VerificationRelation::CapabilityInvocation,
+            )
+            .into(),
+        capability_delegation_public_key: r
+            .get_public_key_by_relation(
+                signature::suite::VerificationRelation::CapabilityDelegation,
+            )
+            .into(),
+        capability_delegation_private_key: r
+            .get_private_key_by_relation(
+                signature::suite::VerificationRelation::CapabilityDelegation,
+            )
+            .into(),
+        assertion_method_public_key: r
+            .get_public_key_by_relation(signature::suite::VerificationRelation::AssertionMethod)
+            .into(),
+        assertion_method_private_key: r
+            .get_private_key_by_relation(signature::suite::VerificationRelation::AssertionMethod)
+            .into(),
+        mnemonic: FFICompatMnemonic {
+            language: language.try_into().unwrap(),
+            phrase: phrase.try_into().unwrap(),
+        },
+        did_method: r.get_did_method().try_into().unwrap(),
     }
 }

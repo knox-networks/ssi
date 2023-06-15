@@ -64,13 +64,49 @@ Vec_uint8_t * create_identity_vec (
 void free_identity_did_doc (
     DidDocument_t * did_doc);
 
-typedef struct KeyPair KeyPair_t;
+typedef struct { uint8_t idx[32]; } uint8_32_array_t;
 
-KeyPair_t * create_keypair (
+typedef struct FFICompatMnemonic {
+
+    char * language;
+
+    char * phrase;
+
+} FFICompatMnemonic_t;
+
+typedef struct FFICompatEd25519KeyPair {
+
+    uint8_32_array_t master_public_key;
+
+    uint8_32_array_t master_private_key;
+
+    uint8_32_array_t authetication_public_key;
+
+    uint8_32_array_t authetication_private_key;
+
+    uint8_32_array_t capability_invocation_public_key;
+
+    uint8_32_array_t capability_invocation_private_key;
+
+    uint8_32_array_t capability_delegation_public_key;
+
+    uint8_32_array_t capability_delegation_private_key;
+
+    uint8_32_array_t assertion_method_public_key;
+
+    uint8_32_array_t assertion_method_private_key;
+
+    FFICompatMnemonic_t mnemonic;
+
+    char * did_method;
+
+} FFICompatEd25519KeyPair_t;
+
+FFICompatEd25519KeyPair_t * create_keypair (
     RustError_t * rust_error,
     char const * did_method);
 
-KeyPair_t * recover_keypair (
+FFICompatEd25519KeyPair_t * recover_keypair (
     RustError_t * rust_error,
     char const * did_method,
     char const * mnemonic_input);

@@ -29,6 +29,19 @@ pub trait DIDResolver: Send + Sync + 'static {
     }
 }
 
+#[mockall::automock]
+#[async_trait::async_trait]
+pub trait CredentialManager: Send + Sync + 'static {
+    /// Requests the issuance of a Verifiable Credential of the specified type for the specified subject (`did`).
+    /// The Credential Manager will send a request to the credential issuer to issue a credential for the subject.
+    /// The Credential Manager will then return the issued credential to the function caller
+    async fn issue(
+        &self,
+        did: String,
+        cred_type: credential::CredentialType,
+    ) -> Result<credential::VerifiableCredential, error::ResolverError>;
+}
+
 impl Clone for MockDIDResolver {
     fn clone(&self) -> Self {
         Self::default()
