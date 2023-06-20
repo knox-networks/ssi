@@ -112,6 +112,12 @@ pub struct DidDocument {
     pub assertion_method: Vec<KeyMaterial>,
 }
 
+impl DidDocument {
+    pub fn to_json(&self) -> Result<String, crate::error::Error> {
+        Ok(serde_json::to_string(self)?)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

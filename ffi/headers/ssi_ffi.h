@@ -34,6 +34,12 @@ bool registry_create_did (
 void free_rust_error (
     RustError_t rust_error);
 
+char * get_did (
+    DidDocument_t * did_doc);
+
+char * get_encoded_did_doc (
+    DidDocument_t * did_doc);
+
 DidDocument_t * create_identity (
     RustError_t * rust_error,
     char const * did_method,

@@ -60,11 +60,20 @@ void test_recover_key_pair(void)
     TEST_ASSERT_NOT_NULL(key_pair_recovered->mnemonic.phrase);
 }
 
+void test_did_doc_encoding(void)
+{
+    DidDocument_t *did_document = create_did_doc();
+    char *did_doc_encoded = get_encoded_did_doc(did_document);
+    printf("\n test_did_doc_encoding did_doc_encoded: %s \n", did_doc_encoded);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_create_did_doc_vecs);
     RUN_TEST(test_push_did_doc_integration);
     RUN_TEST(test_create_key_pair);
+    RUN_TEST(test_recover_key_pair);
+    RUN_TEST(test_did_doc_encoding);
     return UNITY_END();
 }

@@ -42,6 +42,21 @@ pub struct FFICompatMnemonic {
 }
 
 #[ffi_export]
+pub fn get_did(did_doc: repr_c::Box<DidDocument>) -> char_p::Box {
+    did_doc.backend.id.clone().try_into().unwrap()
+}
+
+#[ffi_export]
+pub fn get_encoded_did_doc(did_doc: repr_c::Box<DidDocument>) -> char_p::Box {
+    did_doc
+        .backend
+        .to_json()
+        .unwrap()
+        .try_into()
+        .expect("unable to convert did_doc to json")
+}
+
+#[ffi_export]
 pub fn create_identity(
     rust_error: MaybeRustError,
     did_method: char_p::Ref<'_>,
