@@ -42,18 +42,34 @@ pub struct FFICompatMnemonic {
 }
 
 #[ffi_export]
-pub fn get_did(did_doc: repr_c::Box<DidDocument>) -> char_p::Box {
-    did_doc.backend.id.clone().try_into().unwrap()
+pub fn get_did(did_doc: repr_c::Box<DidDocument>) -> Option<char_p::Box> {
+    let did = did_doc.backend.id.clone().try_into();
+    match did {
+        Ok(did) => Some(did),
+        Err(_) => {
+            error!("failed to convert did to string");
+            None
+        }
+    }
 }
 
 #[ffi_export]
-pub fn get_encoded_did_doc(did_doc: repr_c::Box<DidDocument>) -> char_p::Box {
-    did_doc
-        .backend
-        .to_json()
-        .unwrap()
-        .try_into()
-        .expect("unable to convert did_doc to json")
+pub fn get_encoded_did_doc(did_doc: repr_c::Box<DidDocument>) -> Option<char_p::Box> {
+    let did_doc = did_doc.backend.to_json();
+
+    match did_doc {
+        Ok(did_doc) => match did_doc.try_into() {
+            Ok(did_doc) => Some(did_doc),
+            Err(_) => {
+                error!("failed to convert did_doc to string");
+                None
+            }
+        },
+        Err(_) => {
+            error!("failed to convert did_doc to json");
+            None
+        }
+    }
 }
 
 #[ffi_export]
