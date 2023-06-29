@@ -422,7 +422,7 @@ mod tests {
 
         match expanded {
             Err(e) => {
-                println!("Error: {:?}", e);
+                println!("Error: {e:?}");
             }
             Ok(expanded) => {
                 for object in expanded.into_value() {
