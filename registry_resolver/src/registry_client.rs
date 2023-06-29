@@ -1,7 +1,7 @@
 #[allow(non_snake_case, clippy::all, unused_imports, dead_code)]
 #[rustfmt::skip]
 pub mod registry {
-    include!(concat!(env!("OUT_DIR"), '/', env!("CARGO_PKG_NAME"), "/registry_api.v1.rs"));
+    include!(concat!(env!("OUT_DIR"), "/registry_api.v1.rs"));
 }
 
 #[derive(Clone, Debug)]
