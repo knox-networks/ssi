@@ -1,6 +1,6 @@
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let package_path = "buf.build/knox-networks/registry-mgmt";
-    let commit = "d65b89f5f58c4e2ca3d64401cf81b220";
+    let commit = "e36fc74230bb4af7b49588108dc2531a";
     let std::process::Output { status, stderr, .. } = std::process::Command::new("buf")
         .arg("generate")
         .arg(format!("{package_path}:{commit}"))
