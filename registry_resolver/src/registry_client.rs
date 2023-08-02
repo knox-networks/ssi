@@ -1,7 +1,6 @@
-#[allow(non_snake_case, clippy::all, unused_imports, dead_code)]
-#[rustfmt::skip]
-#[path = "gen/registry_api.v1.rs"]
-pub mod registry;
+pub mod registry {
+    include!(concat!(env!("OUT_DIR"), "/registry_api.v1.rs"));
+}
 
 #[derive(Clone, Debug)]
 pub struct GrpcClient {
