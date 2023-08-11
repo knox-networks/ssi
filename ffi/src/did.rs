@@ -46,8 +46,8 @@ pub fn get_did(did_doc: repr_c::Box<DidDocument>) -> Option<char_p::Box> {
     let did = did_doc.backend.id.clone().try_into();
     match did {
         Ok(did) => Some(did),
-        Err(_) => {
-            error!("failed to convert did to string");
+        Err(e) => {
+            error!("failed to convert did to string: {:?}", e);
             None
         }
     }
