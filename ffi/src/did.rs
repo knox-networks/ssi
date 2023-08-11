@@ -60,13 +60,13 @@ pub fn get_encoded_did_doc(did_doc: repr_c::Box<DidDocument>) -> Option<char_p::
     match did_doc {
         Ok(did_doc) => match did_doc.try_into() {
             Ok(did_doc) => Some(did_doc),
-            Err(_) => {
-                error!("failed to convert did_doc to string");
+            Err(e) => {
+                error!("failed to convert did_doc to string: {:?}", e);
                 None
             }
         },
-        Err(_) => {
-            error!("failed to convert did_doc to json");
+        Err(e) => {
+            error!("failed to convert did_doc to json: {:?}", e);
             None
         }
     }
