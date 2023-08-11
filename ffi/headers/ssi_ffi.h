@@ -38,7 +38,7 @@ char * get_did (
     DidDocument_t * const * did_doc);
 
 char * get_encoded_did_doc (
-    DidDocument_t * did_doc);
+    DidDocument_t * const * did_doc);
 
 DidDocument_t * create_identity (
     RustError_t * rust_error,

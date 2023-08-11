@@ -54,7 +54,7 @@ pub fn get_did(did_doc: &repr_c::Box<DidDocument>) -> Option<char_p::Box> {
 }
 
 #[ffi_export]
-pub fn get_encoded_did_doc(did_doc: repr_c::Box<DidDocument>) -> Option<char_p::Box> {
+pub fn get_encoded_did_doc(did_doc: &repr_c::Box<DidDocument>) -> Option<char_p::Box> {
     let did_doc = did_doc.backend.to_json();
 
     match did_doc {
