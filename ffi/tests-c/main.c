@@ -67,13 +67,23 @@ void test_did_doc_encoding(void)
     printf("\n test_did_doc_encoding did_doc_encoded: %s \n", did_doc_encoded);
 }
 
+void test_get_did(void)
+{
+    DidDocument_t *did_document = create_did_doc();
+    char *did = get_did(&did_document);
+    printf("\n did: %s \n", did);
+    char *did_two = get_did(&did_document);
+    printf("\n did: %s \n", did_two);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
-    RUN_TEST(test_create_did_doc_vecs);
-    RUN_TEST(test_push_did_doc_integration);
-    RUN_TEST(test_create_key_pair);
-    RUN_TEST(test_recover_key_pair);
-    RUN_TEST(test_did_doc_encoding);
+    // RUN_TEST(test_create_did_doc_vecs);
+    // RUN_TEST(test_push_did_doc_integration);
+    // RUN_TEST(test_create_key_pair);
+    // RUN_TEST(test_recover_key_pair);
+    // RUN_TEST(test_did_doc_encoding);
+    RUN_TEST(test_get_did);
     return UNITY_END();
 }

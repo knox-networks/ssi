@@ -42,7 +42,7 @@ pub struct FFICompatMnemonic {
 }
 
 #[ffi_export]
-pub fn get_did(did_doc: repr_c::Box<DidDocument>) -> Option<char_p::Box> {
+pub fn get_did(did_doc: &repr_c::Box<DidDocument>) -> Option<char_p::Box> {
     let did = did_doc.backend.id.clone().try_into();
     match did {
         Ok(did) => Some(did),
@@ -104,12 +104,11 @@ pub fn create_identity(
             .expect("unable to launch runtime");
         let did_doc =
             rt.block_on(async move { ssi_core::identity::create_identity(verifier).await });
-        debug!("create_identity response {:?}", did_doc);
+
         Ok(did_doc)
     });
 
     if result.is_some() {
-        debug!("create_identity unpacking result {:?}", result);
         let r = result.unwrap();
         return Some(repr_c::Box::new(DidDocument {
             backend: r.unwrap(),
