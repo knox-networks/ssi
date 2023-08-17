@@ -66,6 +66,10 @@ where
     fn get_private_key_by_relation(&self, relation: VerificationRelation) -> T
     where
         Self: Sized;
+
+    fn get_public_key_by_relation(&self, relation: VerificationRelation) -> U
+    where
+        Self: Sized;
 }
 
 pub trait DIDSigner<S>
