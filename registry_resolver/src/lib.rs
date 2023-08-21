@@ -48,7 +48,11 @@ where
             .await
             .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
-        let document = res.into_inner().did_document.unwrap();
+        let document = res.into_inner().did_document.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No document found in registry response".to_string(),
+            )
+        })?;
 
         Ok(
             serde_json::to_value(document).map_err(|e: serde_json::Error| {
