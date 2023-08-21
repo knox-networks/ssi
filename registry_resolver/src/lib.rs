@@ -48,10 +48,13 @@ where
             .await
             .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
 
-        let document = res.into_inner().document;
+        let document = res.into_inner().did_document.unwrap();
 
-        Ok(serde_json::from_str(&document)
-            .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?)
+        Ok(
+            serde_json::to_value(document).map_err(|e: serde_json::Error| {
+                ssi_core::error::ResolverError::InvalidData(e.to_string())
+            })?,
+        )
     }
 }
 
@@ -90,6 +93,12 @@ mod tests {
                 }]
             }
         )
+    }
+
+    fn create_proto_did_doc(did: String) -> pbjson_types::Struct {
+        let value = create_did_doc(did);
+
+        serde_json::from_value(value).unwrap()
     }
 
     #[ignore = "registry contract test disabled"]
@@ -168,9 +177,9 @@ mod tests {
     #[case::success(
         create_did(),
         Some(Ok(tonic::Response::new(ResolveResponse {
-            did: create_did(),
-            document: create_did_doc(create_did()).to_string(),
-            metadata: None,
+            did_document: Some(create_proto_did_doc(create_did())),
+            did_document_metadata: None,
+            did_resolution_metadata: None
          }))),
         None,
         true
