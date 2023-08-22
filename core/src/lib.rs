@@ -3,6 +3,46 @@ pub mod error;
 pub mod identity;
 pub mod proof;
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct DidResolutionURL {
+    // W3C Decentralized Identifier (DID) of the wallet
+    pub did: String,
+    #[serde(rename = "methodName")]
+    // W3C Decentralized Scheme
+    pub method_name: String,
+    #[serde(rename = "methodSpecificId")]
+    // Method specific identifier
+    pub method_specific_id: String,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct ResolutionMetadata {
+    #[serde(rename = "contentType")]
+    pub content_type: Option<String>,
+    pub duration: Option<i64>,
+    #[serde(rename = "didUrl")]
+    pub did_url: Option<DidResolutionURL>,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct DidDocumentMetadata {
+    // Timestamp representing the DID document creation time.
+    pub created: String,
+    // Timestamp representing the DID document last update time.
+    pub updated: String,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct ResolveResponse {
+    #[serde(rename = "didDocument")]
+    pub did_document: Option<serde_json::Value>,
+    #[serde(rename = "didDocumentMetadata")]
+    pub did_document_metadata: Option<DidDocumentMetadata>,
+    #[serde(rename = "didResolutionMetadata")]
+    pub did_resolution_metadata: Option<ResolutionMetadata>,
+}
+
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
 /// The DIDResolver is responsible for resolving the `verificationMethod` to a key that can be used to verify the proof.
@@ -12,7 +52,7 @@ pub mod proof;
 pub trait DIDResolver: Send + Sync + 'static {
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
     /// Return the JSON-LD document representing the DID.
-    async fn read(&self, did: String) -> Result<serde_json::Value, error::ResolverError>;
+    async fn resolve(&self, did: String) -> Result<ResolveResponse, error::ResolverError>;
     /// Given a `did` and the associated DID Document, register the DID Document with the external source used by the DIDResolver.
     async fn create(&self, did: String, doc: serde_json::Value)
         -> Result<(), error::ResolverError>;

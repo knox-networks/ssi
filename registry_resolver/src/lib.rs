@@ -19,6 +19,7 @@ impl RegistryResolver<registry_client::GrpcClient> {
         RegistryResolver { client }
     }
 }
+
 #[async_trait::async_trait]
 impl<T> ssi_core::DIDResolver for RegistryResolver<T>
 where
@@ -41,24 +42,32 @@ where
         Ok(())
     }
 
-    async fn read(&self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
+    async fn resolve(
+        &self,
+        did: String,
+    ) -> Result<ssi_core::ResolveResponse, ssi_core::error::ResolverError> {
         let res = self
             .client
             .resolve(did.clone())
             .await
-            .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
+            .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?
+            .into_inner();
 
-        let document = res.into_inner().did_document.ok_or({
+        let document = res.did_document.ok_or({
             ssi_core::error::ResolverError::InvalidData(
                 "No document found in registry response".to_string(),
             )
         })?;
 
-        Ok(
-            serde_json::to_value(document).map_err(|e: serde_json::Error| {
-                ssi_core::error::ResolverError::InvalidData(e.to_string())
-            })?,
-        )
+        let document = serde_json::to_value(document).map_err(|e: serde_json::Error| {
+            ssi_core::error::ResolverError::InvalidData(e.to_string())
+        })?;
+
+        Ok(ssi_core::ResolveResponse {
+            did_document: Some(document),
+            did_document_metadata: None,
+            did_resolution_metadata: None,
+        })
     }
 }
 
@@ -206,7 +215,7 @@ mod tests {
             client: mock_client,
         };
 
-        let res = aw!(resolver.read(did));
+        let res = aw!(resolver.resolve(did));
         assert_eq!(res.is_ok(), expect_ok);
         match res.err() {
             Some(e) => {

@@ -31,7 +31,10 @@ impl ssi_core::DIDResolver for EphemeralResolver {
         Ok(())
     }
 
-    async fn read(&self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
+    async fn resolve(
+        &self,
+        did: String,
+    ) -> Result<ssi_core::ResolveResponse, ssi_core::error::ResolverError> {
         let document = self
             .registry
             .read()
@@ -44,7 +47,11 @@ impl ssi_core::DIDResolver for EphemeralResolver {
             })?
             .clone();
 
-        Ok(document)
+        Ok(ssi_core::ResolveResponse {
+            did_document: Some(document),
+            did_document_metadata: None,
+            did_resolution_metadata: None,
+        })
     }
 }
 
@@ -129,11 +136,11 @@ mod tests {
         aw!(resolver.create(did.clone(), did_doc.clone())).unwrap();
         aw!(resolver.create(secondary_did.clone(), secondary_did_doc.clone())).unwrap();
 
-        let retrieved_did_doc = aw!(resolver.read(did)).unwrap();
-        assert_ne!(retrieved_did_doc, secondary_did_doc);
+        let retrieved_did_doc = aw!(resolver.resolve(did)).unwrap();
+        assert_ne!(retrieved_did_doc.did_document.unwrap(), secondary_did_doc);
 
-        let retrieved_did_doc = aw!(resolver.read(secondary_did)).unwrap();
-        assert_ne!(retrieved_did_doc, did_doc);
+        let retrieved_did_doc = aw!(resolver.resolve(secondary_did)).unwrap();
+        assert_ne!(retrieved_did_doc.did_document.unwrap(), did_doc);
     }
 
     #[test]
@@ -146,8 +153,8 @@ mod tests {
 
         aw!(resolver.create(did.clone(), did_doc.clone())).unwrap();
 
-        let retrieved_did_doc = aw!(resolver.read(did)).unwrap();
+        let retrieved_did_doc = aw!(resolver.resolve(did)).unwrap();
 
-        assert_eq!(did_doc, retrieved_did_doc);
+        assert_eq!(did_doc, retrieved_did_doc.did_document.unwrap());
     }
 }
