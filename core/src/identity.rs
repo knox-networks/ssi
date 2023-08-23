@@ -145,10 +145,10 @@ mod tests {
                     .into(),
             },
             did_resolution_metadata: crate::ResolutionMetadata {
-                content_type: todo!(),
-                duration: todo!(),
-                did_url: todo!(),
-                error: todo!(),
+                content_type: None,
+                duration: None,
+                did_url: None,
+                error: None,
             },
         })
     }
