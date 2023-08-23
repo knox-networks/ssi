@@ -8,7 +8,7 @@ where
     S: signature::suite::Signature,
 {
     let rsp = resolver.resolve(verifier.get_did()).await?;
-    Ok(rsp.did_document.unwrap())
+    Ok(rsp.did_document)
 }
 
 pub async fn create_identity<S>(
@@ -135,8 +135,15 @@ mod tests {
 
     fn get_restore_response() -> Result<ResolveResponse, crate::error::ResolverError> {
         Ok(ResolveResponse {
-            did_document: Some(get_json_input_mock()),
-            did_document_metadata: None,
+            did_document: get_json_input_mock(),
+            did_document_metadata: crate::DidDocumentMetadata {
+                created: chrono::DateTime::parse_from_rfc3339("2021-04-28T20:00:00.000Z")
+                    .unwrap()
+                    .into(),
+                updated: chrono::DateTime::parse_from_rfc3339("2021-04-28T20:00:00.000Z")
+                    .unwrap()
+                    .into(),
+            },
             did_resolution_metadata: None,
         })
     }

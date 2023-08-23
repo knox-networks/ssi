@@ -28,17 +28,17 @@ pub struct ResolutionMetadata {
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct DidDocumentMetadata {
     // Timestamp representing the DID document creation time.
-    pub created: String,
+    pub created: chrono::DateTime<chrono::Utc>,
     // Timestamp representing the DID document last update time.
-    pub updated: String,
+    pub updated: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct ResolveResponse {
     #[serde(rename = "didDocument")]
-    pub did_document: Option<serde_json::Value>,
+    pub did_document: serde_json::Value,
     #[serde(rename = "didDocumentMetadata")]
-    pub did_document_metadata: Option<DidDocumentMetadata>,
+    pub did_document_metadata: DidDocumentMetadata,
     #[serde(rename = "didResolutionMetadata")]
     pub did_resolution_metadata: Option<ResolutionMetadata>,
 }

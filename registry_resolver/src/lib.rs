@@ -1,3 +1,7 @@
+use std::num::TryFromIntError;
+
+use chrono::TimeZone;
+
 mod registry_client;
 pub const DID_METHOD: &str = "knox";
 
@@ -58,14 +62,47 @@ where
                 "No document found in registry response".to_string(),
             )
         })?;
+        let document_metadata = res.did_document_metadata.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No document metadata found in registry response".to_string(),
+            )
+        })?;
+
+        let resolution_metadata = res.did_resolution_metadata;
+
+        //timestamp to date
+        let created = document_metadata.created.unwrap();
+        let updated = document_metadata.updated.unwrap();
+        let created = chrono::Utc
+            .timestamp_opt(
+                created.seconds,
+                created.nanos.try_into().map_err(|e: TryFromIntError| {
+                    ssi_core::error::ResolverError::Unknown(e.to_string())
+                })?,
+            )
+            .unwrap();
+
+        let updated = chrono::Utc
+            .timestamp_opt(
+                updated.seconds,
+                updated.nanos.try_into().map_err(|e: TryFromIntError| {
+                    ssi_core::error::ResolverError::Unknown(e.to_string())
+                })?,
+            )
+            .unwrap();
+
+        let document_metadata = ssi_core::DidDocumentMetadata {
+            created: created,
+            updated: updated,
+        };
 
         let document = serde_json::to_value(document).map_err(|e: serde_json::Error| {
             ssi_core::error::ResolverError::InvalidData(e.to_string())
         })?;
 
         Ok(ssi_core::ResolveResponse {
-            did_document: Some(document),
-            did_document_metadata: None,
+            did_document: document,
+            did_document_metadata: document_metadata,
             did_resolution_metadata: None,
         })
     }
@@ -76,7 +113,9 @@ mod tests {
 
     use crate::{
         registry_client::{
-            registry::CreateResponse, registry::ResolveResponse, MockRegistryClient,
+            registry::ResolveResponse,
+            registry::{CreateResponse, DidDocumentMetadata},
+            MockRegistryClient,
         },
         RegistryResolver,
     };
@@ -191,7 +230,16 @@ mod tests {
         create_did(),
         Some(Ok(tonic::Response::new(ResolveResponse {
             did_document: Some(create_proto_did_doc(create_did())),
-            did_document_metadata: None,
+            did_document_metadata: Some(DidDocumentMetadata{
+                created: Some(pbjson_types::Timestamp{
+                    seconds: 0,
+                    nanos: 0
+                }),
+                updated: Some(pbjson_types::Timestamp{
+                    seconds: 0,
+                    nanos: 0
+                })
+            }),
             did_resolution_metadata: None
          }))),
         None,
