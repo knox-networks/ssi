@@ -106,21 +106,19 @@ where
 
         let document_metadata = ssi_core::DidDocumentMetadata { created, updated };
 
-        let did_url = resolution_metadata.did_url.ok_or({
-            ssi_core::error::ResolverError::InvalidData(
-                "No did url found in resolution metadata in response".to_string(),
-            )
-        })?;
+        let did_url = resolution_metadata
+            .did_url
+            .map(|url| ssi_core::DidResolutionURL {
+                did,
+                method_specific_id: url.method_specific_id,
+                method_name: url.method_name,
+            });
 
         let resolution_metadata = ssi_core::ResolutionMetadata {
             duration: resolution_metadata.duration,
             error: resolution_metadata.error,
             content_type: resolution_metadata.content_type,
-            did_url: Some(ssi_core::DidResolutionURL {
-                did,
-                method_specific_id: did_url.method_specific_id,
-                method_name: did_url.method_name,
-            }),
+            did_url,
         };
 
         let document = serde_json::to_value(document).map_err(|e: serde_json::Error| {
@@ -140,8 +138,8 @@ mod tests {
 
     use crate::{
         registry_client::{
-            registry::ResolveResponse,
             registry::{CreateResponse, DidDocumentMetadata},
+            registry::{ResolutionMetadata, ResolveResponse},
             MockRegistryClient,
         },
         RegistryResolver,
@@ -267,7 +265,12 @@ mod tests {
                     nanos: 0
                 })
             }),
-            did_resolution_metadata: None
+            did_resolution_metadata: Some(ResolutionMetadata{
+                content_type: None,
+                duration: None,
+                did_url: None,
+                error: None,
+            })
          }))),
         None,
         true
@@ -291,6 +294,7 @@ mod tests {
         };
 
         let res = aw!(resolver.resolve(did));
+        println!("{:?}", res);
         assert_eq!(res.is_ok(), expect_ok);
         match res.err() {
             Some(e) => {
