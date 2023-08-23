@@ -71,8 +71,17 @@ where
         let resolution_metadata = res.did_resolution_metadata;
 
         //timestamp to date
-        let created = document_metadata.created.unwrap();
-        let updated = document_metadata.updated.unwrap();
+        let created = document_metadata.created.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No created property found in document metadata in response".to_string(),
+            )
+        })?;
+        let updated = document_metadata.updated.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No updated property found in document metadata in response".to_string(),
+            )
+        })?;
+
         let created = chrono::Utc
             .timestamp_opt(
                 created.seconds,
