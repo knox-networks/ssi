@@ -68,7 +68,11 @@ where
             )
         })?;
 
-        let resolution_metadata = res.did_resolution_metadata;
+        let resolution_metadata = res.did_resolution_metadata.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No resolution metadata found in registry response".to_string(),
+            )
+        })?;
 
         //timestamp to date
         let created = document_metadata.created.ok_or({
@@ -105,6 +109,23 @@ where
             updated: updated,
         };
 
+        let did_url = resolution_metadata.did_url.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No did url found in resolution metadata in response".to_string(),
+            )
+        })?;
+
+        let resolution_metadata = ssi_core::ResolutionMetadata {
+            duration: resolution_metadata.duration,
+            error: resolution_metadata.error,
+            content_type: resolution_metadata.content_type,
+            did_url: Some(ssi_core::DidResolutionURL {
+                did: did,
+                method_specific_id: did_url.method_specific_id,
+                method_name: did_url.method_name,
+            }),
+        };
+
         let document = serde_json::to_value(document).map_err(|e: serde_json::Error| {
             ssi_core::error::ResolverError::InvalidData(e.to_string())
         })?;
@@ -112,7 +133,7 @@ where
         Ok(ssi_core::ResolveResponse {
             did_document: document,
             did_document_metadata: document_metadata,
-            did_resolution_metadata: None,
+            did_resolution_metadata: Some(resolution_metadata),
         })
     }
 }

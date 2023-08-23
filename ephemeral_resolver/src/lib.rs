@@ -48,8 +48,15 @@ impl ssi_core::DIDResolver for EphemeralResolver {
             .clone();
 
         Ok(ssi_core::ResolveResponse {
-            did_document: Some(document),
-            did_document_metadata: None,
+            did_document: document,
+            did_document_metadata: ssi_core::DidDocumentMetadata {
+                created: chrono::DateTime::parse_from_rfc3339("2021-01-01T00:00:00.000Z")
+                    .unwrap()
+                    .into(),
+                updated: chrono::DateTime::parse_from_rfc3339("2021-01-01T00:00:00.000Z")
+                    .unwrap()
+                    .into(),
+            },
             did_resolution_metadata: None,
         })
     }
@@ -137,10 +144,10 @@ mod tests {
         aw!(resolver.create(secondary_did.clone(), secondary_did_doc.clone())).unwrap();
 
         let retrieved_did_doc = aw!(resolver.resolve(did)).unwrap();
-        assert_ne!(retrieved_did_doc.did_document.unwrap(), secondary_did_doc);
+        assert_ne!(retrieved_did_doc.did_document, secondary_did_doc);
 
         let retrieved_did_doc = aw!(resolver.resolve(secondary_did)).unwrap();
-        assert_ne!(retrieved_did_doc.did_document.unwrap(), did_doc);
+        assert_ne!(retrieved_did_doc.did_document, did_doc);
     }
 
     #[test]
@@ -155,6 +162,6 @@ mod tests {
 
         let retrieved_did_doc = aw!(resolver.resolve(did)).unwrap();
 
-        assert_eq!(did_doc, retrieved_did_doc.did_document.unwrap());
+        assert_eq!(did_doc, retrieved_did_doc.did_document);
     }
 }
