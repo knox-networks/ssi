@@ -33,6 +33,7 @@ pub struct DidDocumentMetadata {
     pub updated: chrono::DateTime<chrono::Utc>,
 }
 
+// Response follows the structure defined in - https://www.w3.org/TR/did-core/#did-resolution
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct ResolveResponse {
     #[serde(rename = "didDocument")]
@@ -40,7 +41,7 @@ pub struct ResolveResponse {
     #[serde(rename = "didDocumentMetadata")]
     pub did_document_metadata: DidDocumentMetadata,
     #[serde(rename = "didResolutionMetadata")]
-    pub did_resolution_metadata: Option<ResolutionMetadata>,
+    pub did_resolution_metadata: ResolutionMetadata,
 }
 
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.

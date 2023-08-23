@@ -104,10 +104,7 @@ where
             )
             .unwrap();
 
-        let document_metadata = ssi_core::DidDocumentMetadata {
-            created: created,
-            updated: updated,
-        };
+        let document_metadata = ssi_core::DidDocumentMetadata { created, updated };
 
         let did_url = resolution_metadata.did_url.ok_or({
             ssi_core::error::ResolverError::InvalidData(
@@ -120,7 +117,7 @@ where
             error: resolution_metadata.error,
             content_type: resolution_metadata.content_type,
             did_url: Some(ssi_core::DidResolutionURL {
-                did: did,
+                did,
                 method_specific_id: did_url.method_specific_id,
                 method_name: did_url.method_name,
             }),
@@ -133,7 +130,7 @@ where
         Ok(ssi_core::ResolveResponse {
             did_document: document,
             did_document_metadata: document_metadata,
-            did_resolution_metadata: Some(resolution_metadata),
+            did_resolution_metadata: resolution_metadata,
         })
     }
 }

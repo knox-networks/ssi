@@ -144,7 +144,12 @@ mod tests {
                     .unwrap()
                     .into(),
             },
-            did_resolution_metadata: None,
+            did_resolution_metadata: crate::ResolutionMetadata {
+                content_type: todo!(),
+                duration: todo!(),
+                did_url: todo!(),
+                error: todo!(),
+            },
         })
     }
 

@@ -57,7 +57,12 @@ impl ssi_core::DIDResolver for EphemeralResolver {
                     .unwrap()
                     .into(),
             },
-            did_resolution_metadata: None,
+            did_resolution_metadata: ssi_core::ResolutionMetadata {
+                content_type: None,
+                duration: None,
+                did_url: None,
+                error: None,
+            },
         })
     }
 }
