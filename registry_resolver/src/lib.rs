@@ -1,3 +1,7 @@
+use std::num::TryFromIntError;
+
+use chrono::TimeZone;
+
 mod registry_client;
 pub const DID_METHOD: &str = "knox";
 
@@ -19,6 +23,7 @@ impl RegistryResolver<registry_client::GrpcClient> {
         RegistryResolver { client }
     }
 }
+
 #[async_trait::async_trait]
 impl<T> ssi_core::DIDResolver for RegistryResolver<T>
 where
@@ -41,17 +46,90 @@ where
         Ok(())
     }
 
-    async fn read(&self, did: String) -> Result<serde_json::Value, ssi_core::error::ResolverError> {
+    async fn resolve(
+        &self,
+        did: String,
+    ) -> Result<ssi_core::ResolveResponse, ssi_core::error::ResolverError> {
         let res = self
             .client
             .resolve(did.clone())
             .await
-            .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?;
+            .map_err(|e| ssi_core::error::ResolverError::NetworkFailure(e.to_string()))?
+            .into_inner();
 
-        let document = res.into_inner().document;
+        let document = res.did_document.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No document found in registry response".to_string(),
+            )
+        })?;
+        let document_metadata = res.did_document_metadata.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No document metadata found in registry response".to_string(),
+            )
+        })?;
 
-        Ok(serde_json::from_str(&document)
-            .map_err(|e| ssi_core::error::ResolverError::InvalidData(e.to_string()))?)
+        let resolution_metadata = res.did_resolution_metadata.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No resolution metadata found in registry response".to_string(),
+            )
+        })?;
+
+        //timestamp to date
+        let created = document_metadata.created.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No created property found in document metadata in response".to_string(),
+            )
+        })?;
+        let updated = document_metadata.updated.ok_or({
+            ssi_core::error::ResolverError::InvalidData(
+                "No updated property found in document metadata in response".to_string(),
+            )
+        })?;
+
+        let created = chrono::Utc
+            .timestamp_opt(
+                created.seconds,
+                created.nanos.try_into().map_err(|e: TryFromIntError| {
+                    ssi_core::error::ResolverError::Unknown(e.to_string())
+                })?,
+            )
+            .unwrap();
+
+        let updated = chrono::Utc
+            .timestamp_opt(
+                updated.seconds,
+                updated.nanos.try_into().map_err(|e: TryFromIntError| {
+                    ssi_core::error::ResolverError::Unknown(e.to_string())
+                })?,
+            )
+            .unwrap();
+
+        let document_metadata = ssi_core::DidDocumentMetadata { created, updated };
+
+        let did_url = resolution_metadata
+            .did_url
+            .map(|url| ssi_core::DidResolutionURL {
+                did,
+                method_specific_id: url.method_specific_id,
+                method_name: url.method_name,
+            });
+
+        let resolution_metadata = ssi_core::ResolutionMetadata {
+            duration: resolution_metadata.duration,
+            error: resolution_metadata.error,
+            content_type: resolution_metadata.content_type,
+            did_url,
+        };
+
+        let document = serde_json::to_value(document).map_err(|e: serde_json::Error| {
+            ssi_core::error::ResolverError::InvalidData(e.to_string())
+        })?;
+
+        Ok(ssi_core::ResolveResponse {
+            did_document: document,
+            did_document_metadata: document_metadata,
+            did_resolution_metadata: resolution_metadata,
+        })
     }
 }
 
@@ -60,7 +138,9 @@ mod tests {
 
     use crate::{
         registry_client::{
-            registry::CreateResponse, registry::ResolveResponse, MockRegistryClient,
+            registry::{CreateResponse, DidDocumentMetadata},
+            registry::{ResolutionMetadata, ResolveResponse},
+            MockRegistryClient,
         },
         RegistryResolver,
     };
@@ -90,6 +170,12 @@ mod tests {
                 }]
             }
         )
+    }
+
+    fn create_proto_did_doc(did: String) -> pbjson_types::Struct {
+        let value = create_did_doc(did);
+
+        serde_json::from_value(value).unwrap()
     }
 
     #[ignore = "registry contract test disabled"]
@@ -168,9 +254,23 @@ mod tests {
     #[case::success(
         create_did(),
         Some(Ok(tonic::Response::new(ResolveResponse {
-            did: create_did(),
-            document: create_did_doc(create_did()).to_string(),
-            metadata: None,
+            did_document: Some(create_proto_did_doc(create_did())),
+            did_document_metadata: Some(DidDocumentMetadata{
+                created: Some(pbjson_types::Timestamp{
+                    seconds: 0,
+                    nanos: 0
+                }),
+                updated: Some(pbjson_types::Timestamp{
+                    seconds: 0,
+                    nanos: 0
+                })
+            }),
+            did_resolution_metadata: Some(ResolutionMetadata{
+                content_type: None,
+                duration: None,
+                did_url: None,
+                error: None,
+            })
          }))),
         None,
         true
@@ -193,7 +293,8 @@ mod tests {
             client: mock_client,
         };
 
-        let res = aw!(resolver.read(did));
+        let res = aw!(resolver.resolve(did));
+        println!("{:?}", res);
         assert_eq!(res.is_ok(), expect_ok);
         match res.err() {
             Some(e) => {

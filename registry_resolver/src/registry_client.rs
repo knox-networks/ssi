@@ -35,7 +35,12 @@ impl RegistryClient for GrpcClient {
         did: String,
     ) -> Result<tonic::Response<registry::ResolveResponse>, tonic::Status> {
         let mut client = self.inner.to_owned();
-        return client.resolve(registry::ResolveRequest { did }).await;
+        return client
+            .resolve(registry::ResolveRequest {
+                did,
+                resolution_option: None,
+            })
+            .await;
     }
 }
 

@@ -7,8 +7,8 @@ pub async fn recover<S>(
 where
     S: signature::suite::Signature,
 {
-    let rsp = resolver.read(verifier.get_did()).await?;
-    Ok(rsp)
+    let rsp = resolver.resolve(verifier.get_did()).await?;
+    Ok(rsp.did_document)
 }
 
 pub async fn create_identity<S>(
@@ -121,7 +121,7 @@ impl DidDocument {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::MockDIDResolver;
+    use crate::{MockDIDResolver, ResolveResponse};
     use assert_json_diff::assert_json_eq;
     use serde_json::json;
 
@@ -133,8 +133,24 @@ mod tests {
         };
     }
 
-    fn get_json_restore_mock_ok() -> Result<serde_json::Value, crate::error::ResolverError> {
-        Ok(get_json_input_mock())
+    fn get_restore_response() -> Result<ResolveResponse, crate::error::ResolverError> {
+        Ok(ResolveResponse {
+            did_document: get_json_input_mock(),
+            did_document_metadata: crate::DidDocumentMetadata {
+                created: chrono::DateTime::parse_from_rfc3339("2021-04-28T20:00:00.000Z")
+                    .unwrap()
+                    .into(),
+                updated: chrono::DateTime::parse_from_rfc3339("2021-04-28T20:00:00.000Z")
+                    .unwrap()
+                    .into(),
+            },
+            did_resolution_metadata: crate::ResolutionMetadata {
+                content_type: None,
+                duration: None,
+                did_url: None,
+                error: None,
+            },
+        })
     }
 
     fn get_json_input_mock() -> serde_json::Value {
@@ -229,15 +245,15 @@ mod tests {
     }
 
     #[rstest::rstest]
-    #[case::restored_successfully(get_did(), get_json_restore_mock_ok(), true)]
+    #[case::restored_successfully(get_did(), get_restore_response(), true)]
     fn test_restore_identity(
         #[case] _did: String,
-        #[case] restore_response: Result<serde_json::Value, crate::error::ResolverError>,
+        #[case] restore_response: Result<ResolveResponse, crate::error::ResolverError>,
         #[case] expect_ok: bool,
     ) -> Result<(), String> {
         let mut resolver_mock = MockDIDResolver::default();
         resolver_mock
-            .expect_read()
+            .expect_resolve()
             .with(mockall::predicate::function(|did_doc: &String| -> bool {
                 !did_doc.clone().is_empty()
             }))

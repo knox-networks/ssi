@@ -340,6 +340,7 @@ dependencies = [
  "js-sys",
  "num-integer",
  "num-traits",
+ "serde",
  "time",
  "wasm-bindgen",
  "winapi",
@@ -591,6 +592,7 @@ name = "ephemeral_resolver"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "chrono",
  "serde_json",
  "ssi_core",
  "tokio",
@@ -1964,6 +1966,7 @@ name = "registry_resolver"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "chrono",
  "mockall",
  "pbjson-types",
  "prost",
