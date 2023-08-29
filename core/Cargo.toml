@@ -12,7 +12,7 @@ serde_json = {workspace = true}
 sha2 = "0.10.2"
 signature = { path = "../signature" }
 serde = { workspace = true}
-mockall = "0.11.1"
+mockall = {workspace = true}
 thiserror = {workspace = true}
 json-ld = "0.11.0"
 
@@ -20,7 +20,6 @@ json-ld = "0.11.0"
 rstest = "0.15.0"
 map = "0.0.0"
 assert-json-diff = "2.0.2"
-mockall = "0.11.1"
 tokio-test = "0.4.2"
 async-std = "1.12.0"
 iref = "2.2.2"
