@@ -16,7 +16,15 @@ In order to build and run the FFI examples you will need to have the following i
 ```
 cargo install --force cargo-make
 ```
-
+We also need to add the appropriate targets to be run in various architectures and build artifacts accordingly.
+```
+rustup target add aarch64-apple-ios  (iOS devices)
+rustup target add x86_64-apple-ios (iOS simulator for Swift unit tests)
+rustup target add aarch64-apple-darwin (iOS simluator for Flutter unit tests)
+cargo build --release --target aarch64-apple-ios --package ssi-ffi
+cargo build --release --target x86_64-apple-ios --package ssi-ffi
+cargo build --release --target aarch64-apple-darwin --package ssi-ffi
+```
 ## Usage
 
 ## Running Tests
