@@ -23,6 +23,10 @@ chrono.workspace = true
 rstest = "0.15.0"
 tokio-test = "0.4.2"
 
+[build-dependencies]
+tonic-build = "0.8.4"
+bigerror.workspace = true
+
 [features]
 static = []
 ci_ffi_build=[]
