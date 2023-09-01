@@ -72,10 +72,8 @@ jobs:
           aws-region: us-east-2
       - run: sudo chown -R "$USER:$USER" "/home/$USER"
       - name: Install deps
-        run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc buf
+        run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc
       - run: sudo chown -R "$USER:$USER" "/home/$USER"
-      - run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
-      - run: chmod -R 0777 ./registry_resolver/src/gen
 
       - run: cargo make ffi-build
 
@@ -118,10 +116,8 @@ jobs:
 
       - run: sudo chown -R "$USER:$USER" "/home/$USER"
 
-      - name: buf download & set up
-        run: ./container/deps.sh --force cross cargo-make protoc buf
-      - name: buf generate
-        run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
+      - name: dependency download & set up
+        run: ./container/deps.sh --force cross cargo-make protoc
 
       - name: Build Cross-Platform FFI
         run: cross build --release --target ${{ matrix.arch }} --package ssi-ffi
