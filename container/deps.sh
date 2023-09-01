@@ -83,14 +83,6 @@ try_ln() {
     sudo ln -sf "$1" "$2"
   }
 }
-_buf() {
-  local version=${BUF_VERSION:-1.13.1}
-  local tar_file="buf-Linux-x86_64.tar.gz"
-  local prefix="$HOME/.local/bin"
-  wget -q "https://github.com/bufbuild/buf/releases/download/v${version}/$tar_file" && tar -xvzf $tar_file -C "${prefix}" --strip-components 2
-  chmod +x "$HOME/.local/bin/buf" && try_ln "$HOME/.local/bin/buf" /usr/local/bin/buf
-  rm "$tar_file"
-}
 
 _cachepot() {
   local version=${CACHEPOT_VERSION:-a702d14aa}

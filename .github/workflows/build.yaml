@@ -20,8 +20,6 @@ jobs:
         with:
           version: "3.x"
 
-      - uses: bufbuild/buf-setup-action@v1
-
       - name: Installing Rust Tools
         run: |-
           rustup component add rustfmt
@@ -30,6 +28,11 @@ jobs:
       - name: Installing Make
         run: |-
           cargo install cargo-make
+
+      - uses: knox-networks/github-actions-public/.github/actions/setup-protofetch@main
+        with:
+          cross-repo-username: "developersKnox"
+          cross-repo-token: ${{ secrets.PROTOFETCH_GITHUB_TOKEN }}
 
       - name: Build
         run: |-

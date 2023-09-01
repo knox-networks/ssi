@@ -11,3 +11,5 @@
 
 gen
 .vscode
+.protofetch/
+protos/

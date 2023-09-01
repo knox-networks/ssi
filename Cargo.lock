@@ -268,6 +268,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "414dcefbc63d77c526a76b3afcf6fbb9b5e2791c19c3aa2297733208750c6e53"
 
 [[package]]
+name = "bigerror"
+version = "0.3.0"
+source = "git+https://github.com/knox-networks/bigerror?rev=5a42952#5a429529ab5a1011db679574e89b0048bc213f49"
+dependencies = [
+ "error-stack",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -600,7 +610,7 @@ checksum = "90e5c1c8368803113bf0c9584fc495a58b86dc8a29edbf8fe877d21d9507e797"
 
 [[package]]
 name = "ephemeral_resolver"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -635,6 +645,16 @@ checksum = "aa68f1b12764fab894d2755d2518754e71b4fd80ecfb822714a1206c2aab39bf"
 dependencies = [
  "cc",
  "libc",
+]
+
+[[package]]
+name = "error-stack"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f00447f331c7f726db5b8532ebc9163519eed03c6d7c8b73c90b3ff5646ac85"
+dependencies = [
+ "anyhow",
+ "rustc_version",
 ]
 
 [[package]]
@@ -1989,9 +2009,10 @@ checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
 
 [[package]]
 name = "registry_resolver"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "async-trait",
+ "bigerror",
  "chrono",
  "mockall",
  "pbjson-types",
@@ -2005,6 +2026,7 @@ dependencies = [
  "tokio-stream",
  "tokio-test",
  "tonic",
+ "tonic-build",
 ]
 
 [[package]]
@@ -2311,7 +2333,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "ed25519-zebra",
  "multibase",
@@ -2364,7 +2386,7 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
 name = "ssi"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "ephemeral_resolver",
  "registry_resolver",
@@ -2374,7 +2396,7 @@ dependencies = [
 
 [[package]]
 name = "ssi-ffi"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "ephemeral_resolver",
  "registry_resolver",
@@ -2392,7 +2414,7 @@ dependencies = [
 
 [[package]]
 name = "ssi_core"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "assert-json-diff",
  "async-std",
@@ -2504,22 +2526,22 @@ checksum = "95059e91184749cb66be6dc994f67f182b6d897cb3df74a5bf66b5e709295fd8"
 
 [[package]]
 name = "thiserror"
-version = "1.0.37"
+version = "1.0.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10deb33631e3c9018b9baf9dcbbc4f737320d2b576bac10f6aefa048fa407e3e"
+checksum = "97a802ec30afc17eee47b2855fc72e0c4cd62be9b4efe6591edde0ec5bd68d8f"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.37"
+version = "1.0.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "982d17546b47146b28f7c22e3d08465f6b8903d0ea13c1660d9d84a6e7adcdbb"
+checksum = "6bb623b56e39ab7dcd4b1b98bb6c8f8d907ed255b18de254088016b27a8ee19b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 1.0.105",
+ "syn 2.0.29",
 ]
 
 [[package]]
@@ -2694,6 +2716,19 @@ dependencies = [
  "tower-service",
  "tracing",
  "webpki-roots",
+]
+
+[[package]]
+name = "tonic-build"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5bf5e9b9c0f7e0a7c027dcfaba7b2c60816c7049171f679d99ee2ff65d0de8c4"
+dependencies = [
+ "prettyplease",
+ "proc-macro2",
+ "prost-build",
+ "quote",
+ "syn 1.0.105",
 ]
 
 [[package]]
