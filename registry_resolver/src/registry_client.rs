@@ -1,5 +1,5 @@
 pub mod registry {
-    include!(concat!(env!("OUT_DIR"), "/gen/registry_api.v1.rs"));
+    include!(concat!(env!("OUT_DIR"), "/gen/pb/registry_api.v1.rs"));
 }
 
 #[derive(Clone, Debug)]

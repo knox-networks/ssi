@@ -38,12 +38,8 @@ fn main() -> Result<(), Report<BuildError>> {
     // https://docs.rs/pbjson-build/latest/pbjson_build/  - note that `tonic_build`
     // accepts many of the same arguments as `prost_build` does in the documented example.
 
-    let gen_out_dir = {
-        let mut p = PathBuf::from(&out_dir);
-        p.push("gen");
-        p
-    };
-    std::fs::create_dir_all(&gen_out_dir).report_as()?;
+    let generated_code_dir = PathBuf::from(&out_dir).join("gen").join("pb");
+    std::fs::create_dir_all(&generated_code_dir).report_as()?;
 
     let descriptor_path = PathBuf::from(&out_dir).join("proto_descriptor.bin");
 
@@ -51,7 +47,7 @@ fn main() -> Result<(), Report<BuildError>> {
     println!("registry proto: {}", registry_proto.display());
 
     tonic_build::configure()
-        .out_dir(&gen_out_dir)
+        .out_dir(&generated_code_dir)
         .compile_well_known_types(true)
         .extern_path(".google.protobuf", "::pbjson_types")
         .file_descriptor_set_path(descriptor_path)
