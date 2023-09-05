@@ -3,8 +3,11 @@ use std::{env, path::PathBuf};
 
 fn main() -> Result<(), Report<BuildError>> {
     let out_dir = env::var("OUT_DIR").unwrap();
+    println!("cargo:warning={out_dir}");
 
     let proto_dir = PathBuf::from(&out_dir).join("protos");
+    let protofetch_cache_dir = PathBuf::from(&out_dir).join("protofetch_cache_dir");
+    std::fs::create_dir_all(&protofetch_cache_dir).report_as()?;
 
     let std::process::Output {
         status,
@@ -15,6 +18,8 @@ fn main() -> Result<(), Report<BuildError>> {
         .env("RUST_LOG", "TRACE")
         .arg("--output-proto-directory")
         .arg(&proto_dir)
+        .arg("--cache-directory")
+        .arg(&protofetch_cache_dir)
         .arg("fetch")
         .output()
         .report_as()?;
