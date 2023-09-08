@@ -21,7 +21,7 @@ fn main() -> Result<(), Report<BuildError>> {
     command.arg("fetch");
 
     if let Ok(dir) = env::var("PROTOFETCH_OVERRIDE_REPOSITORY") {
-        println!("Value of PROTOFETCH_OVERRIDE_REPOSITORY: {dir}");
+        println!("cargo:warning=PROTOFETCH_OVERRIDE_REPOSITORY=\"{dir}\"");
         command
             .arg("--source-overrides")
             .arg(&format!("registry-mgmt={}", dir));
