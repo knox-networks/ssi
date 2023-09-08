@@ -3,21 +3,36 @@ use std::{env, path::PathBuf};
 
 fn main() -> Result<(), Report<BuildError>> {
     let out_dir = env::var("OUT_DIR").unwrap();
+    println!("cargo:warning={out_dir}");
 
     let proto_dir = PathBuf::from(&out_dir).join("protos");
+    let protofetch_cache_dir = PathBuf::from(&out_dir).join("protofetch_cache_dir");
+    std::fs::create_dir_all(&protofetch_cache_dir).report_as()?;
+
+    let mut command = std::process::Command::new("protofetch");
+
+    command
+        .env("RUST_LOG", "TRACE")
+        .arg("--output-proto-directory")
+        .arg(&proto_dir)
+        .arg("--cache-directory")
+        .arg(&protofetch_cache_dir);
+
+    command.arg("fetch");
+
+    if let Ok(dir) = env::var("PROTOFETCH_OVERRIDE_REPOSITORY") {
+        println!("cargo:warning=PROTOFETCH_OVERRIDE_REPOSITORY=\"{dir}\"");
+        command
+            .arg("--source-overrides")
+            .arg(&format!("registry-mgmt={}", dir));
+    }
 
     let std::process::Output {
         status,
         stderr,
         stdout,
         ..
-    } = std::process::Command::new("protofetch")
-        .env("RUST_LOG", "TRACE")
-        .arg("--output-proto-directory")
-        .arg(&proto_dir)
-        .arg("fetch")
-        .output()
-        .report_as()?;
+    } = command.output().report_as()?;
 
     println!(
         "protofetch stdout: {}",
