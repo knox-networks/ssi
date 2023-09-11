@@ -5,6 +5,10 @@ Digital Identity Core
 ## Requirements
 At the moment we make no promise to support anything but the latest version of Rust. Current minimum version of rust (MVR): 1.64
 
+We use the [protofetch](https://github.com/coralogix/protofetch) tool for managing Protobuf files in the `build.rs` script 
+for `registry_resolver`. Make sure it is installed on your system - one way to do this is by running `cargo install protofetch`
+to build it from source.
+
 ## Installation
 You can utilize `ssi` by importing it via GitHub through the main branch. At the moment the crate is not published on crates.io
 ```
