@@ -1,5 +1,5 @@
 use bigerror::{BuildError, Report, ReportAs, Reportable};
-use std::{env, path::PathBuf};
+use std::{env, io, path::PathBuf};
 
 fn main() -> Result<(), Report<BuildError>> {
     let out_dir = env::var("OUT_DIR").unwrap();
@@ -32,7 +32,12 @@ fn main() -> Result<(), Report<BuildError>> {
         stderr,
         stdout,
         ..
-    } = command.output().report_as()?;
+    } = command.output().map_err(|err| {
+        if err.kind() == io::ErrorKind::NotFound {
+            println!("`protofetch` binary not found, make sure it is installed on your system and available in PATH");
+        }
+        err
+    }).report_as()?;
 
     println!(
         "protofetch stdout: {}",
