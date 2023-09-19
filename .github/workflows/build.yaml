@@ -10,13 +10,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
       - name: Install Protoc and cargo-make
         run: ./container/deps.sh protoc cargo-make
 
       - name: Installing Rust Tools
-        run: |-
-          rustup component add rustfmt
-          rustup component add clippy
+        run: rustup component add rustfmt clippy
 
       - uses: knox-networks/github-actions-public/.github/actions/setup-protofetch@main
         with:
@@ -35,9 +36,7 @@ jobs:
           cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Test
-        run: |-
-          cargo test
+        run: cargo test
 
       - name: Run FFI tests
-        run: |
-          cargo make ffi-test
+        run: cargo make ffi-test

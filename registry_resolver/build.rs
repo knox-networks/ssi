@@ -1,8 +1,5 @@
 use bigerror::{BuildError, Report, ReportAs};
-use std::{
-    env,
-    path::PathBuf,
-};
+use std::{env, path::PathBuf};
 
 fn main() -> Result<(), Report<BuildError>> {
     let out_dir = env::var("OUT_DIR").report_as()?;
