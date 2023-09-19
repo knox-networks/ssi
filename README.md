@@ -7,7 +7,7 @@ At the moment we make no promise to support anything but the latest version of R
 
 We use the [protofetch](https://github.com/coralogix/protofetch) tool for
 vendoring Protobuf files for `registry_resolver`. Make `protofetch` it is installed on
-your system before running `(cd registry-resolver; protofetch fetch)`.
+your system before running `(cd registry_resolver; protofetch fetch)`.
 
 One way to get protofetch is to install it from source: `cargo install protofetch`.
 

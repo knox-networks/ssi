@@ -15,7 +15,8 @@ jobs:
         with:
           rust-version: 1.71.1
 
-      - name: Install Protoc (required by ::pbjson_types)
+      - name: Install Protoc and cargo-make
+        run: ./container/deps.sh protoc cargo-make
         uses: arduino/setup-protoc@v1
         with:
           version: "3.x"
@@ -25,17 +26,13 @@ jobs:
           rustup component add rustfmt
           rustup component add clippy
 
-      - name: Installing Make
-        run: |-
-          cargo install cargo-make
-
       - uses: knox-networks/github-actions-public/.github/actions/setup-protofetch@main
         with:
           cross-repo-username: "developersKnox"
           cross-repo-token: ${{ secrets.PROTOFETCH_GITHUB_TOKEN }}
 
       - name: Test protos
-        run: (cd registry-resolver; protofetch fetch) && git diff --exit-code
+        run: (cd registry_resolver; protofetch fetch) && git diff --exit-code
 
       - name: Build
         run: cargo build
