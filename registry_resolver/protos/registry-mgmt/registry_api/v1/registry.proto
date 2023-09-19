@@ -1,0 +1,540 @@
+// protoc --go_out=plugins=grpc:. *.proto
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+package registry_api.v1;
+option go_package = "github.com/knox-networks/gomono/protos/registry-mgmt/registry_api/v1";
+
+// THIS PROTO FILE IS INTENDED FOR USE FOR KNOX AND KNOX CUSTOMERS.
+
+
+/* [Example]
+{
+  "did": "did:method-name:zDIDMultibase58Encoded",
+  "document": "DOCUMENT"
+}
+*/
+message CreateRequest {
+  // W3C Decentralized Identifier (DID) of the wallet.
+  string did = 1;
+  // A set of data containing mechanisms to verify the DID and discover related services. 
+  string document = 2;
+}
+
+/* [Example]
+{}
+*/
+message CreateResponse {
+  // Empty body.
+}
+
+/* [Example]
+{
+  "did": "did:method-name:zDIDMultibase58Encoded"
+}
+*/
+message ResolveRequest {
+  // W3C Decentralized Identifier (DID) of the wallet.
+  string did = 1;
+
+  // W3C metadata structure for did resolution
+  ResolutionOption resolutionOption = 2;
+}
+
+/* [Example]
+{
+  "did": "did:method-name:zDIDMultibase58Encoded"
+}
+*/
+message ResolveRepresentationRequest {
+  // W3C Decentralized Identifier (DID) of the wallet.
+  string did = 1;
+
+  // W3C metadata structure for did resolution
+  ResolutionOption resolutionOption = 2;
+}
+
+// Resolution Option Accept Method.
+enum ResolutionOptionAccept {
+  // Resolution Option Accept Method Unspecified.
+  RESOLUTION_OPTION_ACCEPT_UNSPECIFIED = 0;
+  // Resolution Option Accept Method JSON-LD.
+  RESOLUTION_OPTION_ACCEPT_JSON_LD = 1;
+}
+
+/* [Example]
+{
+  "accept": 0
+}
+*/
+message ResolutionOption {
+  // Resolution Option.
+  ResolutionOptionAccept accept = 1;
+}
+
+
+/* [Example]
+{
+  "created":"2022-05-07T17:24:28.787Z",
+  "updated":"2022-05-07T17:24:28.787Z"
+}
+*/
+message DidDocumentMetadata {
+  // Timestamp representing the DID document creation time.
+  google.protobuf.Timestamp created = 1;
+  // Timestamp representing the DID document last update time.
+  google.protobuf.Timestamp updated = 2;
+}
+
+
+/* [Example]
+{
+  "did": "did:method-name:zDIDMultibase58Encoded",
+  "document": "DOCUMENT",
+  "metadata": { 
+    "created": { 
+      "seconds": 0, 
+      "nanos": 0 
+    }, 
+    "updated": { 
+      "seconds": 0, 
+      "nanos": 0 
+    }, 
+    "contentType": "MEDIA_TYPE"
+  }
+}
+*/
+message ResolveResponse {
+  // Resolution Metadata object, with defined timestamps and content type.
+  ResolutionMetadata didResolutionMetadata = 1;
+  // A set of data containing mechanisms to verify the DID and discover related services.
+  google.protobuf.Struct  didDocument = 2;
+  // This structure contains metadata about the DID document contained in the didDocument property
+  DidDocumentMetadata didDocumentMetadata = 3;
+}
+
+/* [Example]
+{
+  "did": "did:method-name:zDIDMultibase58Encoded",
+  "document": "DOCUMENT",
+  "metadata": { 
+    "created":"2022-05-07T17:24:28.787Z",,
+    "updated": { 
+      "seconds": 0, 
+      "nanos": 0 
+    }, 
+    "contentType": "MEDIA_TYPE"
+  }
+}
+*/
+message ResolveRepresentationResponse{
+  // A set of data containing mechanisms to verify the DID and discover related services.
+  string didDocumentStream = 1;
+  // Resolution Metadata object, with defined timestamps and content type.
+  ResolutionMetadata didResolutionMetadata = 2;
+  // This structure contains metadata about the DID document contained in the didDocument property
+  DidDocumentMetadata didDocumentMetadata = 3;
+}
+
+/* [Example]
+{
+  "created": { 
+    "seconds": 0, 
+    "nanos": 0 
+  }, 
+  "updated": { 
+    "seconds": 0, 
+    "nanos": 0 
+  }, 
+  "contentType": "MEDIA_TYPE"
+}
+*/
+message ResolutionMetadata {
+  // Media type of the W3C DID Document.
+  optional string contentType = 1;
+
+  optional int64 duration = 2;
+
+  optional ResolutionMetadataDidUrl didUrl = 3;
+
+  optional string error = 4;
+}
+
+message ResolutionMetadataDidUrl {
+  // W3C Decentralized Identifier (DID) of the wallet
+  string did = 1;
+
+  // W3C Decentralized Scheme
+  string methodName = 2;
+
+  // Method specific identifier
+  string methodSpecificId = 3;
+}
+
+/* [Example]
+{
+  "did": "did:method-name:zDIDMultibase58Encoded",
+  "document": "DOCUMENT"
+}
+*/
+message UpdateRequest {
+  // W3C Decentralized Identifier (DID) of the wallet.
+  string did = 1;
+  // A set of data containing mechanisms to verify the DID and discover related services. 
+  string document = 2;
+}
+
+/* [Example]
+{}
+*/
+message UpdateResponse {
+  // Empty body.
+}
+
+/* [Example]
+{
+  "did": "did:method-name:zDIDMultibase58Encoded"
+}
+*/
+message RevokeRequest{
+  // W3C Decentralized Identifier (DID) of the wallet.
+  string did = 1;
+
+  // Document contains signature to proof the ownership of this DID.
+  string document = 2;
+}
+
+/* [Example]
+{}
+*/
+message RevokeResponse {
+  // Empty body.
+}
+
+// Publicly accessible repo of DID Documents for cryptographic verification of DIDs. Contains no sensitive data and default implementation of Knox DID method is operated by Knox in AWS. https:// Www.w3.org/TR/did-core/
+service RegistryService {
+  // Creates a new DID document entry for a given DID in the Knox Registry Management Service. 
+  rpc Create(CreateRequest) returns (CreateResponse);
+  // Resolves a DID document entry for a given DID in the Knox Registry Management Service.
+  rpc Resolve(ResolveRequest) returns (ResolveResponse);
+  // Resolves and presents a DID document entry for a given DID in the Knox Registry Management Service.
+  rpc ResolveRepresentation(ResolveRepresentationRequest) returns (ResolveRepresentationResponse);
+  // Updates a DID document entry for a given DID in the Knox Registry Management Service.
+  rpc Update(UpdateRequest) returns (UpdateResponse);
+  // Revokes a DID document entry for a given DID in the Knox Registry Management Service.
+  rpc Revoke(RevokeRequest) returns (RevokeResponse);
+}
+
+// Issuer Status.
+enum IssuerStatus {
+  // Status of Issuer Unspecified.
+  ISSUER_STATUS_UNSPECIFIED = 0;
+  // Status of Issuer Active.
+  ISSUER_STATUS_ACTIVE = 1;
+  // Status of Issuer Suspended.
+  ISSUER_STATUS_SUSPENDED = 2;
+}
+
+/* [Example]
+{
+  "country": "United States",
+  "city": "Anytown",
+  "state": "AL",
+  "postal_code": "10101",
+  "street": "123 Sesame Street"
+}
+*/
+message PostalAddress {
+  // Country, e.g. United States
+  string country = 1;
+  // City, e.g. Anytown
+  string city = 2;
+  // State, e.g. AL
+  string state = 3;
+  // Postal Code, e.g. 10101
+  string postal_code = 4;
+  // Street Address, e.g. 123 Sesame Street
+  string street = 5;
+}
+
+/* [Example]
+{
+  "issuer_did": "did:method-name:zDIDIssuerMultibase58Encoded",
+  "issuer_name": "ISSUER_NAME",
+  "email": "example@gmail.com",
+  "website": "google.com",
+  "postal_address": {
+    "country": "United States",
+    "city": "Anytown",
+    "state": "AL",
+    "postal_code": "10101",
+    "street": "123 Sesame Street"
+  },
+  "status": 0
+}
+*/
+message CredentialIssuer {
+  // DID of Credential Issuer.
+  string issuer_did = 1;
+  // Name of Credential Issuer.
+  string issuer_name = 2;
+  // Email of Credential Issuer.
+  string email = 3;
+  // Website of Credential Issuer.
+  string website = 4;
+  // Postal Address of Credential Issuer.
+  PostalAddress postal_address = 5;
+  // Status of Credential Issuer, e.g. Active, Suspended.
+  IssuerStatus status = 6;
+}
+
+/* [Example]
+{ 
+  "credential_issuer": {
+    "issuer_did": "did:method-name:zDIDIssuerMultibase58Encoded",
+    "issuer_name": "ISSUER_NAME",
+    "email": "example@gmail.com",
+    "website": "google.com",
+    "postal_address": {
+      "country": "United States",
+      "city": "Anytown",
+      "state": "AL",
+      "postal_code": "10101",
+      "street": "123 Sesame Street"
+    },
+    "status": 0
+  }
+}
+*/
+message CreateCredentialIssuerRequest {
+  // Credential Issuer.
+  CredentialIssuer credential_issuer = 1;
+}
+
+/* [Example]
+{
+  "ok": true
+}
+*/
+message CreateCredentialIssuerResponse {
+  bool ok = 1;
+}
+
+/* [Example]
+{ 
+  "issuer_did": "did:method-name:zDIDCredentialIssuerMultibase58Encoded"
+}
+*/
+message GetCredentialIssuerRequest {
+  // Credential Issuer DID.
+  string issuer_did = 1;
+}
+
+/* [Example]
+{ 
+  "credential_issuer": {
+    "issuer_did": "did:method-name:zDIDIssuerMultibase58Encoded",
+    "issuer_name": "ISSUER_NAME",
+    "email": "example@gmail.com",
+    "website": "google.com",
+    "postal_address": {
+      "country": "United States",
+      "city": "Anytown",
+      "state": "AL",
+      "postal_code": "10101",
+      "street": "123 Sesame Street"
+    },
+    "status": 0
+  }
+}
+*/
+message GetCredentialIssuerResponse {
+  // Returned Credential Issuer.
+  CredentialIssuer credential_issuer = 1;
+}
+
+/* [Example]
+{ 
+  "credential_issuer": {
+    "issuer_did": "did:method-name:zDIDIssuerMultibase58Encoded",
+    "issuer_name": "ISSUER_NAME",
+    "email": "example@gmail.com",
+    "website": "google.com",
+    "postal_address": {
+      "country": "United States",
+      "city": "Anytown",
+      "state": "AL",
+      "postal_code": "10101",
+      "street": "123 Sesame Street"
+    },
+    "status": 0
+  }
+}
+*/
+message UpdateCredentialIssuerRequest {
+  // Updated Credential Issuer.
+  CredentialIssuer credential_issuer = 1;
+}
+
+/* [Example]
+{
+  "ok": true
+}
+*/
+message UpdateCredentialIssuerResponse {
+  bool ok = 1;
+}
+
+// Credential Issuer Registry Service Manages the Lifecycle of a Credential Issuer.
+service CredentialIssuerRegistryService {
+  // Creates an verifiable credential credentialIssuer
+  rpc CreateCredentialIssuer(CreateCredentialIssuerRequest) returns (CreateCredentialIssuerResponse);
+
+  // Gets an verifiable credential credentialIssuer
+  rpc GetCredentialIssuer(GetCredentialIssuerRequest) returns (GetCredentialIssuerResponse);
+
+  // Updates an verifiable credential credentialIssuer
+  rpc UpdateCredentialIssuer(UpdateCredentialIssuerRequest) returns (UpdateCredentialIssuerResponse);
+}
+
+// Purpose of Status.
+enum StatusPurpose {
+  // Status Unspecified.
+  STATUS_PURPOSE_UNSPECIFIED = 0;
+  // Status Revocation.
+  STATUS_PURPOSE_REVOCATION = 1;
+  // Status Suspension.
+  STATUS_PURPOSE_SUSPENSION = 2;
+}
+
+/* [Example]
+{ 
+  "credential_id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+  "credential_issuer_id": "did:method-name:zDIDCredentialIssuerMultibase58Encoded",
+  "status_purpose": 0,
+  "credential_type": "BankAccount",
+  "status_list_index": 0,
+  "status_list_credential_id": "https://reg.YOUR_SANDBOX_URL.knoxnetworks.io/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "status": true
+}
+*/
+message StatusListEntry {
+  // Credential Unique ID, e.g. "https://issuer.oidp.uscis.gov/credentials/83627465"
+  string credential_id = 1;
+  // Credential Issuer DID.
+  string credential_issuer_id = 2;
+  // Status Purpose, e.g. revocation.
+  StatusPurpose status_purpose = 3;
+  // Credential Type.
+  string credential_type = 4;
+  // Status Index of the VC.
+  int64 status_list_index = 5;
+  // Credential Status List ID, e.g. "https://reg.YOUR_SANDBOX_URL.knoxnetworks.io/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  string status_list_credential_id = 6;
+  // Status.
+  bool status = 7;
+}
+
+/* [Example]
+{ 
+  "credential_id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+  "credential_issuer_id": "did:method-name:zDIDCredentialIssuerMultibase58Encoded",
+  "status_purpose": 0,
+  "credential_type": "BankAccount",
+  "status": true
+}
+*/
+message CreateStatusListEntryRequest {
+  // Credential Unique ID, e.g. "https://issuer.oidp.uscis.gov/credentials/83627465"
+  string credential_id = 1;
+  // Credential Issuer DID.
+  string credential_issuer_id = 2;
+  // Status Purpose, e.g. revocation.
+  StatusPurpose status_purpose = 3;
+  // Credential Type, e.g. BankAccount, Citizenship.
+  string credential_type = 4;
+  // Status.
+  bool status = 5;
+}
+
+/* [Example]
+{ 
+  "status_list_entry": { 
+    "credential_id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+    "credential_issuer_id": "did:method-name:zDIDCredentialIssuerMultibase58Encoded",
+    "status_purpose": 0,
+    "credential_type": "BankAccount",
+    "status_list_index": 0,
+    "status_list_credential_id": "https://reg.YOUR_SANDBOX_URL.knoxnetworks.io/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "status": true
+  }
+}
+*/
+message CreateStatusListEntryResponse {
+  // Created StatusListEntry.
+  StatusListEntry status_list_entry = 1;
+}
+
+/* [Example]
+{ 
+  "status_list_credential_id": "https://reg.YOUR_SANDBOX_URL.knoxnetworks.io/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+}
+*/
+message GetStatusListCredentialRequest {
+  // Credential Status List ID, e.g. "https://reg.YOUR_SANDBOX_URL.knoxnetworks.io/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  string status_list_credential_id = 1;
+}
+
+/* [Example]
+{ 
+  "status_list_credential": "STATUS_LIST_CREDENTIAL"
+}
+*/
+message GetStatusListCredentialResponse {
+  // Unique ID of StatusListCredential.
+  string status_list_credential = 1;
+}
+
+/* [Example]
+{ 
+  "credential_id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+  "credential_issuer_id": "did:method-name:zDIDCredentialIssuerMultibase58Encoded",
+  "status_purpose": 0,
+  "credential_type": "BankAccount",
+  "status": true
+}
+*/
+message UpdateStatusListEntryRequest {
+  // Credential Unique ID, e.g. "https://issuer.oidp.uscis.gov/credentials/83627465"
+  string credential_id = 1;
+  // Credential Issuer DID.
+  string credential_issuer_id = 2;
+  // Status Purpose, e.g. revocation.
+  StatusPurpose status_purpose = 3;
+  // Credential Type, e.g. BankAccount, Citizenship.
+  string credential_type = 4;
+  // Status.
+  bool status = 5;
+}
+
+/* [Example]
+{}
+*/
+message UpdateStatusListEntryResponse {
+  // Empty body.
+}
+
+// Status List Registry Service manages the Lifecycle of the VC Registry.
+service StatusListRegistryService {
+  // Create status registry entry
+  rpc CreateStatusListEntry(CreateStatusListEntryRequest) returns (CreateStatusListEntryResponse);
+
+  // Get VC status Credential
+  rpc GetStatusListCredential(GetStatusListCredentialRequest) returns (GetStatusListCredentialResponse);
+
+  // Update status registry entry
+  rpc UpdateStatusListEntry(UpdateStatusListEntryRequest) returns (UpdateStatusListEntryResponse);
+}

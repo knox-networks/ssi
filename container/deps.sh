@@ -124,7 +124,7 @@ _protoc() {
 }
 
 _cargo-make() {
-  local version=${CARGO_MAKE_VERSION:-0.35.12}
+  local version=${CARGO_MAKE_VERSION:-0.37.1}
   local version_name="cargo-make-v${version}-x86_64-unknown-linux-musl"
   local zip_file="$version_name.zip"
   wget -q "https://github.com/sagiegurari/cargo-make/releases/download/${version}/$zip_file" &&

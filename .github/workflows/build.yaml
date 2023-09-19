@@ -8,35 +8,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Setup | Rust
-        uses: ATiltedTree/setup-rust@v1
-        with:
-          rust-version: 1.71.1
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
 
-      - name: Install Protoc (required by ::pbjson_types)
-        uses: arduino/setup-protoc@v1
-        with:
-          version: "3.x"
+      - name: Install Protoc and cargo-make
+        run: ./container/deps.sh protoc cargo-make
 
       - name: Installing Rust Tools
-        run: |-
-          rustup component add rustfmt
-          rustup component add clippy
-
-      - name: Installing Make
-        run: |-
-          cargo install cargo-make
+        run: rustup component add rustfmt clippy
 
       - uses: knox-networks/github-actions-public/.github/actions/setup-protofetch@main
         with:
           cross-repo-username: "developersKnox"
           cross-repo-token: ${{ secrets.PROTOFETCH_GITHUB_TOKEN }}
 
+      - name: Test protos
+        run: (cd registry_resolver; protofetch fetch) && git diff --exit-code
+
       - name: Build
-        run: |-
-          cargo build
+        run: cargo build
 
       - name: Linting
         run: |-
@@ -44,9 +36,7 @@ jobs:
           cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Test
-        run: |-
-          cargo test
+        run: cargo test
 
       - name: Run FFI tests
-        run: |
-          cargo make ffi-test
+        run: cargo make ffi-test

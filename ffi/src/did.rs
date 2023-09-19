@@ -1,3 +1,4 @@
+#![allow(clippy::incorrect_clone_impl_on_copy_type)]
 use crate::error::{MaybeRustError, Reportable, Try};
 use safer_ffi::prelude::*;
 use signature::suite::KeyPair;
@@ -80,7 +81,7 @@ pub fn create_identity(
 ) -> Option<repr_c::Box<DidDocument>> {
     super::init();
     info!(
-        did_method=?did_method, 
+        did_method=?did_method,
         mnemonic_input=?mnemonic_input,
         "ffi create_identity called with params");
 
