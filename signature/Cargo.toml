@@ -8,7 +8,6 @@ edition.workspace = true
 [dependencies]
 ed25519-zebra = "3.0.0"
 multibase = "0.9.1"
-rand = "0.8.5"
 tiny-bip39 = "0.8.2"
 thiserror = {workspace = true}
 serde = { workspace = true }
