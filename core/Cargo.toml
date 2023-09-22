@@ -6,25 +6,23 @@ edition.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-trait = "0.1.53"
+async-trait = "0.1.73"
 chrono = {workspace = true}
 serde_json = {workspace = true}
-sha2 = "0.10.2"
+sha2 = "0.10.7"
 signature = { path = "../signature" }
 serde = { workspace = true}
 mockall = {workspace = true}
 thiserror = {workspace = true}
-json-ld = "0.11.0"
+json-ld = "0.15.0"
 
 [dev-dependencies]
 rstest = "0.15.0"
-map = "0.0.0"
 assert-json-diff = "2.0.2"
-tokio-test = "0.4.2"
-async-std = "1.12.0"
-iref = "2.2.2"
+tokio-test = "0.4.3"
+iref = "2.2.3"
 static-iref = "2.0.0"
-locspan = "0.7.13"
+locspan = "0.7.16"
 
 [features]
 static = []
