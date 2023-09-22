@@ -7,14 +7,14 @@ edition.workspace = true
 
 [dependencies]
 ssi_core = { path = "../core" }
-async-trait = "0.1.53"
+async-trait = "0.1.73"
 serde_json = {workspace = true}
 tokio = { workspace = true }
 chrono.workspace = true
 
 
 [dev-dependencies]
-tokio-test = "0.4.2"
+tokio-test = "0.4.3"
 
 [features]
 static = []
