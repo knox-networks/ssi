@@ -182,11 +182,12 @@ mod tests {
     #[tokio::test]
     async fn test_create_did_integration() {
         let did_doc = create_did();
-        let address = "https://reg.sandbox5.knoxnetworks.io";
+        let address = "https://reg.integration.knoxnetworks.io:443";
         let resolver = RegistryResolver::new(address.to_string()).await;
         let document_serialized = create_did_doc(did_doc.clone());
+
         let result = resolver
-            .create(did_doc.to_string(), document_serialized)
+            .create(did_doc.to_string(), document_serialized.clone())
             .await;
         assert!(result.is_ok())
     }

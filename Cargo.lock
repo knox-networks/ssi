@@ -2193,6 +2193,7 @@ dependencies = [
  "registry_resolver",
  "signature",
  "ssi_core",
+ "tokio",
 ]
 
 [[package]]

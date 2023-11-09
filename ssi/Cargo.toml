@@ -10,3 +10,4 @@ ssi_core = {path = "../core"}
 registry_resolver = {path = "../registry_resolver"}
 signature = {path = "../signature"}
 ephemeral_resolver = {path = "../ephemeral_resolver"}
+tokio.workspace = true
