@@ -15,6 +15,7 @@ serde = { workspace = true}
 mockall = {workspace = true}
 thiserror = {workspace = true}
 json-ld = "0.15.0"
+sophia = { git = "https://github.com/pchampin/sophia_rs.git", rev = "d6d73d78", features = ["jsonld"] }
 
 [dev-dependencies]
 rstest = "0.15.0"
