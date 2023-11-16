@@ -32,9 +32,7 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     doc: serde_json::Value,
     relation: signature::suite::VerificationRelation,
 ) -> Result<DataIntegrityProof, super::error::Error> {
-    let hashed_normalized_doc = normalization::normalize(doc);
-
-    println!("result {:?}", hashed_normalized_doc);
+    let hashed_normalized_doc = normalization::create_hashed_normalized_doc(doc)?;
 
     let encoded_sig = signer.encoded_relational_sign(&hashed_normalized_doc, relation)?;
 
@@ -82,22 +80,21 @@ mod tests {
         assert!(res.is_ok());
         match res {
             Ok(proof) => {
-                println!("{proof}");
                 assert_eq!(proof.proof_type, signer.get_proof_type());
                 assert_eq!(
                     proof.verification_method,
                     signer.get_verification_method(relation)
                 );
                 assert_eq!(proof.proof_purpose, relation.to_string());
-                let comparison = crate::proof::normalization::normalize(doc);
-                // let mut hasher = sha2::Sha512::new();
-                // let encoded = doc.to_string();
-                // let result = encoded.into_bytes();
-                // hasher.update(result);
-                // let comparison = hasher.finalize();
+                let expected_hash_normalized =
+                    crate::proof::normalization::create_hashed_normalized_doc(doc).unwrap();
 
                 assert!(verifier
-                    .decoded_relational_verify(&comparison, proof.proof_value, relation)
+                    .decoded_relational_verify(
+                        &expected_hash_normalized,
+                        proof.proof_value,
+                        relation
+                    )
                     .is_ok());
             }
             Err(e) => panic!("{e:?}"),
