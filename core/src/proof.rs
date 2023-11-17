@@ -57,6 +57,7 @@ mod tests {
     use super::create_data_integrity_proof;
     use signature::suite::DIDSigner;
     use signature::suite::DIDVerifier;
+    use sophia::c14n::hash::HashFunction;
 
     const TEST_DID_METHOD: &str = "knox";
 
@@ -92,15 +93,14 @@ mod tests {
                     signer.get_verification_method(relation)
                 );
                 assert_eq!(proof.proof_purpose, relation.to_string());
-                let expected_hash_normalized =
+                let transformed_data =
                     crate::proof::normalization::create_hashed_normalized_doc(doc).unwrap();
+                let mut hasher = sophia::c14n::hash::Sha256::initialize();
+                hasher.update(&transformed_data);
+                let hash_data = hasher.finalize();
 
                 assert!(verifier
-                    .decoded_relational_verify(
-                        &expected_hash_normalized,
-                        proof.proof_value,
-                        relation
-                    )
+                    .decoded_relational_verify(&hash_data, proof.proof_value, relation)
                     .is_ok());
             }
             Err(e) => panic!("{e:?}"),
