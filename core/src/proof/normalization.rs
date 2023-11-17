@@ -24,9 +24,8 @@ pub fn create_hashed_normalized_doc(
 
     let mut output = Vec::<u8>::new();
     sophia::c14n::rdfc10::normalize(&dataset, &mut output).map_err(|e| {
-        crate::error::Error::Unknown(format!("Error normalizing JSON-LD dataset: {}", e))
+        crate::error::Error::Unknown(format!("Error normalizing JSON-LD dataset1: {}", e))
     })?;
-
     let mut hasher = sophia::c14n::hash::Sha256::initialize();
     hasher.update(&output);
 
