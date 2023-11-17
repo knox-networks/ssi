@@ -30,23 +30,24 @@ impl std::fmt::Display for DataIntegrityProof {
 /// Given a JSON-LD document, create a data integrity proof for the document.
 /// Currently, only `Ed25519Signature2020` data integrity proofs in the JSON-LD format can be created.
 /// We should move to the new spec approach as `Ed25519Signature2020` is considered legacy
+/// Follows algorithm described in https://www.w3.org/TR/vc-data-integrity/#add-proof
 pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     signer: &impl signature::suite::DIDSigner<S>,
-    doc: serde_json::Value,
+    unsecured_doc: serde_json::Value,
     relation: signature::suite::VerificationRelation,
 ) -> Result<DataIntegrityProof, super::error::Error> {
-    let normalized_doc = normalization::create_hashed_normalized_doc(doc)?;
+    let transformed_data = normalization::create_hashed_normalized_doc(unsecured_doc)?;
     let mut hasher = sophia::c14n::hash::Sha256::initialize();
-    hasher.update(&normalized_doc);
-    let hashed_normalized_doc = hasher.finalize();
-    let encoded_sig = signer.encoded_relational_sign(&hashed_normalized_doc, relation)?;
+    hasher.update(&transformed_data);
+    let hash_data = hasher.finalize();
+    let proof = signer.encoded_relational_sign(&hash_data, relation)?;
 
     Ok(DataIntegrityProof {
         proof_type: signer.get_proof_type(),
         created: chrono::Utc::now().to_rfc3339(),
         verification_method: signer.get_verification_method(relation),
         proof_purpose: relation.to_string(),
-        proof_value: encoded_sig,
+        proof_value: proof,
     })
 }
 
