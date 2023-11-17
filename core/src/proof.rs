@@ -1,3 +1,5 @@
+use sophia::c14n::hash::HashFunction;
+
 mod normalization;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
@@ -26,14 +28,17 @@ impl std::fmt::Display for DataIntegrityProof {
 
 // Use it as an example
 /// Given a JSON-LD document, create a data integrity proof for the document.
-/// Currently, only `Ed25519Signature2018` data integrity proofs in the JSON-LD format can be created.
+/// Currently, only `Ed25519Signature2020` data integrity proofs in the JSON-LD format can be created.
+/// We should move to the new spec approach as `Ed25519Signature2020` is considered legacy
 pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     signer: &impl signature::suite::DIDSigner<S>,
     doc: serde_json::Value,
     relation: signature::suite::VerificationRelation,
 ) -> Result<DataIntegrityProof, super::error::Error> {
-    let hashed_normalized_doc = normalization::create_hashed_normalized_doc(doc)?;
-
+    let normalized_doc = normalization::create_hashed_normalized_doc(doc)?;
+    let mut hasher = sophia::c14n::hash::Sha256::initialize();
+    hasher.update(&normalized_doc);
+    let hashed_normalized_doc = hasher.finalize();
     let encoded_sig = signer.encoded_relational_sign(&hashed_normalized_doc, relation)?;
 
     Ok(DataIntegrityProof {
