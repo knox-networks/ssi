@@ -3,7 +3,6 @@
 pub fn credential_context_validation(
     val: &Vec<String>,
 ) -> Result<(), serde_valid::validation::Error> {
-    println!("{:?} {:?}", val, super::BASE_CREDENDIAL_CONTEXT);
     if val.len() == 0 {
         return Err(serde_valid::validation::Error::Custom(
             "Context must contain at least one URI".to_string(),
