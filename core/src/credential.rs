@@ -10,10 +10,14 @@
 
 use std::str::FromStr;
 
+use serde_valid::Validate;
+
 pub type VerificationContext = Vec<String>;
 
 pub const BASE_CREDENDIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
 pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
+
+mod validation;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum CredentialType {
@@ -23,6 +27,7 @@ pub enum CredentialType {
     BankCard,
     BankAccount,
     UniversityDegreeCredential,
+    AlumniCredential,
 }
 
 impl CredentialType {
@@ -33,6 +38,7 @@ impl CredentialType {
             CredentialType::BankCard => "BankCard",
             CredentialType::BankAccount => "BankAccount",
             CredentialType::UniversityDegreeCredential => "UniversityDegreeCredential",
+            CredentialType::AlumniCredential => "AlumniCredential",
         }
     }
 
@@ -43,6 +49,7 @@ impl CredentialType {
             "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
             "VerifiableCredential" => Some(CredentialType::Common),
             "UniversityDegreeCredential" => Some(CredentialType::UniversityDegreeCredential),
+            "AlumniCredential" => Some(CredentialType::AlumniCredential),
             _ => None,
         }
     }
@@ -64,9 +71,10 @@ impl std::fmt::Display for VerifiableCredential {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
 pub struct Credential {
     #[serde(rename = "@context")]
+    #[validate(custom(validation::credential_context_validation))]
     pub context: Vec<String>,
 
     #[serde(rename = "id")]
