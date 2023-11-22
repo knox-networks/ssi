@@ -55,7 +55,12 @@ impl CredentialType {
     }
 }
 
-pub type CredentialSubject = std::collections::HashMap<String, serde_json::Value>;
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[serde(untagged)]
+pub enum CredentialSubject {
+    Single(std::collections::HashMap<String, serde_json::Value>),
+    Set(Vec<std::collections::HashMap<String, serde_json::Value>>),
+}
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
 pub struct VerifiableCredential {

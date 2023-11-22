@@ -124,7 +124,7 @@ pub trait DocumentBuilder {
             issuance_date: chrono::Utc::now(),
             expiration_date: None,
             issuer,
-            subject: cred_subject,
+            subject: credential::CredentialSubject::Single(cred_subject),
             property_set,
         })
     }
