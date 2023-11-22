@@ -5,7 +5,7 @@ use super::ContextValue;
 pub fn credential_context_validation(
     val: &Vec<ContextValue>,
 ) -> Result<(), serde_valid::validation::Error> {
-    if val.len() == 0 {
+    if val.is_empty() {
         return Err(serde_valid::validation::Error::Custom(
             "Context must contain at least one URI".to_string(),
         ));
