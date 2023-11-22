@@ -22,6 +22,7 @@ pub enum CredentialType {
     PermanentResidentCard,
     BankCard,
     BankAccount,
+    UniversityDegreeCredential,
 }
 
 impl CredentialType {
@@ -31,6 +32,7 @@ impl CredentialType {
             CredentialType::PermanentResidentCard => "PermanentResidentCard",
             CredentialType::BankCard => "BankCard",
             CredentialType::BankAccount => "BankAccount",
+            CredentialType::UniversityDegreeCredential => "UniversityDegreeCredential",
         }
     }
 
@@ -40,6 +42,7 @@ impl CredentialType {
             "BankAccount" => Some(CredentialType::BankAccount),
             "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
             "VerifiableCredential" => Some(CredentialType::Common),
+            "UniversityDegreeCredential" => Some(CredentialType::UniversityDegreeCredential),
             _ => None,
         }
     }
@@ -51,7 +54,7 @@ pub type CredentialSubject = std::collections::HashMap<String, serde_json::Value
 pub struct VerifiableCredential {
     #[serde(flatten)]
     pub credential: Credential,
-    pub proof: crate::proof::DataIntegrityProof,
+    pub proof: crate::proof::CredentialProof,
 }
 
 impl std::fmt::Display for VerifiableCredential {
@@ -114,7 +117,7 @@ impl Credential {
 
     pub fn into_verifiable_credential(
         self,
-        integrity_proof: crate::proof::DataIntegrityProof,
+        integrity_proof: crate::proof::CredentialProof,
     ) -> VerifiableCredential {
         VerifiableCredential {
             credential: self,
@@ -127,7 +130,7 @@ impl Credential {
 pub struct VerifiablePresentation {
     #[serde(flatten)]
     pub presentation: Presentation,
-    pub proof: crate::proof::DataIntegrityProof,
+    pub proof: crate::proof::CredentialProof,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]

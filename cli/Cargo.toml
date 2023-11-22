@@ -8,3 +8,8 @@ edition.workspace = true
 [dependencies]
 clap = {version = "4.4.8", features = ["derive"]}
 ssi = {path = "../ssi"}
+
+# binary definition
+[[bin]]
+name = "ssi_cli"
+path = "src/main.rs"
