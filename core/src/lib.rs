@@ -90,16 +90,22 @@ impl Clone for MockDIDResolver {
 }
 
 pub trait DocumentBuilder {
-    fn get_contexts(cred_type: &credential::CredentialType) -> credential::VerificationContext {
+    fn get_contexts(cred_type: &credential::CredentialType) -> credential::DocumentContext {
         match cred_type {
             credential::CredentialType::BankAccount => {
                 vec![
-                    credential::BASE_CREDENTIAL_CONTEXT.to_string(),
-                    credential::BANK_ACCOUNT_CREDENTIAL_CONTEXT.to_string(),
+                    credential::ContextValue::String(
+                        credential::BASE_CREDENTIAL_CONTEXT.to_string(),
+                    ),
+                    credential::ContextValue::String(
+                        credential::BANK_ACCOUNT_CREDENTIAL_CONTEXT.to_string(),
+                    ),
                 ]
             }
             _ => {
-                vec![credential::BASE_CREDENTIAL_CONTEXT.to_string()]
+                vec![credential::ContextValue::String(
+                    credential::BASE_CREDENTIAL_CONTEXT.to_string(),
+                )]
             }
         }
     }
