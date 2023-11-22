@@ -8,6 +8,8 @@
 // ---
 // Default context and Cred types are defaulted but can be redefined
 
+use std::str::FromStr;
+
 pub type VerificationContext = Vec<String>;
 
 pub const BASE_CREDENDIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
@@ -52,6 +54,13 @@ pub struct VerifiableCredential {
     pub proof: crate::proof::DataIntegrityProof,
 }
 
+impl std::fmt::Display for VerifiableCredential {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let vc = serde_json::to_string(&self).expect("Failed to serialize VerifiableCredential");
+        write!(f, "{}", vc)
+    }
+}
+
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Credential {
     #[serde(rename = "@context")]
@@ -73,6 +82,15 @@ pub struct Credential {
 
     #[serde(flatten)]
     pub property_set: std::collections::HashMap<String, serde_json::Value>,
+}
+
+impl FromStr for VerifiableCredential {
+    type Err = super::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let vc = serde_json::from_str::<VerifiableCredential>(s)?;
+        Ok(vc)
+    }
 }
 
 impl Credential {
@@ -118,6 +136,22 @@ pub struct Presentation {
     pub context: VerificationContext,
     #[serde(rename = "verifiableCredential")]
     pub verifiable_credential: Vec<VerifiableCredential>,
+}
+
+impl FromStr for VerifiablePresentation {
+    type Err = super::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let vc = serde_json::from_str::<VerifiablePresentation>(s)?;
+        Ok(vc)
+    }
+}
+
+impl std::fmt::Display for VerifiablePresentation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let vp = serde_json::to_string(&self).expect("Failed to serialize VerifiablePresentation");
+        write!(f, "{}", vp)
+    }
 }
 
 #[cfg(test)]

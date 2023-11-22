@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use clap::{command, Parser, Subcommand};
 
 #[derive(Parser, Debug)]
@@ -24,10 +26,12 @@ fn main() {
     let args = CliArguments::parse();
     match args.command {
         Command::TestIssueCredential { input } => {
-            println!("TestIssueCredential: {}", input);
+            let vc = ssi::credential::VerifiableCredential::from_str(&input).unwrap();
+            println!("{}", vc);
         }
         Command::TestIssuePresentation { input } => {
-            println!("TestIssuePresentation: {}", input);
+            let vc = ssi::credential::VerifiablePresentation::from_str(&input).unwrap();
+            println!("{}", vc);
         }
     }
 }
