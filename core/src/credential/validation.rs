@@ -3,6 +3,7 @@
 pub fn credential_context_validation(
     val: &Vec<String>,
 ) -> Result<(), serde_valid::validation::Error> {
+    println!("{:?} {:?}", val, super::BASE_CREDENDIAL_CONTEXT);
     if val.len() == 0 {
         return Err(serde_valid::validation::Error::Custom(
             "Context must contain at least one URI".to_string(),
@@ -11,8 +12,9 @@ pub fn credential_context_validation(
 
     if val[0] != super::BANK_ACCOUNT_CREDENTIAL_CONTEXT {
         return Err(serde_valid::validation::Error::Custom(format!(
-            "The first URI must be {}",
+            "The first URI must be {}, instead found {}",
             super::BANK_ACCOUNT_CREDENTIAL_CONTEXT,
+            val[0]
         )));
     }
 

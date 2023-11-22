@@ -8,9 +8,9 @@
 // ---
 // Default context and Cred types are defaulted but can be redefined
 
-use std::str::FromStr;
-
+use serde_valid::json::FromJsonStr;
 use serde_valid::Validate;
+use std::str::FromStr;
 
 pub type VerificationContext = Vec<String>;
 
@@ -57,9 +57,10 @@ impl CredentialType {
 
 pub type CredentialSubject = std::collections::HashMap<String, serde_json::Value>;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
 pub struct VerifiableCredential {
     #[serde(flatten)]
+    #[validate]
     pub credential: Credential,
     pub proof: crate::proof::CredentialProof,
 }
@@ -73,8 +74,8 @@ impl std::fmt::Display for VerifiableCredential {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
 pub struct Credential {
-    #[serde(rename = "@context")]
     #[validate(custom(validation::credential_context_validation))]
+    #[serde(rename = "@context")]
     pub context: Vec<String>,
 
     #[serde(rename = "id")]
@@ -99,7 +100,7 @@ impl FromStr for VerifiableCredential {
     type Err = super::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let vc = serde_json::from_str::<VerifiableCredential>(s)?;
+        let vc = VerifiableCredential::from_json_str(s)?;
         Ok(vc)
     }
 }
