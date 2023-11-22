@@ -85,7 +85,10 @@ pub struct Credential {
     pub cred_type: Vec<CredentialType>,
 
     #[serde(rename = "issuanceDate")]
-    pub issuance_date: String,
+    pub issuance_date: chrono::DateTime<chrono::Utc>, //chrono by default serializes to RFC3339
+
+    #[serde(rename = "expirationDate")]
+    pub expiration_date: Option<chrono::DateTime<chrono::Utc>>, //chrono by default serializes to RFC3339
 
     pub issuer: String,
 
