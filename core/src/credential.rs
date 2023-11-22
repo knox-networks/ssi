@@ -14,7 +14,7 @@ use std::str::FromStr;
 
 pub type VerificationContext = Vec<String>;
 
-pub const BASE_CREDENDIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
+pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
 pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
 
 mod validation;

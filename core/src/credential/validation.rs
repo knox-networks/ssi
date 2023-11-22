@@ -9,10 +9,10 @@ pub fn credential_context_validation(
         ));
     }
 
-    if val[0] != super::BANK_ACCOUNT_CREDENTIAL_CONTEXT {
+    if val[0] != super::BASE_CREDENTIAL_CONTEXT {
         return Err(serde_valid::validation::Error::Custom(format!(
             "The first URI must be {}, instead found {}",
-            super::BANK_ACCOUNT_CREDENTIAL_CONTEXT,
+            super::BASE_CREDENTIAL_CONTEXT,
             val[0]
         )));
     }

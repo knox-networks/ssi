@@ -94,12 +94,12 @@ pub trait DocumentBuilder {
         match cred_type {
             credential::CredentialType::BankAccount => {
                 vec![
-                    credential::BASE_CREDENDIAL_CONTEXT.to_string(),
+                    credential::BASE_CREDENTIAL_CONTEXT.to_string(),
                     credential::BANK_ACCOUNT_CREDENTIAL_CONTEXT.to_string(),
                 ]
             }
             _ => {
-                vec![credential::BASE_CREDENDIAL_CONTEXT.to_string()]
+                vec![credential::BASE_CREDENTIAL_CONTEXT.to_string()]
             }
         }
     }
