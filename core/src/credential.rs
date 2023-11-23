@@ -37,6 +37,13 @@ pub enum CredentialType {
     AlumniCredential,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub enum PresentationType {
+    #[serde(rename = "VerifiablePresentation")]
+    Common,
+    CredentialManagerPresentation,
+}
+
 impl CredentialType {
     pub fn as_str(&self) -> &str {
         match self {
@@ -154,6 +161,8 @@ impl Credential {
 pub struct VerifiablePresentation {
     #[serde(flatten)]
     pub presentation: Presentation,
+    #[serde(rename = "type")]
+    pub presentation_type: Vec<PresentationType>,
     pub proof: crate::proof::CredentialProof,
 }
 
@@ -161,6 +170,7 @@ pub struct VerifiablePresentation {
 pub struct Presentation {
     #[serde(rename = "@context")]
     pub context: DocumentContext,
+
     #[serde(rename = "verifiableCredential")]
     pub verifiable_credential: Vec<VerifiableCredential>,
 }
