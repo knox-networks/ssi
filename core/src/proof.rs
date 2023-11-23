@@ -7,6 +7,7 @@ pub struct DataIntegrityProof {
     #[serde(rename = "type")]
     pub proof_type: String,
     #[serde(rename = "created")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub created: Option<String>,
     #[serde(rename = "verificationMethod")]
     pub verification_method: String,
@@ -21,6 +22,7 @@ pub struct RsaSignature2018 {
     #[serde(rename = "type")]
     pub proof_type: String,
     #[serde(rename = "created")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub created: Option<String>,
     #[serde(rename = "verificationMethod")]
     pub verification_method: String,
