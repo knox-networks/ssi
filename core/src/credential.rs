@@ -107,6 +107,7 @@ pub struct Credential {
     pub issuance_date: chrono::DateTime<chrono::Utc>, //chrono by default serializes to RFC3339
 
     #[serde(rename = "expirationDate")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub expiration_date: Option<chrono::DateTime<chrono::Utc>>, //chrono by default serializes to RFC3339
 
     pub issuer: String,
@@ -217,10 +218,11 @@ mod tests {
             }
         });
 
-        let res = serde_json::from_str::<VerifiableCredential>(&expect.to_string());
+        let res = VerifiableCredential::from_str(&expect.to_string());
         assert!(res.is_ok());
         if let Ok(vc) = res {
             let vc = serde_json::to_value(vc).unwrap();
+            println!("{}", vc);
             assert_json_eq!(expect, vc);
         }
         Ok(())
