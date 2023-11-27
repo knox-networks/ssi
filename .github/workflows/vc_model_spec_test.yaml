@@ -43,6 +43,12 @@ jobs:
           git clone https://github.com/knox-networks/vc-test-suite
           cd vc-test-suite
           npm install
+
+      - name: Copy vc-test-suite config
+        run:
+          cp tests/vc_model_spec_testvc-test-suite-config.json
+          vc-test-suite/config.json
+
       - name: Run vc-test-suite
         run: |
           cd vc-test-suite
