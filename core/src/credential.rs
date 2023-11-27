@@ -119,6 +119,15 @@ pub struct Credential {
     pub property_set: std::collections::HashMap<String, serde_json::Value>,
 }
 
+impl FromStr for Credential {
+    type Err = super::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let vc = Credential::from_json_str(s)?;
+        Ok(vc)
+    }
+}
+
 impl FromStr for VerifiableCredential {
     type Err = super::error::Error;
 
@@ -259,7 +268,7 @@ mod tests {
             },
         });
 
-        let res = serde_json::from_str::<Credential>(&expect.to_string());
+        let res = Credential::from_str(&expect.to_string());
         assert!(res.is_ok());
         if let Ok(vc) = res {
             let vc = serde_json::to_value(vc).unwrap();
