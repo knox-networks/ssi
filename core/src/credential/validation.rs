@@ -3,7 +3,7 @@ use super::ContextValue;
 // Context must contain at least one URI
 // The first URI must be https://www.w3.org/2018/credentials/v1 (use BASE_CREDENDIAL_CONTEXT)
 pub fn credential_context_validation(
-    val: &Vec<ContextValue>,
+    val: &[ContextValue],
 ) -> Result<(), serde_valid::validation::Error> {
     match val.get(0) {
         None => {
