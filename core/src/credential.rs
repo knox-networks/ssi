@@ -154,8 +154,7 @@ impl FromStr for Credential {
     type Err = super::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let c = Credential::from_json_str(s)?;
-        Ok(c)
+        Ok(Credential::from_json_str(s)?)
     }
 }
 
@@ -163,8 +162,7 @@ impl FromStr for VerifiableCredential {
     type Err = super::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let vc = VerifiableCredential::from_json_str(s)?;
-        Ok(vc)
+        Ok(VerifiableCredential::from_json_str(s)?)
     }
 }
 
@@ -202,8 +200,7 @@ impl FromStr for Presentation {
     type Err = super::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let p = Presentation::from_json_str(s)?;
-        Ok(p)
+        Ok(Presentation::from_json_str(s)?)
     }
 }
 
@@ -211,8 +208,7 @@ impl FromStr for VerifiablePresentation {
     type Err = super::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let vp = VerifiablePresentation::from_json_str(s)?;
-        Ok(vp)
+        Ok(VerifiablePresentation::from_json_str(s)?)
     }
 }
 
