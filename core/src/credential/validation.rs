@@ -19,11 +19,9 @@ pub fn credential_context_validation(
                 s
             )))
         }
-        Some(ContextValue::Object(_)) => {
-            return Err(serde_valid::validation::Error::Custom(
-                "The first URI must be a string".to_string(),
-            ));
-        }
+        Some(ContextValue::Object(_)) => Err(serde_valid::validation::Error::Custom(
+            "The first URI must be a string".to_string(),
+        )),
         _ => Ok(()),
     }
 }
