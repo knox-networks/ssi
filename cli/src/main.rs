@@ -12,10 +12,12 @@ struct CliArguments {
 
 #[derive(Subcommand, Debug)]
 enum Command {
+    /// Read the JSON string file in input_file_path and parse it into a VerifiableCredential. Then prints the VerifiableCredential
     TestIssueCredential {
         #[arg(short, long)]
         input_file_path: String,
     },
+    /// Read the JSON string file in input_file_path and parse it into a VerifiablePresentation. Then prints the VerifiablePresentation
     TestIssuePresentation {
         #[arg(short, long)]
         input_file_path: String,
@@ -26,8 +28,6 @@ fn main() {
     let args = CliArguments::parse();
     match args.command {
         Command::TestIssueCredential { input_file_path } => {
-            //read the JSON string file in input_file_path and parse it into a VerifiableCredential
-            //print the VerifiableCredential
             let input = std::fs::read_to_string(input_file_path).unwrap();
             let vc = ssi::credential::VerifiableCredential::from_str(&input).unwrap();
             println!("{}", vc);
