@@ -7,6 +7,7 @@
 // Users can also user their own types that implement trait X if they need a different structure
 // ---
 // Default context and Cred types are defaulted but can be redefined
+mod validation;
 
 use serde_valid::json::{FromJsonStr, ToJsonString};
 use serde_valid::Validate;
@@ -23,8 +24,6 @@ pub type DocumentContext = Vec<ContextValue>;
 
 pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
 pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
-
-mod validation;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum CredentialType {
