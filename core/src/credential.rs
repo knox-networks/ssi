@@ -148,7 +148,7 @@ impl std::fmt::Display for VerifiableCredential {
                 write!(f, "{}", vc)
             }
             Err(e) => {
-                return write!(f, "Error: {}", e);
+                write!(f, "Error: {}", e)
             }
         }
     }
@@ -227,7 +227,7 @@ impl std::fmt::Display for VerifiablePresentation {
                 write!(f, "{}", vp)
             }
             Err(e) => {
-                return write!(f, "Error: {}", e);
+                write!(f, "Error: {}", e)
             }
         }
     }
