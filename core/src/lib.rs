@@ -331,6 +331,7 @@ mod tests {
         let builder = DefaultDocumentBuilder {};
         let mut expect_presentation = json!({
         "@context" : ["https://www.w3.org/2018/credentials/v1"],
+        "type" : ["VerifiablePresentation"],
         "verifiableCredential":[
             {
             "@context":["https://www.w3.org/2018/credentials/v1"],
