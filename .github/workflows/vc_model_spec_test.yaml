@@ -45,9 +45,7 @@ jobs:
           npm install
 
       - name: Copy vc-test-suite config
-        run:
-          cp tests/vc_model_spec_test/vc-test-suite-config.json
-          vc-test-suite/config.json
+        run: cp tests/vc_model_spec_test/config.json vc-test-suite/config.json
 
       - name: Run vc-test-suite
         run: |
