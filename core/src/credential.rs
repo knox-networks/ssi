@@ -54,7 +54,8 @@ pub struct Credential {
     #[serde(rename = "@context")]
     pub context: DocumentContext,
 
-    pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
 
     #[serde(rename = "type")]
     pub cred_type: Vec<CredentialType>,
@@ -87,6 +88,10 @@ pub struct VerifiableCredential {
 pub struct Presentation {
     #[serde(rename = "@context")]
     pub context: DocumentContext,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+
     #[serde(rename = "type")]
     pub presentation_type: Vec<PresentationType>,
 
