@@ -181,11 +181,19 @@ pub struct VerifiablePresentation {
 pub struct Presentation {
     #[serde(rename = "@context")]
     pub context: DocumentContext,
-
     #[serde(rename = "verifiableCredential")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[validate]
     pub verifiable_credential: Option<Vec<VerifiableCredential>>,
+}
+
+impl FromStr for Presentation {
+    type Err = super::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let p = Presentation::from_json_str(s)?;
+        Ok(p)
+    }
 }
 
 impl FromStr for VerifiablePresentation {
