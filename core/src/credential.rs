@@ -143,8 +143,14 @@ impl CredentialType {
 
 impl std::fmt::Display for VerifiableCredential {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let vc = self.to_json_string().unwrap();
-        write!(f, "{}", vc)
+        match self.to_json_string() {
+            Ok(vc) => {
+                write!(f, "{}", vc)
+            }
+            Err(e) => {
+                return write!(f, "Error: {}", e);
+            }
+        }
     }
 }
 
@@ -152,8 +158,8 @@ impl FromStr for Credential {
     type Err = super::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let vc = Credential::from_json_str(s)?;
-        Ok(vc)
+        let c = Credential::from_json_str(s)?;
+        Ok(c)
     }
 }
 
@@ -216,8 +222,14 @@ impl FromStr for VerifiablePresentation {
 
 impl std::fmt::Display for VerifiablePresentation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let vp = self.to_json_string().unwrap();
-        write!(f, "{}", vp)
+        match self.to_json_string() {
+            Ok(vp) => {
+                write!(f, "{}", vp)
+            }
+            Err(e) => {
+                return write!(f, "Error: {}", e);
+            }
+        }
     }
 }
 
