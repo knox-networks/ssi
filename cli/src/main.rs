@@ -12,12 +12,12 @@ struct CliArguments {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-    /// Read the JSON string file in input_file_path and parse it into a VerifiableCredential. Then prints the VerifiableCredential
+    /// Read the JSON string file in input_file and parse it into a VerifiableCredential. Then prints the VerifiableCredential
     TestIssueCredential {
         #[arg(short, long)]
         input_file: String,
     },
-    /// Read the JSON string file in input_file_path and parse it into a VerifiablePresentation. Then prints the VerifiablePresentation
+    /// Read the JSON string file in input_file and parse it into a VerifiablePresentation. Then prints the VerifiablePresentation
     TestIssuePresentation {
         #[arg(short, long)]
         input_file: String,
