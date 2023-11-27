@@ -110,6 +110,24 @@ pub struct VerifiablePresentation {
     pub proof: crate::proof::CredentialProof,
 }
 
+impl FromStr for CredentialType {
+    type Err = super::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "VerifiableCredential" => Ok(CredentialType::VerifiableCredential),
+            "PermanentResidentCard" => Ok(CredentialType::PermanentResidentCard),
+            "BankCard" => Ok(CredentialType::BankCard),
+            "BankAccount" => Ok(CredentialType::BankAccount),
+            "UniversityDegreeCredential" => Ok(CredentialType::UniversityDegreeCredential),
+            "AlumniCredential" => Ok(CredentialType::AlumniCredential),
+            _ => Err(super::error::Error::Unknown(
+                "Unknown CredentialType".to_string(),
+            )),
+        }
+    }
+}
+
 impl CredentialType {
     pub fn as_str(&self) -> &str {
         match self {
@@ -119,18 +137,6 @@ impl CredentialType {
             CredentialType::BankAccount => "BankAccount",
             CredentialType::UniversityDegreeCredential => "UniversityDegreeCredential",
             CredentialType::AlumniCredential => "AlumniCredential",
-        }
-    }
-
-    pub fn from_string(cred_type: &str) -> Option<Self> {
-        match cred_type {
-            "BankCard" => Some(CredentialType::BankCard),
-            "BankAccount" => Some(CredentialType::BankAccount),
-            "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
-            "VerifiableCredential" => Some(CredentialType::VerifiableCredential),
-            "UniversityDegreeCredential" => Some(CredentialType::UniversityDegreeCredential),
-            "AlumniCredential" => Some(CredentialType::AlumniCredential),
-            _ => None,
         }
     }
 }

@@ -5,28 +5,25 @@ use super::ContextValue;
 pub fn credential_context_validation(
     val: &Vec<ContextValue>,
 ) -> Result<(), serde_valid::validation::Error> {
-    if val.is_empty() {
-        return Err(serde_valid::validation::Error::Custom(
-            "Context must contain at least one URI".to_string(),
-        ));
-    }
-
-    match val[0] {
-        ContextValue::String(ref s) => {
-            if s != super::BASE_CREDENTIAL_CONTEXT {
-                return Err(serde_valid::validation::Error::Custom(format!(
-                    "The first URI must be {}, instead found {}",
-                    super::BASE_CREDENTIAL_CONTEXT,
-                    s
-                )));
-            }
+    match val.get(0) {
+        None => {
+            // Context must contain at least one URI
+            Err(serde_valid::validation::Error::Custom(
+                "Context must contain at least one URI".to_string(),
+            ))
         }
-        ContextValue::Object(_) => {
+        Some(ContextValue::String(ref s)) if s != super::BASE_CREDENTIAL_CONTEXT => {
+            Err(serde_valid::validation::Error::Custom(format!(
+                "The first URI must be {}, instead found {}",
+                super::BASE_CREDENTIAL_CONTEXT,
+                s
+            )))
+        }
+        Some(ContextValue::Object(_)) => {
             return Err(serde_valid::validation::Error::Custom(
                 "The first URI must be a string".to_string(),
             ));
         }
+        _ => Ok(()),
     }
-
-    Ok(())
 }
