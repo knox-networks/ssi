@@ -77,21 +77,6 @@ pub enum CredentialSubject {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
-pub struct VerifiableCredential {
-    #[serde(flatten)]
-    #[validate]
-    pub credential: Credential,
-    pub proof: crate::proof::CredentialProof,
-}
-
-impl std::fmt::Display for VerifiableCredential {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let vc = self.to_json_string().unwrap();
-        write!(f, "{}", vc)
-    }
-}
-
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
 pub struct Credential {
     #[validate(custom(validation::credential_context_validation))]
     #[serde(rename = "@context")]
@@ -117,6 +102,41 @@ pub struct Credential {
 
     #[serde(flatten)]
     pub property_set: std::collections::HashMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
+pub struct VerifiableCredential {
+    #[serde(flatten)]
+    #[validate]
+    pub credential: Credential,
+    pub proof: crate::proof::CredentialProof,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
+pub struct Presentation {
+    #[serde(rename = "@context")]
+    pub context: DocumentContext,
+    #[serde(rename = "verifiableCredential")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate]
+    pub verifiable_credential: Option<Vec<VerifiableCredential>>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
+pub struct VerifiablePresentation {
+    #[serde(flatten)]
+    #[validate]
+    pub presentation: Presentation,
+    #[serde(rename = "type")]
+    pub presentation_type: Vec<PresentationType>,
+    pub proof: crate::proof::CredentialProof,
+}
+
+impl std::fmt::Display for VerifiableCredential {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let vc = self.to_json_string().unwrap();
+        write!(f, "{}", vc)
+    }
 }
 
 impl FromStr for Credential {
@@ -165,26 +185,6 @@ impl Credential {
             proof: integrity_proof,
         }
     }
-}
-
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
-pub struct VerifiablePresentation {
-    #[serde(flatten)]
-    #[validate]
-    pub presentation: Presentation,
-    #[serde(rename = "type")]
-    pub presentation_type: Vec<PresentationType>,
-    pub proof: crate::proof::CredentialProof,
-}
-
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
-pub struct Presentation {
-    #[serde(rename = "@context")]
-    pub context: DocumentContext,
-    #[serde(rename = "verifiableCredential")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate]
-    pub verifiable_credential: Option<Vec<VerifiableCredential>>,
 }
 
 impl FromStr for Presentation {
