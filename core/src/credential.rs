@@ -173,7 +173,8 @@ pub struct Presentation {
     pub context: DocumentContext,
 
     #[serde(rename = "verifiableCredential")]
-    pub verifiable_credential: Vec<VerifiableCredential>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub verifiable_credential: Option<Vec<VerifiableCredential>>,
 }
 
 impl FromStr for VerifiablePresentation {

@@ -145,7 +145,7 @@ pub trait DocumentBuilder {
         let context = Self::get_contexts(&credential::CredentialType::Common);
         Ok(credential::Presentation {
             context,
-            verifiable_credential: credentials,
+            verifiable_credential: Some(credentials),
         })
     }
 }
@@ -394,8 +394,8 @@ mod tests {
         let interim_presentation = builder
             .create_presentation(credentials)
             .expect("unable to create presentation from credentials");
-
-        let interim_proof = &interim_presentation.verifiable_credential[0].proof;
+        let verifiable_credential = interim_presentation.verifiable_credential.clone().unwrap();
+        let interim_proof = &verifiable_credential[0].proof;
         let interim_proof = serde_json::to_value(interim_proof).unwrap();
         expect_presentation["verifiableCredential"][0]["proof"] = interim_proof;
 
