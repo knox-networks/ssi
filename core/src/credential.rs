@@ -8,7 +8,7 @@
 // ---
 // Default context and Cred types are defaulted but can be redefined
 
-use serde_valid::json::FromJsonStr;
+use serde_valid::json::{FromJsonStr, ToJsonString};
 use serde_valid::Validate;
 use std::str::FromStr;
 
@@ -86,7 +86,7 @@ pub struct VerifiableCredential {
 
 impl std::fmt::Display for VerifiableCredential {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let vc = serde_json::to_string(&self).expect("Failed to serialize VerifiableCredential");
+        let vc = self.to_json_string().unwrap();
         write!(f, "{}", vc)
     }
 }
@@ -158,22 +158,24 @@ impl Credential {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
 pub struct VerifiablePresentation {
     #[serde(flatten)]
+    #[validate]
     pub presentation: Presentation,
     #[serde(rename = "type")]
     pub presentation_type: Vec<PresentationType>,
     pub proof: crate::proof::CredentialProof,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
 pub struct Presentation {
     #[serde(rename = "@context")]
     pub context: DocumentContext,
 
     #[serde(rename = "verifiableCredential")]
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate]
     pub verifiable_credential: Option<Vec<VerifiableCredential>>,
 }
 
@@ -181,14 +183,14 @@ impl FromStr for VerifiablePresentation {
     type Err = super::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let vc = serde_json::from_str::<VerifiablePresentation>(s)?;
-        Ok(vc)
+        let vp = VerifiablePresentation::from_json_str(s)?;
+        Ok(vp)
     }
 }
 
 impl std::fmt::Display for VerifiablePresentation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let vp = serde_json::to_string(&self).expect("Failed to serialize VerifiablePresentation");
+        let vp = self.to_json_string().unwrap();
         write!(f, "{}", vp)
     }
 }
