@@ -44,31 +44,6 @@ pub enum PresentationType {
     CredentialManagerPresentation,
 }
 
-impl CredentialType {
-    pub fn as_str(&self) -> &str {
-        match self {
-            CredentialType::Common => "VerifiableCredential",
-            CredentialType::PermanentResidentCard => "PermanentResidentCard",
-            CredentialType::BankCard => "BankCard",
-            CredentialType::BankAccount => "BankAccount",
-            CredentialType::UniversityDegreeCredential => "UniversityDegreeCredential",
-            CredentialType::AlumniCredential => "AlumniCredential",
-        }
-    }
-
-    pub fn from_string(cred_type: &str) -> Option<Self> {
-        match cred_type {
-            "BankCard" => Some(CredentialType::BankCard),
-            "BankAccount" => Some(CredentialType::BankAccount),
-            "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
-            "VerifiableCredential" => Some(CredentialType::Common),
-            "UniversityDegreeCredential" => Some(CredentialType::UniversityDegreeCredential),
-            "AlumniCredential" => Some(CredentialType::AlumniCredential),
-            _ => None,
-        }
-    }
-}
-
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 #[serde(untagged)]
 pub enum CredentialSubject {
@@ -130,6 +105,31 @@ pub struct VerifiablePresentation {
     #[serde(rename = "type")]
     pub presentation_type: Vec<PresentationType>,
     pub proof: crate::proof::CredentialProof,
+}
+
+impl CredentialType {
+    pub fn as_str(&self) -> &str {
+        match self {
+            CredentialType::Common => "VerifiableCredential",
+            CredentialType::PermanentResidentCard => "PermanentResidentCard",
+            CredentialType::BankCard => "BankCard",
+            CredentialType::BankAccount => "BankAccount",
+            CredentialType::UniversityDegreeCredential => "UniversityDegreeCredential",
+            CredentialType::AlumniCredential => "AlumniCredential",
+        }
+    }
+
+    pub fn from_string(cred_type: &str) -> Option<Self> {
+        match cred_type {
+            "BankCard" => Some(CredentialType::BankCard),
+            "BankAccount" => Some(CredentialType::BankAccount),
+            "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
+            "VerifiableCredential" => Some(CredentialType::Common),
+            "UniversityDegreeCredential" => Some(CredentialType::UniversityDegreeCredential),
+            "AlumniCredential" => Some(CredentialType::AlumniCredential),
+            _ => None,
+        }
+    }
 }
 
 impl std::fmt::Display for VerifiableCredential {
