@@ -1,5 +1,5 @@
 name: VC Model Spec Test
-
+# Tests the VC Model Spec against the vc-test-suite - https://github.com/w3c/vc-test-suite
 on:
   pull_request:
     branches:
