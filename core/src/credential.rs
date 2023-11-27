@@ -27,8 +27,7 @@ pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum CredentialType {
-    #[serde(rename = "VerifiableCredential")]
-    Common,
+    VerifiableCredential, // credential type common to all credentials
     PermanentResidentCard,
     BankCard,
     BankAccount,
@@ -38,8 +37,7 @@ pub enum CredentialType {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum PresentationType {
-    #[serde(rename = "VerifiablePresentation")]
-    Common,
+    VerifiablePresentation, // presentation type common to all presentations
     CredentialManagerPresentation,
 }
 
@@ -56,7 +54,6 @@ pub struct Credential {
     #[serde(rename = "@context")]
     pub context: DocumentContext,
 
-    #[serde(rename = "id")]
     pub id: String,
 
     #[serde(rename = "type")]
@@ -90,6 +87,9 @@ pub struct VerifiableCredential {
 pub struct Presentation {
     #[serde(rename = "@context")]
     pub context: DocumentContext,
+    #[serde(rename = "type")]
+    pub presentation_type: Vec<PresentationType>,
+
     #[serde(rename = "verifiableCredential")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[validate]
@@ -101,15 +101,14 @@ pub struct VerifiablePresentation {
     #[serde(flatten)]
     #[validate]
     pub presentation: Presentation,
-    #[serde(rename = "type")]
-    pub presentation_type: Vec<PresentationType>,
+
     pub proof: crate::proof::CredentialProof,
 }
 
 impl CredentialType {
     pub fn as_str(&self) -> &str {
         match self {
-            CredentialType::Common => "VerifiableCredential",
+            CredentialType::VerifiableCredential => "VerifiableCredential",
             CredentialType::PermanentResidentCard => "PermanentResidentCard",
             CredentialType::BankCard => "BankCard",
             CredentialType::BankAccount => "BankAccount",
@@ -123,7 +122,7 @@ impl CredentialType {
             "BankCard" => Some(CredentialType::BankCard),
             "BankAccount" => Some(CredentialType::BankAccount),
             "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
-            "VerifiableCredential" => Some(CredentialType::Common),
+            "VerifiableCredential" => Some(CredentialType::VerifiableCredential),
             "UniversityDegreeCredential" => Some(CredentialType::UniversityDegreeCredential),
             "AlumniCredential" => Some(CredentialType::AlumniCredential),
             _ => None,

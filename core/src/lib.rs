@@ -126,7 +126,7 @@ pub trait DocumentBuilder {
         Ok(credential::Credential {
             context,
             id: id.to_string(),
-            cred_type: vec![credential::CredentialType::Common, cred_type],
+            cred_type: vec![credential::CredentialType::VerifiableCredential, cred_type],
             issuance_date: chrono::Utc::now(),
             expiration_date: None,
             issuer,
@@ -142,9 +142,10 @@ pub trait DocumentBuilder {
         &self,
         credentials: Vec<credential::VerifiableCredential>,
     ) -> Result<credential::Presentation, error::Error> {
-        let context = Self::get_contexts(&credential::CredentialType::Common);
+        let context = Self::get_contexts(&credential::CredentialType::VerifiableCredential);
         Ok(credential::Presentation {
             context,
+            presentation_type: vec![credential::PresentationType::VerifiablePresentation],
             verifiable_credential: Some(credentials),
         })
     }
