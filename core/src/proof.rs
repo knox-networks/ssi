@@ -116,26 +116,25 @@ mod tests {
         assert!(res.is_ok());
         match res {
             Ok(proof) => {
-                if let super::CredentialProof::Single(proof) = proof {
-                    if let super::ProofType::Ed25519Signature2020(proof) = proof {
-                        assert_eq!(proof.proof_type, signer.get_proof_type());
-                        assert_eq!(
-                            proof.verification_method,
-                            signer.get_verification_method(relation)
-                        );
-                        assert_eq!(proof.proof_purpose, relation.to_string());
-                        let transformed_data =
-                            crate::proof::normalization::create_hashed_normalized_doc(doc).unwrap();
-                        let mut hasher = sophia::c14n::hash::Sha256::initialize();
-                        hasher.update(&transformed_data);
-                        let hash_data = hasher.finalize();
+                if let super::CredentialProof::Single(super::ProofType::Ed25519Signature2020(
+                    proof,
+                )) = proof
+                {
+                    assert_eq!(proof.proof_type, signer.get_proof_type());
+                    assert_eq!(
+                        proof.verification_method,
+                        signer.get_verification_method(relation)
+                    );
+                    assert_eq!(proof.proof_purpose, relation.to_string());
+                    let transformed_data =
+                        crate::proof::normalization::create_hashed_normalized_doc(doc).unwrap();
+                    let mut hasher = sophia::c14n::hash::Sha256::initialize();
+                    hasher.update(&transformed_data);
+                    let hash_data = hasher.finalize();
 
-                        assert!(verifier
-                            .decoded_relational_verify(&hash_data, proof.proof_value, relation)
-                            .is_ok());
-                    } else {
-                        panic!("Wrong proof type: {:?}", proof);
-                    }
+                    assert!(verifier
+                        .decoded_relational_verify(&hash_data, proof.proof_value, relation)
+                        .is_ok());
                 } else {
                     panic!("Expected single proof but got set of proofs: {:?}", proof);
                 }
