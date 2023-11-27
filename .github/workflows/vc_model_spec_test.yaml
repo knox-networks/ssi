@@ -1,4 +1,4 @@
-name: Lint, Build & Test
+name: VC Model Spec Test
 
 on:
   pull_request:
