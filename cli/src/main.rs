@@ -15,24 +15,28 @@ enum Command {
     /// Read the JSON string file in input_file_path and parse it into a VerifiableCredential. Then prints the VerifiableCredential
     TestIssueCredential {
         #[arg(short, long)]
-        input_file_path: String,
+        input_file: String,
     },
     /// Read the JSON string file in input_file_path and parse it into a VerifiablePresentation. Then prints the VerifiablePresentation
     TestIssuePresentation {
         #[arg(short, long)]
-        input_file_path: String,
+        input_file: String,
     },
 }
 
 fn main() {
     let args = CliArguments::parse();
     match args.command {
-        Command::TestIssueCredential { input_file_path } => {
+        Command::TestIssueCredential {
+            input_file: input_file_path,
+        } => {
             let input = std::fs::read_to_string(input_file_path).unwrap();
             let vc = ssi::credential::VerifiableCredential::from_str(&input).unwrap();
             println!("{}", vc);
         }
-        Command::TestIssuePresentation { input_file_path } => {
+        Command::TestIssuePresentation {
+            input_file: input_file_path,
+        } => {
             let input = std::fs::read_to_string(input_file_path).unwrap();
             let vc = ssi::credential::VerifiablePresentation::from_str(&input).unwrap();
             println!("{}", vc);

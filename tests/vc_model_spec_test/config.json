@@ -1,6 +1,6 @@
 {
-  "generator": "ssi_cli test-issue-credential --input-file-path",
-  "presentationGenerator": "ssi_cli test-issue-presentation --input-file-path",
+  "generator": "ssi_cli test-issue-credential --input-file",
+  "presentationGenerator": "ssi_cli test-issue-presentation --input-file",
   "generatorOptions": "",
 
   "sectionsNotSupported": [
