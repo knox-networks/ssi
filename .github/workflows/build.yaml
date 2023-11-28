@@ -20,9 +20,6 @@ jobs:
       - name: Install Protoc and cargo-make
         run: ./container/deps.sh protoc cargo-make
 
-      - name: Installing Rust Tools
-        run: rustup component add rustfmt clippy
-
       - uses: knox-networks/github-actions-public/.github/actions/setup-protofetch@main
         with:
           cross-repo-username: "developersKnox"
