@@ -10,15 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - run:
-          rustup toolchain install 1.74 --profile default --component rustfmt
-          --component clippy
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Install Protoc and cargo-make
-        run: ./container/deps.sh protoc cargo-make
+      - uses: ./.github/actions/rust-setup
+        name: Setup rust toolchain
 
       - uses: knox-networks/github-actions-public/.github/actions/setup-protofetch@main
         with:
