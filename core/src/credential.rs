@@ -215,7 +215,7 @@ impl FromStr for VerifiablePresentation {
 impl std::fmt::Display for VerifiablePresentation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.to_json_string() {
-            Ok(vp) => return write!(f, "{}", vp),
+            Ok(vp) => write!(f, "{}", vp),
             Err(e) => write!(f, "Error: {}", e),
         }
     }
