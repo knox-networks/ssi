@@ -3,7 +3,6 @@ use std::{env, path::PathBuf};
 
 fn main() -> Result<(), Report<BuildError>> {
     let out_dir = env::var("OUT_DIR").report_as()?;
-    println!("cargo:warning={out_dir}");
 
     let out_dir = PathBuf::from(out_dir);
     let gen_dir = &out_dir.join("gen/pb");
