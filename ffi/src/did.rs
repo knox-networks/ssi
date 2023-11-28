@@ -1,4 +1,4 @@
-#![allow(non_camel_case_types, clippy::incorrect_clone_impl_on_copy_type)]
+#![allow(non_camel_case_types, clippy::non_canonical_clone_impl)]
 use crate::error::{MaybeRustError, Reportable, Try};
 use safer_ffi::prelude::*;
 use signature::suite::KeyPair;
