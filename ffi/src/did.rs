@@ -1,4 +1,4 @@
-#![allow(clippy::incorrect_clone_impl_on_copy_type)]
+#![allow(clippy::all)]
 use crate::error::{MaybeRustError, Reportable, Try};
 use safer_ffi::prelude::*;
 use signature::suite::KeyPair;
