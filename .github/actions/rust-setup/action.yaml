@@ -7,9 +7,11 @@ runs:
   steps:
     - name: Install Rust Toolchain
       shell: bash
-      run:
+      run: |
         rustup toolchain install 1.74 --profile default --component rustfmt
         --component clippy
+        rustup default 1.74
+        rustup update
 
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
