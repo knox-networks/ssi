@@ -9,7 +9,7 @@ edition.workspace = true
 async-trait = "0.1.73"
 chrono = {workspace = true}
 serde_json = {workspace = true}
-sha2 = "0.10.7"
+sha2 = {workspace = true}
 signature = { path = "../signature" }
 serde = { workspace = true}
 mockall = {workspace = true}
