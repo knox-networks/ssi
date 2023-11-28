@@ -5,13 +5,14 @@ description: Install Rust toolchain
 runs:
   using: "composite"
   steps:
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+
     - name: Install Rust Toolchain
       shell: bash
       run:
         rustup toolchain install 1.74 --profile default --component rustfmt
         --component clippy
-    - name: Cache Rust dependencies
-      uses: Swatinem/rust-cache@v2
 
     - name: Install Protoc and cargo-make
       shell: bash
