@@ -16,6 +16,7 @@ mockall = {workspace = true}
 thiserror = {workspace = true}
 json-ld = "0.15.0"
 sophia = { git = "https://github.com/pchampin/sophia_rs.git", rev = "572512bd4a13dce4ca52f9310ac907b06dbea556", features = ["jsonld","http_client"] }
+serde_valid = "0.16.3"
 
 [dev-dependencies]
 rstest = "0.15.0"

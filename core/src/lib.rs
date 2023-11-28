@@ -90,16 +90,22 @@ impl Clone for MockDIDResolver {
 }
 
 pub trait DocumentBuilder {
-    fn get_contexts(cred_type: &credential::CredentialType) -> credential::VerificationContext {
+    fn get_contexts(cred_type: &credential::CredentialType) -> credential::DocumentContext {
         match cred_type {
             credential::CredentialType::BankAccount => {
                 vec![
-                    credential::BASE_CREDENDIAL_CONTEXT.to_string(),
-                    credential::BANK_ACCOUNT_CREDENTIAL_CONTEXT.to_string(),
+                    credential::ContextValue::String(
+                        credential::BASE_CREDENTIAL_CONTEXT.to_string(),
+                    ),
+                    credential::ContextValue::String(
+                        credential::BANK_ACCOUNT_CREDENTIAL_CONTEXT.to_string(),
+                    ),
                 ]
             }
             _ => {
-                vec![credential::BASE_CREDENDIAL_CONTEXT.to_string()]
+                vec![credential::ContextValue::String(
+                    credential::BASE_CREDENTIAL_CONTEXT.to_string(),
+                )]
             }
         }
     }
@@ -119,11 +125,12 @@ pub trait DocumentBuilder {
 
         Ok(credential::Credential {
             context,
-            id: id.to_string(),
-            cred_type: vec![credential::CredentialType::Common, cred_type],
-            issuance_date: chrono::Utc::now().to_rfc3339(),
+            id: Some(id.to_string()),
+            cred_type: vec![credential::CredentialType::VerifiableCredential, cred_type],
+            issuance_date: chrono::Utc::now(),
+            expiration_date: None,
             issuer,
-            subject: cred_subject,
+            subject: credential::CredentialSubject::Single(cred_subject),
             property_set,
         })
     }
@@ -135,10 +142,12 @@ pub trait DocumentBuilder {
         &self,
         credentials: Vec<credential::VerifiableCredential>,
     ) -> Result<credential::Presentation, error::Error> {
-        let context = Self::get_contexts(&credential::CredentialType::Common);
+        let context = Self::get_contexts(&credential::CredentialType::VerifiableCredential);
         Ok(credential::Presentation {
             context,
-            verifiable_credential: credentials,
+            id: None,
+            presentation_type: vec![credential::PresentationType::VerifiablePresentation],
+            verifiable_credential: Some(credentials),
         })
     }
 }
@@ -323,6 +332,7 @@ mod tests {
         let builder = DefaultDocumentBuilder {};
         let mut expect_presentation = json!({
         "@context" : ["https://www.w3.org/2018/credentials/v1"],
+        "type" : ["VerifiablePresentation"],
         "verifiableCredential":[
             {
             "@context":["https://www.w3.org/2018/credentials/v1"],
@@ -387,8 +397,8 @@ mod tests {
         let interim_presentation = builder
             .create_presentation(credentials)
             .expect("unable to create presentation from credentials");
-
-        let interim_proof = &interim_presentation.verifiable_credential[0].proof;
+        let verifiable_credential = interim_presentation.verifiable_credential.clone().unwrap();
+        let interim_proof = &verifiable_credential[0].proof;
         let interim_proof = serde_json::to_value(interim_proof).unwrap();
         expect_presentation["verifiableCredential"][0]["proof"] = interim_proof;
 

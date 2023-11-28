@@ -6,8 +6,8 @@ mod normalization;
 pub struct DataIntegrityProof {
     #[serde(rename = "type")]
     pub proof_type: String,
-    #[serde(rename = "created")]
-    pub created: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created: Option<String>,
     #[serde(rename = "verificationMethod")]
     pub verification_method: String,
     #[serde(rename = "proofPurpose")]
@@ -16,11 +16,38 @@ pub struct DataIntegrityProof {
     pub proof_value: String,
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+pub struct RsaSignature2018 {
+    #[serde(rename = "type")]
+    pub proof_type: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created: Option<String>,
+    #[serde(rename = "verificationMethod")]
+    pub verification_method: String,
+    #[serde(rename = "proofPurpose")]
+    pub proof_purpose: String,
+    pub jws: String,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[serde(untagged)]
+pub enum CredentialProof {
+    Single(ProofType),
+    Set(Vec<ProofType>),
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[serde(untagged)]
+pub enum ProofType {
+    Ed25519Signature2020(DataIntegrityProof),
+    RsaSignature2018(RsaSignature2018),
+}
+
 impl std::fmt::Display for DataIntegrityProof {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "{{\"type\": \"{}\", \"created\": \"{}\", \"verificationMethod\": \"{}\", \"proofPurpose\": \"{}\", \"proofValue\": \"{}\"}}",
+            "{{\"type\": \"{}\", \"created\": \"{:?}\", \"verificationMethod\": \"{}\", \"proofPurpose\": \"{}\", \"proofValue\": \"{}\"}}",
             self.proof_type, self.created, self.verification_method, self.proof_purpose, self.proof_value
         )
     }
@@ -35,20 +62,22 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     signer: &impl signature::suite::DIDSigner<S>,
     unsecured_doc: serde_json::Value,
     relation: signature::suite::VerificationRelation,
-) -> Result<DataIntegrityProof, super::error::Error> {
+) -> Result<CredentialProof, super::error::Error> {
     let transformed_data = normalization::create_hashed_normalized_doc(unsecured_doc)?;
     let mut hasher = sophia::c14n::hash::Sha256::initialize();
     hasher.update(&transformed_data);
     let hash_data = hasher.finalize();
     let proof = signer.encoded_relational_sign(&hash_data, relation)?;
 
-    Ok(DataIntegrityProof {
-        proof_type: signer.get_proof_type(),
-        created: chrono::Utc::now().to_rfc3339(),
-        verification_method: signer.get_verification_method(relation),
-        proof_purpose: relation.to_string(),
-        proof_value: proof,
-    })
+    Ok(CredentialProof::Single(ProofType::Ed25519Signature2020(
+        DataIntegrityProof {
+            proof_type: signer.get_proof_type(),
+            created: Some(chrono::Utc::now().to_rfc3339()),
+            verification_method: signer.get_verification_method(relation),
+            proof_purpose: relation.to_string(),
+            proof_value: proof,
+        },
+    )))
 }
 
 #[cfg(test)]
@@ -87,21 +116,28 @@ mod tests {
         assert!(res.is_ok());
         match res {
             Ok(proof) => {
-                assert_eq!(proof.proof_type, signer.get_proof_type());
-                assert_eq!(
-                    proof.verification_method,
-                    signer.get_verification_method(relation)
-                );
-                assert_eq!(proof.proof_purpose, relation.to_string());
-                let transformed_data =
-                    crate::proof::normalization::create_hashed_normalized_doc(doc).unwrap();
-                let mut hasher = sophia::c14n::hash::Sha256::initialize();
-                hasher.update(&transformed_data);
-                let hash_data = hasher.finalize();
+                if let super::CredentialProof::Single(super::ProofType::Ed25519Signature2020(
+                    proof,
+                )) = proof
+                {
+                    assert_eq!(proof.proof_type, signer.get_proof_type());
+                    assert_eq!(
+                        proof.verification_method,
+                        signer.get_verification_method(relation)
+                    );
+                    assert_eq!(proof.proof_purpose, relation.to_string());
+                    let transformed_data =
+                        crate::proof::normalization::create_hashed_normalized_doc(doc).unwrap();
+                    let mut hasher = sophia::c14n::hash::Sha256::initialize();
+                    hasher.update(&transformed_data);
+                    let hash_data = hasher.finalize();
 
-                assert!(verifier
-                    .decoded_relational_verify(&hash_data, proof.proof_value, relation)
-                    .is_ok());
+                    assert!(verifier
+                        .decoded_relational_verify(&hash_data, proof.proof_value, relation)
+                        .is_ok());
+                } else {
+                    panic!("Expected single proof but got set of proofs: {:?}", proof);
+                }
             }
             Err(e) => panic!("{e:?}"),
         }

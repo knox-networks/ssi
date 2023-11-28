@@ -7,64 +7,65 @@
 // Users can also user their own types that implement trait X if they need a different structure
 // ---
 // Default context and Cred types are defaulted but can be redefined
+mod validation;
 
-pub type VerificationContext = Vec<String>;
+use serde_valid::json::{FromJsonStr, ToJsonString};
+use serde_valid::Validate;
+use std::str::FromStr;
 
-pub const BASE_CREDENDIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(untagged)]
+pub enum ContextValue {
+    String(String),
+    Object(std::collections::HashMap<String, serde_json::Value>),
+}
+
+pub type DocumentContext = Vec<ContextValue>;
+
+pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
 pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum CredentialType {
-    #[serde(rename = "VerifiableCredential")]
-    Common,
+    VerifiableCredential, // credential type common to all credentials
     PermanentResidentCard,
     BankCard,
     BankAccount,
+    UniversityDegreeCredential,
+    AlumniCredential,
 }
 
-impl CredentialType {
-    pub fn as_str(&self) -> &str {
-        match self {
-            CredentialType::Common => "VerifiableCredential",
-            CredentialType::PermanentResidentCard => "PermanentResidentCard",
-            CredentialType::BankCard => "BankCard",
-            CredentialType::BankAccount => "BankAccount",
-        }
-    }
-
-    pub fn from_string(cred_type: &str) -> Option<Self> {
-        match cred_type {
-            "BankCard" => Some(CredentialType::BankCard),
-            "BankAccount" => Some(CredentialType::BankAccount),
-            "PermanentResidentCard" => Some(CredentialType::PermanentResidentCard),
-            "VerifiableCredential" => Some(CredentialType::Common),
-            _ => None,
-        }
-    }
-}
-
-pub type CredentialSubject = std::collections::HashMap<String, serde_json::Value>;
-
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-pub struct VerifiableCredential {
-    #[serde(flatten)]
-    pub credential: Credential,
-    pub proof: crate::proof::DataIntegrityProof,
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub enum PresentationType {
+    VerifiablePresentation, // presentation type common to all presentations
+    CredentialManagerPresentation,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[serde(untagged)]
+pub enum CredentialSubject {
+    Single(std::collections::HashMap<String, serde_json::Value>),
+    Set(Vec<std::collections::HashMap<String, serde_json::Value>>),
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
 pub struct Credential {
+    #[validate(custom(validation::credential_context_validation))]
     #[serde(rename = "@context")]
-    pub context: Vec<String>,
+    pub context: DocumentContext,
 
-    #[serde(rename = "id")]
-    pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
 
     #[serde(rename = "type")]
     pub cred_type: Vec<CredentialType>,
 
     #[serde(rename = "issuanceDate")]
-    pub issuance_date: String,
+    pub issuance_date: chrono::DateTime<chrono::Utc>, //chrono by default serializes to RFC3339
+
+    #[serde(rename = "expirationDate")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expiration_date: Option<chrono::DateTime<chrono::Utc>>, //chrono by default serializes to RFC3339
 
     pub issuer: String,
 
@@ -73,6 +74,96 @@ pub struct Credential {
 
     #[serde(flatten)]
     pub property_set: std::collections::HashMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
+pub struct VerifiableCredential {
+    #[serde(flatten)]
+    #[validate]
+    pub credential: Credential,
+    pub proof: crate::proof::CredentialProof,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
+pub struct Presentation {
+    #[serde(rename = "@context")]
+    pub context: DocumentContext,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+
+    #[serde(rename = "type")]
+    pub presentation_type: Vec<PresentationType>,
+
+    #[serde(rename = "verifiableCredential")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate]
+    pub verifiable_credential: Option<Vec<VerifiableCredential>>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Validate)]
+pub struct VerifiablePresentation {
+    #[serde(flatten)]
+    #[validate]
+    pub presentation: Presentation,
+
+    pub proof: crate::proof::CredentialProof,
+}
+
+impl FromStr for CredentialType {
+    type Err = super::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "VerifiableCredential" => Ok(CredentialType::VerifiableCredential),
+            "PermanentResidentCard" => Ok(CredentialType::PermanentResidentCard),
+            "BankCard" => Ok(CredentialType::BankCard),
+            "BankAccount" => Ok(CredentialType::BankAccount),
+            "UniversityDegreeCredential" => Ok(CredentialType::UniversityDegreeCredential),
+            "AlumniCredential" => Ok(CredentialType::AlumniCredential),
+            _ => Err(super::error::Error::Unknown(
+                "Unknown CredentialType".to_string(),
+            )),
+        }
+    }
+}
+
+impl CredentialType {
+    pub fn as_str(&self) -> &str {
+        match self {
+            CredentialType::VerifiableCredential => "VerifiableCredential",
+            CredentialType::PermanentResidentCard => "PermanentResidentCard",
+            CredentialType::BankCard => "BankCard",
+            CredentialType::BankAccount => "BankAccount",
+            CredentialType::UniversityDegreeCredential => "UniversityDegreeCredential",
+            CredentialType::AlumniCredential => "AlumniCredential",
+        }
+    }
+}
+
+impl std::fmt::Display for VerifiableCredential {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.to_json_string() {
+            Ok(vc) => write!(f, "{}", vc),
+            Err(e) => write!(f, "Error: {}", e),
+        }
+    }
+}
+
+impl FromStr for Credential {
+    type Err = super::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Credential::from_json_str(s)?)
+    }
+}
+
+impl FromStr for VerifiableCredential {
+    type Err = super::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(VerifiableCredential::from_json_str(s)?)
+    }
 }
 
 impl Credential {
@@ -96,7 +187,7 @@ impl Credential {
 
     pub fn into_verifiable_credential(
         self,
-        integrity_proof: crate::proof::DataIntegrityProof,
+        integrity_proof: crate::proof::CredentialProof,
     ) -> VerifiableCredential {
         VerifiableCredential {
             credential: self,
@@ -105,19 +196,29 @@ impl Credential {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-pub struct VerifiablePresentation {
-    #[serde(flatten)]
-    pub presentation: Presentation,
-    pub proof: crate::proof::DataIntegrityProof,
+impl FromStr for Presentation {
+    type Err = super::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Presentation::from_json_str(s)?)
+    }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-pub struct Presentation {
-    #[serde(rename = "@context")]
-    pub context: VerificationContext,
-    #[serde(rename = "verifiableCredential")]
-    pub verifiable_credential: Vec<VerifiableCredential>,
+impl FromStr for VerifiablePresentation {
+    type Err = super::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(VerifiablePresentation::from_json_str(s)?)
+    }
+}
+
+impl std::fmt::Display for VerifiablePresentation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.to_json_string() {
+            Ok(vp) => write!(f, "{}", vp),
+            Err(e) => write!(f, "Error: {}", e),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -146,10 +247,11 @@ mod tests {
             }
         });
 
-        let res = serde_json::from_str::<VerifiableCredential>(&expect.to_string());
+        let res = VerifiableCredential::from_str(&expect.to_string());
         assert!(res.is_ok());
         if let Ok(vc) = res {
             let vc = serde_json::to_value(vc).unwrap();
+            println!("{}", vc);
             assert_json_eq!(expect, vc);
         }
         Ok(())
@@ -183,7 +285,7 @@ mod tests {
             },
         });
 
-        let res = serde_json::from_str::<Credential>(&expect.to_string());
+        let res = Credential::from_str(&expect.to_string());
         assert!(res.is_ok());
         if let Ok(vc) = res {
             let vc = serde_json::to_value(vc).unwrap();
