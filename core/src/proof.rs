@@ -93,7 +93,7 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
                 super::credential::BASE_CREDENTIAL_CONTEXT.to_string(),
             ),
             super::credential::ContextValue::String(
-                "https://www.w3.org/ns/credentials/examples/v2".to_string(),
+                super::credential::EXAMPLE_CREDENTIAL_CONTEXT.to_string(),
             ),
         ],
         proof_type: signer.get_proof_type(),

@@ -22,7 +22,8 @@ pub enum ContextValue {
 
 pub type DocumentContext = Vec<ContextValue>;
 
-pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
+pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/ns/credentials/v2";
+pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/ns/credentials/examples/v2";
 pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -61,7 +62,8 @@ pub struct Credential {
     pub cred_type: Vec<CredentialType>,
 
     #[serde(rename = "issuanceDate")]
-    pub issuance_date: chrono::DateTime<chrono::Utc>, //chrono by default serializes to RFC3339
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub issuance_date: Option<chrono::DateTime<chrono::Utc>>, //chrono by default serializes to RFC3339
 
     #[serde(rename = "expirationDate")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -137,6 +139,15 @@ impl CredentialType {
             CredentialType::BankAccount => "BankAccount",
             CredentialType::UniversityDegreeCredential => "UniversityDegreeCredential",
             CredentialType::AlumniCredential => "AlumniCredential",
+        }
+    }
+}
+
+impl std::fmt::Display for Credential {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.to_json_string() {
+            Ok(vc) => write!(f, "{}", vc),
+            Err(e) => write!(f, "Error: {}", e),
         }
     }
 }

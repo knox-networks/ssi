@@ -127,7 +127,7 @@ pub trait DocumentBuilder {
             context,
             id: Some(id.to_string()),
             cred_type: vec![credential::CredentialType::VerifiableCredential, cred_type],
-            issuance_date: chrono::Utc::now(),
+            issuance_date: Some(chrono::Utc::now()),
             expiration_date: None,
             issuer,
             subject: credential::CredentialSubject::Single(cred_subject),
