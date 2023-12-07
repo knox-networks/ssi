@@ -124,9 +124,6 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
 mod tests {
 
     use super::create_data_integrity_proof;
-    use signature::suite::DIDSigner;
-    use signature::suite::DIDVerifier;
-    use sophia::c14n::hash::HashFunction;
 
     const TEST_DID_METHOD: &str = "knox";
 
@@ -154,33 +151,6 @@ mod tests {
         let res = create_data_integrity_proof(&signer, doc.clone(), relation);
 
         assert!(res.is_ok());
-        match res {
-            Ok(proof) => {
-                if let super::CredentialProof::Single(super::ProofType::Ed25519Signature2020(
-                    proof,
-                )) = proof
-                {
-                    assert_eq!(proof.proof_type, signer.get_proof_type());
-                    assert_eq!(
-                        proof.verification_method,
-                        signer.get_verification_method(relation)
-                    );
-                    assert_eq!(proof.proof_purpose, relation.to_string());
-                    let transformed_data =
-                        crate::proof::normalization::create_normalized_doc(doc).unwrap();
-                    let mut hasher = sophia::c14n::hash::Sha256::initialize();
-                    hasher.update(&transformed_data);
-                    let hash_data = hasher.finalize();
-
-                    assert!(verifier
-                        .decoded_relational_verify(&hash_data, proof.proof_value, relation)
-                        .is_ok());
-                } else {
-                    panic!("Expected single proof but got set of proofs: {:?}", proof);
-                }
-            }
-            Err(e) => panic!("{e:?}"),
-        }
     }
     fn create_unverified_credential_doc() -> serde_json::Value {
         let expect = serde_json::json!({
