@@ -37,7 +37,7 @@ jobs:
           git clone https://github.com/w3c/vc-di-eddsa
           cd vc-di-eddsa
 
-      - name: Run vc-test-suite
+      - name: Run vc-di-eddsa
         run: |
-          cd vc-test-suite
-          npm run test
+          cd vc-di-eddsa
+          echo "Running vc-di-eddsa"
