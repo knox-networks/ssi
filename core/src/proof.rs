@@ -1,13 +1,25 @@
-use sophia::c14n::hash::HashFunction;
-
 mod normalization;
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+struct ProofOptionDocument {
+    #[serde(rename = "@context")]
+    context: super::credential::DocumentContext,
+    #[serde(rename = "type")]
+    proof_type: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    created: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(rename = "verificationMethod")]
+    verification_method: String,
+    #[serde(rename = "proofPurpose")]
+    proof_purpose: String,
+}
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct DataIntegrityProof {
     #[serde(rename = "type")]
     pub proof_type: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub created: Option<String>,
+    pub created: Option<chrono::DateTime<chrono::Utc>>,
     #[serde(rename = "verificationMethod")]
     pub verification_method: String,
     #[serde(rename = "proofPurpose")]
@@ -63,16 +75,38 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     unsecured_doc: serde_json::Value,
     relation: signature::suite::VerificationRelation,
 ) -> Result<CredentialProof, super::error::Error> {
-    let transformed_data = normalization::create_hashed_normalized_doc(unsecured_doc)?;
-    let mut hasher = sophia::c14n::hash::Sha256::initialize();
-    hasher.update(&transformed_data);
-    let hash_data = hasher.finalize();
-    let proof = signer.encoded_relational_sign(&hash_data, relation)?;
+    let proof_options = ProofOptionDocument {
+        context: vec![
+            super::credential::ContextValue::String(
+                super::credential::BASE_CREDENTIAL_CONTEXT.to_string(),
+            ),
+            super::credential::ContextValue::String(
+                "https://www.w3.org/ns/credentials/examples/v2".to_string(),
+            ),
+        ],
+        proof_type: signer.get_proof_type(),
+        created: Some(chrono::Utc::now()),
+        verification_method: signer.get_verification_method(relation),
+        proof_purpose: relation.to_string(),
+    };
+    let serialized_proof_options = serde_json::to_value(proof_options)?;
+
+    let transformed_data = normalization::create_normalized_doc(unsecured_doc)?;
+    let transformed_proof_options = normalization::create_normalized_doc(serialized_proof_options)?;
+    let hashed_unsecured_doc = normalization::hash(&transformed_data)?;
+    let hash_proof_options = normalization::hash(&transformed_proof_options)?;
+
+    //concatenate hashed_unsecured_doc and hash_proof_options
+    //hash_proof_options should be the first part of the combined hash
+    let mut combined_hash_data = hash_proof_options.to_vec();
+    combined_hash_data.extend_from_slice(&hashed_unsecured_doc);
+
+    let proof = signer.encoded_relational_sign(&combined_hash_data, relation)?;
 
     Ok(CredentialProof::Single(ProofType::Ed25519Signature2020(
         DataIntegrityProof {
             proof_type: signer.get_proof_type(),
-            created: Some(chrono::Utc::now().to_rfc3339()),
+            created: Some(chrono::Utc::now()),
             verification_method: signer.get_verification_method(relation),
             proof_purpose: relation.to_string(),
             proof_value: proof,
@@ -127,7 +161,7 @@ mod tests {
                     );
                     assert_eq!(proof.proof_purpose, relation.to_string());
                     let transformed_data =
-                        crate::proof::normalization::create_hashed_normalized_doc(doc).unwrap();
+                        crate::proof::normalization::create_normalized_doc(doc).unwrap();
                     let mut hasher = sophia::c14n::hash::Sha256::initialize();
                     hasher.update(&transformed_data);
                     let hash_data = hasher.finalize();
