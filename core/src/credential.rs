@@ -22,7 +22,7 @@ pub enum ContextValue {
 
 pub type DocumentContext = Vec<ContextValue>;
 
-pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/ns/credentials/v2";
+pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
 pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/ns/credentials/examples/v2";
 pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
 
