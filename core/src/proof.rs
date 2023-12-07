@@ -147,7 +147,6 @@ mod tests {
         )
         .unwrap();
         let signer: signature::suite::ed25519_2020::Ed25519DidSigner = kp.clone().into();
-        let verifier: signature::suite::ed25519_2020::Ed25519DidVerifier = kp.into();
         let res = create_data_integrity_proof(&signer, doc.clone(), relation);
 
         assert!(res.is_ok());
