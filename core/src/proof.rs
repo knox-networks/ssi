@@ -148,13 +148,12 @@ mod tests {
         .unwrap();
         let signer: signature::suite::ed25519_2020::Ed25519DidSigner = kp.clone().into();
         let res = create_data_integrity_proof(&signer, doc.clone(), relation);
-
         assert!(res.is_ok());
     }
     fn create_unverified_credential_doc() -> serde_json::Value {
         let expect = serde_json::json!({
                 "@context": [
-                  "https://www.w3.org/ns/credentials/v2",
+                  "https://www.w3.org/2018/credentials/v1",
                   "https://www.w3.org/2018/credentials/examples/v1"
                 ],
                 "credentialSubject": {
