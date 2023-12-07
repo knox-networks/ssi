@@ -65,6 +65,18 @@ impl std::fmt::Display for DataIntegrityProof {
     }
 }
 
+impl ProofOptionDocument {
+    pub fn into_data_integrity_proof(self, proof_value: String) -> DataIntegrityProof {
+        DataIntegrityProof {
+            proof_type: self.proof_type,
+            created: self.created,
+            verification_method: self.verification_method,
+            proof_purpose: self.proof_purpose,
+            proof_value,
+        }
+    }
+}
+
 // Use it as an example
 /// Given a JSON-LD document, create a data integrity proof for the document.
 /// Currently, only `Ed25519Signature2020` data integrity proofs in the JSON-LD format can be created.
@@ -89,7 +101,7 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
         verification_method: signer.get_verification_method(relation),
         proof_purpose: relation.to_string(),
     };
-    let serialized_proof_options = serde_json::to_value(proof_options)?;
+    let serialized_proof_options = serde_json::to_value(&proof_options)?;
 
     let transformed_data = normalization::create_normalized_doc(unsecured_doc)?;
     let transformed_proof_options = normalization::create_normalized_doc(serialized_proof_options)?;
@@ -104,13 +116,7 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     let proof = signer.encoded_relational_sign(&combined_hash_data, relation)?;
 
     Ok(CredentialProof::Single(ProofType::Ed25519Signature2020(
-        DataIntegrityProof {
-            proof_type: signer.get_proof_type(),
-            created: Some(chrono::Utc::now()),
-            verification_method: signer.get_verification_method(relation),
-            proof_purpose: relation.to_string(),
-            proof_value: proof,
-        },
+        proof_options.into_data_integrity_proof(proof),
     )))
 }
 
