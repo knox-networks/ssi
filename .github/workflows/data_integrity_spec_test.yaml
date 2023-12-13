@@ -41,4 +41,4 @@ jobs:
         run: |
           cd vc-di-eddsa
           echo "Running vc-di-eddsa"
-          ssi_cli test-ed25519-signature2020 --input-file vc-di-eddsa/TestVectors/unsigned.json --key-pair-file vc-di-eddsa/TestVectors/keyPair.json --comparison-file vc-di-eddsa/TestVectors//Users/luisosta/vc-di-eddsa/TestVectors/Ed25519Signature2020/signedEdSig.json
+          ssi_cli test-ed25519-signature2020 --input-file vc-di-eddsa/TestVectors/unsigned.json --key-pair-file vc-di-eddsa/TestVectors/keyPair.json --comparison-file vc-di-eddsa/TestVectors/Ed25519Signature2020/signedEdSig.json
