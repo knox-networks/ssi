@@ -120,6 +120,48 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     )))
 }
 
+pub fn create_data_integrity_proof_for_test<S: signature::suite::Signature>(
+    signer: &impl signature::suite::DIDSigner<S>,
+    unsecured_doc: serde_json::Value,
+    proof_time: chrono::DateTime<chrono::Utc>,
+    verification_method: String,
+) -> Result<CredentialProof, super::error::Error> {
+    let proof_options = ProofOptionDocument {
+        context: vec![
+            super::credential::ContextValue::String(
+                super::credential::BASE_CREDENTIAL_CONTEXT_V2.to_string(),
+            ),
+            super::credential::ContextValue::String(
+                super::credential::EXAMPLE_CREDENTIAL_CONTEXT_V2.to_string(),
+            ),
+        ],
+        proof_type: signer.get_proof_type(),
+        created: Some(proof_time),
+        verification_method: verification_method,
+        proof_purpose: signature::suite::VerificationRelation::AssertionMethod.to_string(),
+    };
+    let serialized_proof_options = serde_json::to_value(&proof_options)?;
+
+    let transformed_data = normalization::create_normalized_doc(unsecured_doc)?;
+    let transformed_proof_options = normalization::create_normalized_doc(serialized_proof_options)?;
+    let hashed_unsecured_doc = normalization::hash(&transformed_data)?;
+    let hash_proof_options = normalization::hash(&transformed_proof_options)?;
+
+    //concatenate hashed_unsecured_doc and hash_proof_options
+    //hash_proof_options should be the first part of the combined hash
+    let mut combined_hash_data = hash_proof_options.to_vec();
+    combined_hash_data.extend_from_slice(&hashed_unsecured_doc);
+
+    let proof = signer.encoded_relational_sign(
+        &combined_hash_data,
+        signature::suite::VerificationRelation::AssertionMethod,
+    )?;
+
+    Ok(CredentialProof::Single(ProofType::Ed25519Signature2020(
+        proof_options.into_data_integrity_proof(proof),
+    )))
+}
+
 #[cfg(test)]
 mod tests {
 

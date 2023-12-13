@@ -23,7 +23,9 @@ pub enum ContextValue {
 pub type DocumentContext = Vec<ContextValue>;
 
 pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
+pub const BASE_CREDENTIAL_CONTEXT_V2: &str = "https://www.w3.org/ns/credentials/v2";
 pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/examples/v1";
+pub const EXAMPLE_CREDENTIAL_CONTEXT_V2: &str = "https://www.w3.org/ns/credentials/examples/v2";
 pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -188,6 +190,27 @@ impl Credential {
             issuer_signer,
             serialized_credential,
             relation,
+        )?;
+
+        Ok(VerifiableCredential {
+            credential: self,
+            proof,
+        })
+    }
+
+    pub fn try_into_verifiable_credential_for_test<S: signature::suite::Signature>(
+        self,
+        issuer_signer: &impl signature::suite::DIDSigner<S>,
+        proof_time: String,
+        verification_method: String,
+    ) -> Result<VerifiableCredential, super::error::Error> {
+        let proof_time = chrono::DateTime::parse_from_rfc3339(&proof_time).unwrap();
+        let serialized_credential = serde_json::to_value(&self)?;
+        let proof = crate::proof::create_data_integrity_proof_for_test(
+            issuer_signer,
+            serialized_credential,
+            proof_time.into(),
+            verification_method,
         )?;
 
         Ok(VerifiableCredential {

@@ -22,7 +22,7 @@ jobs:
         run: (cd registry_resolver; protofetch fetch) && git diff --exit-code
 
       - name: Build CLI
-        run: cargo build --package cli --release
+        run: cargo build --package cli --release --features credential_v2
 
       - name: Add CLI to bin
         run: sudo cp $PWD/target/release/ssi_cli /bin/ssi_cli
@@ -41,4 +41,4 @@ jobs:
         run: |
           cd vc-di-eddsa
           echo "Running vc-di-eddsa"
-          ssi_cli test-ed25519-signature2020 --input-file vc-di-eddsa/TestVectors/unsigned.json --key-pair-file vc-di-eddsa/TestVectors/keyPair.json
+          ssi_cli test-ed25519-signature2020 --input-file vc-di-eddsa/TestVectors/unsigned.json --key-pair-file vc-di-eddsa/TestVectors/keyPair.json --comparison-file vc-di-eddsa/TestVectors//Users/luisosta/vc-di-eddsa/TestVectors/Ed25519Signature2020/signedEdSig.json

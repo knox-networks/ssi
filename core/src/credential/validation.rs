@@ -12,7 +12,9 @@ pub fn credential_context_validation(
                 "Context must contain at least one URI".to_string(),
             ))
         }
-        Some(ContextValue::String(ref s)) if s != super::BASE_CREDENTIAL_CONTEXT => {
+        Some(ContextValue::String(ref s))
+            if s != super::BASE_CREDENTIAL_CONTEXT && s != super::BASE_CREDENTIAL_CONTEXT_V2 =>
+        {
             Err(serde_valid::validation::Error::Custom(format!(
                 "The first URI must be {}, instead found {}",
                 super::BASE_CREDENTIAL_CONTEXT,

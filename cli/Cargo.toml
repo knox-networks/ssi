@@ -8,7 +8,8 @@ edition.workspace = true
 [dependencies]
 clap = {version = "4.4.8", features = ["derive"]}
 serde_json.workspace = true
-ssi = {path = "../ssi"}
+ssi_core = {path = "../core"}
+signature = {path = "../signature"}
 
 # binary definition
 [[bin]]

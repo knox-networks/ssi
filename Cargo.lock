@@ -378,7 +378,8 @@ version = "0.4.0"
 dependencies = [
  "clap",
  "serde_json",
- "ssi",
+ "signature",
+ "ssi_core",
 ]
 
 [[package]]
