@@ -145,8 +145,8 @@ fn create_ed25519_signature_2020_proof_value<S: signature::suite::Signature>(
 
     let transformed_data = normalization::create_normalized_doc(unsecured_doc)?;
     let transformed_proof_options = normalization::create_normalized_doc(serialized_proof_options)?;
-    let hashed_unsecured_doc = normalization::hash(&transformed_data)?;
-    let hash_proof_options = normalization::hash(&transformed_proof_options)?;
+    let hashed_unsecured_doc = normalization::hash(&transformed_data);
+    let hash_proof_options = normalization::hash(&transformed_proof_options);
 
     //concatenate hashed_unsecured_doc and hash_proof_options
     //hash_proof_options should be the first part of the combined hash
