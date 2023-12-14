@@ -36,6 +36,5 @@ pub fn create_normalized_doc(doc: serde_json::Value) -> Result<Vec<u8>, crate::e
 pub fn hash(data: &[u8]) -> [u8; 32] {
     let mut hasher = sophia::c14n::hash::Sha256::initialize();
     hasher.update(data);
-    let hash_data = hasher.finalize();
-    hash_data
+    hasher.finalize()
 }
