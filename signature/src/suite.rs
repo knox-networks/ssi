@@ -5,9 +5,13 @@ pub mod error;
     serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd,
 )]
 pub enum VerificationRelation {
+    #[serde(rename = "assertionMethod")]
     AssertionMethod,
+    #[serde(rename = "authentication")]
     Authentication,
+    #[serde(rename = "capabilityInvocation")]
     CapabilityInvocation,
+    #[serde(rename = "capabilityDelegation")]
     CapabilityDelegation,
 }
 

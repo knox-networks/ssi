@@ -11,7 +11,7 @@ struct ProofOptionDocument {
     #[serde(rename = "verificationMethod")]
     verification_method: String,
     #[serde(rename = "proofPurpose")]
-    proof_purpose: String,
+    proof_purpose: signature::suite::VerificationRelation,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
@@ -23,7 +23,7 @@ pub struct DataIntegrityProof {
     #[serde(rename = "verificationMethod")]
     pub verification_method: String,
     #[serde(rename = "proofPurpose")]
-    pub proof_purpose: String,
+    pub proof_purpose: signature::suite::VerificationRelation,
     #[serde(rename = "proofValue")]
     pub proof_value: String,
 }
@@ -99,8 +99,20 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
         proof_type: signer.get_proof_type(),
         created: Some(chrono::Utc::now()),
         verification_method: signer.get_verification_method(relation),
-        proof_purpose: relation.to_string(),
+        proof_purpose: relation,
     };
+    let proof = create_ed25519_signature_2020_proof_value(signer, unsecured_doc, &proof_options)?;
+
+    Ok(CredentialProof::Single(ProofType::Ed25519Signature2020(
+        proof_options.into_data_integrity_proof(proof),
+    )))
+}
+
+fn create_ed25519_signature_2020_proof_value<S: signature::suite::Signature>(
+    signer: &impl signature::suite::DIDSigner<S>,
+    unsecured_doc: serde_json::Value,
+    proof_options: &ProofOptionDocument,
+) -> Result<String, super::error::Error> {
     let serialized_proof_options = serde_json::to_value(&proof_options)?;
 
     let transformed_data = normalization::create_normalized_doc(unsecured_doc)?;
@@ -113,11 +125,9 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     let mut combined_hash_data = hash_proof_options.to_vec();
     combined_hash_data.extend_from_slice(&hashed_unsecured_doc);
 
-    let proof = signer.encoded_relational_sign(&combined_hash_data, relation)?;
+    let proof = signer.encoded_relational_sign(&combined_hash_data, proof_options.proof_purpose)?;
 
-    Ok(CredentialProof::Single(ProofType::Ed25519Signature2020(
-        proof_options.into_data_integrity_proof(proof),
-    )))
+    Ok(proof)
 }
 
 #[cfg(feature = "v2_test")]
@@ -139,24 +149,10 @@ pub fn create_data_integrity_proof_for_test<S: signature::suite::Signature>(
         proof_type: signer.get_proof_type(),
         created: Some(proof_time),
         verification_method,
-        proof_purpose: signature::suite::VerificationRelation::AssertionMethod.to_string(),
+        proof_purpose: signature::suite::VerificationRelation::AssertionMethod,
     };
-    let serialized_proof_options = serde_json::to_value(&proof_options)?;
 
-    let transformed_data = normalization::create_normalized_doc(unsecured_doc)?;
-    let transformed_proof_options = normalization::create_normalized_doc(serialized_proof_options)?;
-    let hashed_unsecured_doc = normalization::hash(&transformed_data)?;
-    let hash_proof_options = normalization::hash(&transformed_proof_options)?;
-
-    //concatenate hashed_unsecured_doc and hash_proof_options
-    //hash_proof_options should be the first part of the combined hash
-    let mut combined_hash_data = hash_proof_options.to_vec();
-    combined_hash_data.extend_from_slice(&hashed_unsecured_doc);
-
-    let proof = signer.encoded_relational_sign(
-        &combined_hash_data,
-        signature::suite::VerificationRelation::AssertionMethod,
-    )?;
+    let proof = create_ed25519_signature_2020_proof_value(signer, unsecured_doc, &proof_options)?;
 
     Ok(CredentialProof::Single(ProofType::Ed25519Signature2020(
         proof_options.into_data_integrity_proof(proof),
