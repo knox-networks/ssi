@@ -22,7 +22,7 @@ jobs:
         run: (cd registry_resolver; protofetch fetch) && git diff --exit-code
 
       - name: Build CLI
-        run: cargo build --package cli --release --features credential_v2
+        run: cargo build --package cli --release
 
       - name: Add CLI to bin
         run: sudo cp $PWD/target/release/ssi_cli /bin/ssi_cli
