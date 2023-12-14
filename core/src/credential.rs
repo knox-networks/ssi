@@ -22,12 +22,17 @@ pub enum ContextValue {
 
 pub type DocumentContext = Vec<ContextValue>;
 
-pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
-pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/examples/v1";
-#[cfg(feature = "v2_test")]
-pub const BASE_CREDENTIAL_CONTEXT_V2: &str = "https://www.w3.org/ns/credentials/v2";
-#[cfg(feature = "v2_test")]
-pub const EXAMPLE_CREDENTIAL_CONTEXT_V2: &str = "https://www.w3.org/ns/credentials/examples/v2";
+cfg_if::cfg_if! {
+    if #[cfg(feature = "v2_test")] {
+        pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/ns/credentials/v2";
+        pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/ns/credentials/examples/v2";
+
+    } else {
+        pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
+        pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/examples/v1";
+    }
+}
+
 pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]

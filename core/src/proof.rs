@@ -140,10 +140,10 @@ pub fn create_data_integrity_proof_for_test<S: signature::suite::Signature>(
     let proof_options = ProofOptionDocument {
         context: vec![
             super::credential::ContextValue::String(
-                super::credential::BASE_CREDENTIAL_CONTEXT_V2.to_string(),
+                super::credential::BASE_CREDENTIAL_CONTEXT.to_string(),
             ),
             super::credential::ContextValue::String(
-                super::credential::EXAMPLE_CREDENTIAL_CONTEXT_V2.to_string(),
+                super::credential::EXAMPLE_CREDENTIAL_CONTEXT.to_string(),
             ),
         ],
         proof_type: signer.get_proof_type(),
