@@ -120,6 +120,7 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     )))
 }
 
+#[cfg(feature = "v2_test")]
 pub fn create_data_integrity_proof_for_test<S: signature::suite::Signature>(
     signer: &impl signature::suite::DIDSigner<S>,
     unsecured_doc: serde_json::Value,
@@ -137,7 +138,7 @@ pub fn create_data_integrity_proof_for_test<S: signature::suite::Signature>(
         ],
         proof_type: signer.get_proof_type(),
         created: Some(proof_time),
-        verification_method: verification_method,
+        verification_method,
         proof_purpose: signature::suite::VerificationRelation::AssertionMethod.to_string(),
     };
     let serialized_proof_options = serde_json::to_value(&proof_options)?;

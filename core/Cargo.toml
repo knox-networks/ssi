@@ -28,3 +28,4 @@ locspan = "0.7.16"
 
 [features]
 static = []
+v2_test = []

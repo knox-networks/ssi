@@ -23,8 +23,10 @@ pub enum ContextValue {
 pub type DocumentContext = Vec<ContextValue>;
 
 pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
-pub const BASE_CREDENTIAL_CONTEXT_V2: &str = "https://www.w3.org/ns/credentials/v2";
 pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/examples/v1";
+#[cfg(feature = "v2_test")]
+pub const BASE_CREDENTIAL_CONTEXT_V2: &str = "https://www.w3.org/ns/credentials/v2";
+#[cfg(feature = "v2_test")]
 pub const EXAMPLE_CREDENTIAL_CONTEXT_V2: &str = "https://www.w3.org/ns/credentials/examples/v2";
 pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
 
@@ -198,6 +200,7 @@ impl Credential {
         })
     }
 
+    #[cfg(feature = "v2_test")]
     pub fn try_into_verifiable_credential_for_test<S: signature::suite::Signature>(
         self,
         issuer_signer: &impl signature::suite::DIDSigner<S>,
