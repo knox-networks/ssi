@@ -14,6 +14,19 @@ struct ProofOptionDocument {
     proof_purpose: signature::suite::VerificationRelation,
 }
 
+impl ProofOptionDocument {
+    fn get_default_context() -> super::credential::DocumentContext {
+        vec![
+            super::credential::ContextValue::String(
+                super::credential::BASE_CREDENTIAL_CONTEXT.to_string(),
+            ),
+            super::credential::ContextValue::String(
+                super::credential::EXAMPLE_CREDENTIAL_CONTEXT.to_string(),
+            ),
+        ]
+    }
+}
+
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct DataIntegrityProof {
     #[serde(rename = "type")]
@@ -88,19 +101,34 @@ pub fn create_data_integrity_proof<S: signature::suite::Signature>(
     relation: signature::suite::VerificationRelation,
 ) -> Result<CredentialProof, super::error::Error> {
     let proof_options = ProofOptionDocument {
-        context: vec![
-            super::credential::ContextValue::String(
-                super::credential::BASE_CREDENTIAL_CONTEXT.to_string(),
-            ),
-            super::credential::ContextValue::String(
-                super::credential::EXAMPLE_CREDENTIAL_CONTEXT.to_string(),
-            ),
-        ],
+        context: ProofOptionDocument::get_default_context(),
         proof_type: signer.get_proof_type(),
         created: Some(chrono::Utc::now()),
         verification_method: signer.get_verification_method(relation),
         proof_purpose: relation,
     };
+    let proof = create_ed25519_signature_2020_proof_value(signer, unsecured_doc, &proof_options)?;
+
+    Ok(CredentialProof::Single(ProofType::Ed25519Signature2020(
+        proof_options.into_data_integrity_proof(proof),
+    )))
+}
+
+#[cfg(feature = "v2_test")]
+pub fn create_data_integrity_proof_for_test<S: signature::suite::Signature>(
+    signer: &impl signature::suite::DIDSigner<S>,
+    unsecured_doc: serde_json::Value,
+    proof_time: chrono::DateTime<chrono::Utc>,
+    verification_method: String,
+) -> Result<CredentialProof, super::error::Error> {
+    let proof_options = ProofOptionDocument {
+        context: ProofOptionDocument::get_default_context(),
+        proof_type: signer.get_proof_type(),
+        created: Some(proof_time),
+        verification_method,
+        proof_purpose: signature::suite::VerificationRelation::AssertionMethod,
+    };
+
     let proof = create_ed25519_signature_2020_proof_value(signer, unsecured_doc, &proof_options)?;
 
     Ok(CredentialProof::Single(ProofType::Ed25519Signature2020(
@@ -128,35 +156,6 @@ fn create_ed25519_signature_2020_proof_value<S: signature::suite::Signature>(
     let proof = signer.encoded_relational_sign(&combined_hash_data, proof_options.proof_purpose)?;
 
     Ok(proof)
-}
-
-#[cfg(feature = "v2_test")]
-pub fn create_data_integrity_proof_for_test<S: signature::suite::Signature>(
-    signer: &impl signature::suite::DIDSigner<S>,
-    unsecured_doc: serde_json::Value,
-    proof_time: chrono::DateTime<chrono::Utc>,
-    verification_method: String,
-) -> Result<CredentialProof, super::error::Error> {
-    let proof_options = ProofOptionDocument {
-        context: vec![
-            super::credential::ContextValue::String(
-                super::credential::BASE_CREDENTIAL_CONTEXT.to_string(),
-            ),
-            super::credential::ContextValue::String(
-                super::credential::EXAMPLE_CREDENTIAL_CONTEXT.to_string(),
-            ),
-        ],
-        proof_type: signer.get_proof_type(),
-        created: Some(proof_time),
-        verification_method,
-        proof_purpose: signature::suite::VerificationRelation::AssertionMethod,
-    };
-
-    let proof = create_ed25519_signature_2020_proof_value(signer, unsecured_doc, &proof_options)?;
-
-    Ok(CredentialProof::Single(ProofType::Ed25519Signature2020(
-        proof_options.into_data_integrity_proof(proof),
-    )))
 }
 
 #[cfg(test)]

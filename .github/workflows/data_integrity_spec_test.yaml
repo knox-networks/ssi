@@ -22,10 +22,10 @@ jobs:
         run: (cd registry_resolver; protofetch fetch) && git diff --exit-code
 
       - name: Build CLI
-        run: cargo build --package cli --release
+        run: cargo build --package cli --release --bin ssi_cli_v2
 
       - name: Add CLI to bin
-        run: sudo cp $PWD/target/release/ssi_cli /bin/ssi_cli
+        run: sudo cp $PWD/target/release/ssi_cli_v2 /bin/ssi_cli_v2
 
       - name: Install Node & NPM
         uses: actions/setup-node@v2
@@ -41,4 +41,4 @@ jobs:
         run: |
           cd vc-di-eddsa
           echo "Running vc-di-eddsa"
-          ssi_cli test-ed25519-signature2020 --input-file TestVectors/unsigned.json --key-pair-file TestVectors/keyPair.json --comparison-file TestVectors/Ed25519Signature2020/signedEdSig.json
+          ssi_cli_v2 test-ed25519-signature2020 --input-file TestVectors/unsigned.json --key-pair-file TestVectors/keyPair.json --comparison-file TestVectors/Ed25519Signature2020/signedEdSig.json

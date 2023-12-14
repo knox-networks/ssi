@@ -22,6 +22,7 @@ enum Command {
         #[arg(short, long)]
         input_file: String,
     },
+    #[cfg(feature = "v2_test")]
     TestEd25519Signature2020 {
         #[arg(short, long)]
         input_file: String,
@@ -49,6 +50,7 @@ fn main() {
             let vc = ssi_core::credential::VerifiablePresentation::from_str(&input).unwrap();
             println!("{}", vc);
         }
+        #[cfg(feature = "v2_test")]
         Command::TestEd25519Signature2020 {
             input_file,
             key_pair_file,

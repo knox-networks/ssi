@@ -8,10 +8,15 @@ edition.workspace = true
 [dependencies]
 clap = {version = "4.4.8", features = ["derive"]}
 serde_json.workspace = true
-ssi_core = {path = "../core", features = ["v2_test"]}
+ssi_core = {path = "../core"}
 signature = {path = "../signature"}
 
 # binary definition
 [[bin]]
 name = "ssi_cli"
 path = "src/main.rs"
+
+[[bin]]
+name = "ssi_cli_v2"
+path = "src/main.rs"
+ssi_core = {path = "../core", features = ["v2_test"]}
