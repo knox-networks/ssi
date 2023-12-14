@@ -141,7 +141,7 @@ fn create_ed25519_signature_2020_proof_value<S: signature::suite::Signature>(
     unsecured_doc: serde_json::Value,
     proof_options: &ProofOptionDocument,
 ) -> Result<String, super::error::Error> {
-    let serialized_proof_options = serde_json::to_value(&proof_options)?;
+    let serialized_proof_options = serde_json::to_value(proof_options)?;
 
     let transformed_data = normalization::create_normalized_doc(unsecured_doc)?;
     let transformed_proof_options = normalization::create_normalized_doc(serialized_proof_options)?;
