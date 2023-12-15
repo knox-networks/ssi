@@ -22,7 +22,17 @@ pub enum ContextValue {
 
 pub type DocumentContext = Vec<ContextValue>;
 
-pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
+cfg_if::cfg_if! {
+    if #[cfg(feature = "v2_test")] {
+        pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/ns/credentials/v2";
+        pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/ns/credentials/examples/v2";
+
+    } else {
+        pub const BASE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/v1";
+        pub const EXAMPLE_CREDENTIAL_CONTEXT: &str = "https://www.w3.org/2018/credentials/examples/v1";
+    }
+}
+
 pub const BANK_ACCOUNT_CREDENTIAL_CONTEXT: &str = "https://w3id.org/traceability/v1";
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -61,7 +71,8 @@ pub struct Credential {
     pub cred_type: Vec<CredentialType>,
 
     #[serde(rename = "issuanceDate")]
-    pub issuance_date: chrono::DateTime<chrono::Utc>, //chrono by default serializes to RFC3339
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub issuance_date: Option<chrono::DateTime<chrono::Utc>>, //chrono by default serializes to RFC3339
 
     #[serde(rename = "expirationDate")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -141,6 +152,15 @@ impl CredentialType {
     }
 }
 
+impl std::fmt::Display for Credential {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.to_json_string() {
+            Ok(vc) => write!(f, "{}", vc),
+            Err(e) => write!(f, "Error: {}", e),
+        }
+    }
+}
+
 impl std::fmt::Display for VerifiableCredential {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.to_json_string() {
@@ -177,6 +197,28 @@ impl Credential {
             issuer_signer,
             serialized_credential,
             relation,
+        )?;
+
+        Ok(VerifiableCredential {
+            credential: self,
+            proof,
+        })
+    }
+
+    #[cfg(feature = "v2_test")]
+    pub fn try_into_verifiable_credential_for_test<S: signature::suite::Signature>(
+        self,
+        issuer_signer: &impl signature::suite::DIDSigner<S>,
+        proof_time: String,
+        verification_method: String,
+    ) -> Result<VerifiableCredential, super::error::Error> {
+        let proof_time = chrono::DateTime::parse_from_rfc3339(&proof_time).unwrap();
+        let serialized_credential = serde_json::to_value(&self)?;
+        let proof = crate::proof::create_data_integrity_proof_for_test(
+            issuer_signer,
+            serialized_credential,
+            proof_time.into(),
+            verification_method,
         )?;
 
         Ok(VerifiableCredential {

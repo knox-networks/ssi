@@ -17,6 +17,7 @@ thiserror = {workspace = true}
 json-ld = "0.15.0"
 sophia = { git = "https://github.com/pchampin/sophia_rs.git", rev = "572512bd4a13dce4ca52f9310ac907b06dbea556", features = ["jsonld","http_client"] }
 serde_valid = "0.16.3"
+cfg-if = "1.0.0"
 
 [dev-dependencies]
 rstest = "0.15.0"
@@ -28,3 +29,4 @@ locspan = "0.7.16"
 
 [features]
 static = []
+v2_test = []
