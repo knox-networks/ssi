@@ -150,6 +150,7 @@ fn create_ed25519_signature_2020_proof_value<S: signature::suite::Signature>(
 
     //concatenate hashed_unsecured_doc and hash_proof_options
     //hash_proof_options should be the first part of the combined hash
+    //[...hash_proof_options, ...hashed_unsecured_doc]
     let mut combined_hash_data = hash_proof_options.to_vec();
     combined_hash_data.extend_from_slice(&hashed_unsecured_doc);
 
