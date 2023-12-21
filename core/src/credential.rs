@@ -238,6 +238,26 @@ impl Credential {
     }
 }
 
+impl Presentation {
+    pub fn try_into_verifiable_presentation<S: signature::suite::Signature>(
+        self,
+        issuer_signer: &impl signature::suite::DIDSigner<S>,
+        relation: signature::suite::VerificationRelation,
+    ) -> Result<VerifiablePresentation, super::error::Error> {
+        let serialized_presentation = serde_json::to_value(&self)?;
+        let proof = crate::proof::create_data_integrity_proof(
+            issuer_signer,
+            serialized_presentation,
+            relation,
+        )?;
+
+        Ok(VerifiablePresentation {
+            presentation: self,
+            proof,
+        })
+    }
+}
+
 impl FromStr for Presentation {
     type Err = super::error::Error;
 
