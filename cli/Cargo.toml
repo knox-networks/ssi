@@ -1,13 +1,19 @@
 [package]
-name = "ssi"
+name = "cli"
 version.workspace = true
 edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+v2_test = ["ssi_core/v2_test"]
 
 [dependencies]
+clap = {version = "4.4.8", features = ["derive"]}
+serde_json.workspace = true
 ssi_core = {path = "../core"}
-registry_resolver = {path = "../registry_resolver"}
 signature = {path = "../signature"}
-ephemeral_resolver = {path = "../ephemeral_resolver"}
-tokio.workspace = true
+
+# binary definition
+[[bin]]
+name = "ssi_cli"
+path = "src/main.rs"

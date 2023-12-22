@@ -1,0 +1,13 @@
+name: Rust Setup
+
+description: Install Rust toolchain
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+
+    - name: Install Protoc and cargo-make
+      shell: bash
+      run: ./container/deps.sh protoc cargo-make

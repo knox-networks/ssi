@@ -1,7 +1,6 @@
-#[allow(non_snake_case, clippy::all, unused_imports, dead_code)]
-#[rustfmt::skip]
-#[path = "gen/registry_api.v1.rs"]
-pub mod registry;
+pub mod registry {
+    include!(concat!(env!("OUT_DIR"), "/gen/pb/registry_api.v1.rs"));
+}
 
 #[derive(Clone, Debug)]
 pub struct GrpcClient {
@@ -31,12 +30,17 @@ impl RegistryClient for GrpcClient {
             .await;
     }
 
-    async fn read(
+    async fn resolve(
         &self,
         did: String,
-    ) -> Result<tonic::Response<registry::ReadResponse>, tonic::Status> {
+    ) -> Result<tonic::Response<registry::ResolveResponse>, tonic::Status> {
         let mut client = self.inner.to_owned();
-        return client.read(registry::ReadRequest { did }).await;
+        return client
+            .resolve(registry::ResolveRequest {
+                did,
+                resolution_option: None,
+            })
+            .await;
     }
 }
 
@@ -49,10 +53,10 @@ pub trait RegistryClient: Send + Sync + std::fmt::Debug {
         document: String,
     ) -> Result<tonic::Response<registry::CreateResponse>, tonic::Status>;
 
-    async fn read(
+    async fn resolve(
         &self,
         did: String,
-    ) -> Result<tonic::Response<registry::ReadResponse>, tonic::Status>;
+    ) -> Result<tonic::Response<registry::ResolveResponse>, tonic::Status>;
 }
 
 impl Clone for MockRegistryClient {

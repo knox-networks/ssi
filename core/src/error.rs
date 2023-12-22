@@ -6,6 +6,9 @@ pub enum Error {
     #[error("Serde Error: {0}")]
     Serde(#[from] serde_json::Error),
 
+    #[error("Serde Valid Error: {0}")]
+    SerdeValid(#[from] serde_valid::Error<serde_json::Error>),
+
     #[error("Signature Error: {0}")]
     Signature(#[from] signature::suite::error::Error),
 }

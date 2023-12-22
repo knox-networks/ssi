@@ -1,0 +1,44 @@
+name: Data Integrity Spec Test
+# Tests the VC Model Spec against the vc-test-suite - https://github.com/w3c/vc-test-suite
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/rust-setup
+        name: Setup rust toolchain
+
+      - uses: knox-networks/github-actions-public/.github/actions/setup-protofetch@main
+        with:
+          cross-repo-username: "developersKnox"
+          cross-repo-token: ${{ secrets.PROTOFETCH_GITHUB_TOKEN }}
+
+      - name: Test protos
+        run: (cd registry_resolver; protofetch fetch) && git diff --exit-code
+
+      - name: Build CLI
+        run: cargo build --package cli --release --features="v2_test"
+
+      - name: Add CLI to bin
+        run: sudo cp $PWD/target/release/ssi_cli /bin/ssi_cli
+
+      - name: Install Node & NPM
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+
+      - name: Clone & Install vc-test-suite
+        run: |
+          git clone https://github.com/w3c/vc-di-eddsa
+          cd vc-di-eddsa
+
+      - name: Run vc-di-eddsa
+        run: |
+          cd vc-di-eddsa
+          echo "Running vc-di-eddsa"
+          ssi_cli test-ed25519-signature2020 --input-file TestVectors/unsigned.json --key-pair-file TestVectors/keyPair.json --comparison-file TestVectors/Ed25519Signature2020/signedEdSig.json

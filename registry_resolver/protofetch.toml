@@ -1,0 +1,12 @@
+name = "SSI"
+description = "Digital Identity Core"
+# Note that this directory should be overriden by the --output-proto-directory
+# argument passed in build.rs
+proto_out_dir = "protos"
+
+[registry-mgmt]
+protocol = "https"
+url = "github.com/knox-networks/gomono"
+branch = "main"
+allow_policies = ["registry-mgmt/registry_api/v1/registry.proto"]
+prune = false

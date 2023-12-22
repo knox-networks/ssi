@@ -1,18 +1,18 @@
 [package]
 name = "signature"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 ed25519-zebra = "3.0.0"
-multibase = "0.9.1"
+multibase = {workspace = true}
 rand = "0.8.5"
 tiny-bip39 = "0.8.2"
-thiserror = "1.0.30"
-serde = { version = "1.0", features = ["derive"] }
-sha2 = "0.10.2"
+thiserror = {workspace = true}
+serde = { workspace = true }
+sha2 = {workspace = true}
 
 [features]
 static = []

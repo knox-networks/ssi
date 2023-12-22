@@ -72,11 +72,9 @@ jobs:
           aws-region: us-east-2
       - run: sudo chown -R "$USER:$USER" "/home/$USER"
       - name: Install deps
-        run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc buf
-      - run: sudo chown -R "$USER:$USER" "/home/$USER"        
-      - run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
-      - run: chmod -R 0777 ./registry_resolver/src/gen
-      
+        run: ./container/deps.sh --force grpc_health_probe flatc cargo-make protoc
+      - run: sudo chown -R "$USER:$USER" "/home/$USER"
+
       - run: cargo make ffi-build
 
       - run: cargo make ffi-header
@@ -118,20 +116,18 @@ jobs:
 
       - run: sudo chown -R "$USER:$USER" "/home/$USER"
 
-      - name: buf download & set up
-        run: ./container/deps.sh --force cross cargo-make protoc buf
-      - name: buf generate
-        run: cd ./registry_resolver && buf generate buf.build/knox-networks/registry-mgmt:f7ff6f57030c418e886459a18b35645e
+      - name: dependency download & set up
+        run: ./container/deps.sh --force cross cargo-make protoc
 
-      - name: Build Cross-Platform FFI 
-        run: cross build --features registry_resolver/ci_ffi_build --release --target ${{ matrix.arch }} --package ssi-ffi
+      - name: Build Cross-Platform FFI
+        run: cross build --release --target ${{ matrix.arch }} --package ssi-ffi
 
       - name: Prepare to Stage Release
         run: |
           chmod g+w "target/${{ matrix.arch }}/release/libssi_ffi.so"
           mkdir ./stage_release_ssi
           chmod g+w ./stage_release_ssi
-      
+
       - name: Stage Release
         env:
           IMAGE_TAG: ${{ needs.init.outputs.image_tag }}

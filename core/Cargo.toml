@@ -1,31 +1,32 @@
 [package]
 name = "ssi_core"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-trait = "0.1.53"
-chrono = "0.4.19"
-serde_json = "1.0.81"
-sha2 = "0.10.2"
+async-trait = {workspace = true}
+chrono = {workspace = true}
+serde_json = {workspace = true}
+sha2 = {workspace = true}
 signature = { path = "../signature" }
-serde = { version = "1.0", features = ["derive"] }
-mockall = "0.11.1"
-thiserror = "1.0.30"
-json-ld = "0.11.0"
+serde = { workspace = true}
+mockall = {workspace = true}
+thiserror = {workspace = true}
+json-ld = "0.15.0"
+sophia = { git = "https://github.com/pchampin/sophia_rs.git", rev = "572512bd4a13dce4ca52f9310ac907b06dbea556", features = ["jsonld","http_client"] }
+serde_valid = "0.16.3"
+cfg-if = "1.0.0"
 
 [dev-dependencies]
 rstest = "0.15.0"
-map = "0.0.0"
 assert-json-diff = "2.0.2"
-mockall = "0.11.1"
-tokio-test = "0.4.2"
-async-std = "1.12.0"
-iref = "2.2.2"
+tokio-test = "0.4.3"
+iref = "2.2.3"
 static-iref = "2.0.0"
-locspan = "0.7.13"
+locspan = "0.7.16"
 
 [features]
 static = []
+v2_test = []

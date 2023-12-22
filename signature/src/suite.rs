@@ -5,9 +5,13 @@ pub mod error;
     serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd,
 )]
 pub enum VerificationRelation {
+    #[serde(rename = "assertionMethod")]
     AssertionMethod,
+    #[serde(rename = "authentication")]
     Authentication,
+    #[serde(rename = "capabilityInvocation")]
     CapabilityInvocation,
+    #[serde(rename = "capabilityDelegation")]
     CapabilityDelegation,
 }
 
@@ -64,6 +68,10 @@ where
         Self: Sized;
 
     fn get_private_key_by_relation(&self, relation: VerificationRelation) -> T
+    where
+        Self: Sized;
+
+    fn get_public_key_by_relation(&self, relation: VerificationRelation) -> U
     where
         Self: Sized;
 }

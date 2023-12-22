@@ -3,6 +3,47 @@ pub mod error;
 pub mod identity;
 pub mod proof;
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct DidResolutionURL {
+    // W3C Decentralized Identifier (DID) of the wallet
+    pub did: String,
+    #[serde(rename = "methodName")]
+    // W3C Decentralized Scheme
+    pub method_name: String,
+    #[serde(rename = "methodSpecificId")]
+    // Method specific identifier
+    pub method_specific_id: String,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct ResolutionMetadata {
+    #[serde(rename = "contentType")]
+    pub content_type: Option<String>,
+    pub duration: Option<i64>,
+    #[serde(rename = "didUrl")]
+    pub did_url: Option<DidResolutionURL>,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct DidDocumentMetadata {
+    // Timestamp representing the DID document creation time.
+    pub created: chrono::DateTime<chrono::Utc>,
+    // Timestamp representing the DID document last update time.
+    pub updated: chrono::DateTime<chrono::Utc>,
+}
+
+// Response follows the structure defined in - https://www.w3.org/TR/did-core/#did-resolution
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct ResolveResponse {
+    #[serde(rename = "didDocument")]
+    pub did_document: serde_json::Value,
+    #[serde(rename = "didDocumentMetadata")]
+    pub did_document_metadata: DidDocumentMetadata,
+    #[serde(rename = "didResolutionMetadata")]
+    pub did_resolution_metadata: ResolutionMetadata,
+}
+
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
 /// The DIDResolver is responsible for resolving the `verificationMethod` to a key that can be used to verify the proof.
@@ -12,7 +53,7 @@ pub mod proof;
 pub trait DIDResolver: Send + Sync + 'static {
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
     /// Return the JSON-LD document representing the DID.
-    async fn read(&self, did: String) -> Result<serde_json::Value, error::ResolverError>;
+    async fn resolve(&self, did: String) -> Result<ResolveResponse, error::ResolverError>;
     /// Given a `did` and the associated DID Document, register the DID Document with the external source used by the DIDResolver.
     async fn create(&self, did: String, doc: serde_json::Value)
         -> Result<(), error::ResolverError>;
@@ -29,6 +70,19 @@ pub trait DIDResolver: Send + Sync + 'static {
     }
 }
 
+#[mockall::automock]
+#[async_trait::async_trait]
+pub trait CredentialManager: Send + Sync + 'static {
+    /// Requests the issuance of a Verifiable Credential of the specified type for the specified subject (`did`).
+    /// The Credential Manager will send a request to the credential issuer to issue a credential for the subject.
+    /// The Credential Manager will then return the issued credential to the function caller
+    async fn issue(
+        &self,
+        did: String,
+        cred_type: credential::CredentialType,
+    ) -> Result<credential::VerifiableCredential, error::ResolverError>;
+}
+
 impl Clone for MockDIDResolver {
     fn clone(&self) -> Self {
         Self::default()
@@ -36,16 +90,22 @@ impl Clone for MockDIDResolver {
 }
 
 pub trait DocumentBuilder {
-    fn get_contexts(cred_type: &credential::CredentialType) -> credential::VerificationContext {
+    fn get_contexts(cred_type: &credential::CredentialType) -> credential::DocumentContext {
         match cred_type {
             credential::CredentialType::BankAccount => {
                 vec![
-                    credential::BASE_CREDENDIAL_CONTEXT.to_string(),
-                    credential::BANK_ACCOUNT_CREDENTIAL_CONTEXT.to_string(),
+                    credential::ContextValue::String(
+                        credential::BASE_CREDENTIAL_CONTEXT.to_string(),
+                    ),
+                    credential::ContextValue::String(
+                        credential::BANK_ACCOUNT_CREDENTIAL_CONTEXT.to_string(),
+                    ),
                 ]
             }
             _ => {
-                vec![credential::BASE_CREDENDIAL_CONTEXT.to_string()]
+                vec![credential::ContextValue::String(
+                    credential::BASE_CREDENTIAL_CONTEXT.to_string(),
+                )]
             }
         }
     }
@@ -65,11 +125,12 @@ pub trait DocumentBuilder {
 
         Ok(credential::Credential {
             context,
-            id: id.to_string(),
-            cred_type: vec![credential::CredentialType::Common, cred_type],
-            issuance_date: chrono::Utc::now().to_rfc3339(),
+            id: Some(id.to_string()),
+            cred_type: vec![credential::CredentialType::VerifiableCredential, cred_type],
+            issuance_date: Some(chrono::Utc::now()),
+            expiration_date: None,
             issuer,
-            subject: cred_subject,
+            subject: credential::CredentialSubject::Single(cred_subject),
             property_set,
         })
     }
@@ -81,10 +142,12 @@ pub trait DocumentBuilder {
         &self,
         credentials: Vec<credential::VerifiableCredential>,
     ) -> Result<credential::Presentation, error::Error> {
-        let context = Self::get_contexts(&credential::CredentialType::Common);
+        let context = Self::get_contexts(&credential::CredentialType::VerifiableCredential);
         Ok(credential::Presentation {
             context,
-            verifiable_credential: credentials,
+            id: None,
+            presentation_type: vec![credential::PresentationType::VerifiablePresentation],
+            verifiable_credential: Some(credentials),
         })
     }
 }
@@ -269,6 +332,7 @@ mod tests {
         let builder = DefaultDocumentBuilder {};
         let mut expect_presentation = json!({
         "@context" : ["https://www.w3.org/2018/credentials/v1"],
+        "type" : ["VerifiablePresentation"],
         "verifiableCredential":[
             {
             "@context":["https://www.w3.org/2018/credentials/v1"],
@@ -333,8 +397,8 @@ mod tests {
         let interim_presentation = builder
             .create_presentation(credentials)
             .expect("unable to create presentation from credentials");
-
-        let interim_proof = &interim_presentation.verifiable_credential[0].proof;
+        let verifiable_credential = interim_presentation.verifiable_credential.clone().unwrap();
+        let interim_proof = &verifiable_credential[0].proof;
         let interim_proof = serde_json::to_value(interim_proof).unwrap();
         expect_presentation["verifiableCredential"][0]["proof"] = interim_proof;
 
@@ -422,7 +486,7 @@ mod tests {
 
         match expanded {
             Err(e) => {
-                println!("Error: {:?}", e);
+                println!("Error: {e:?}");
             }
             Ok(expanded) => {
                 for object in expanded.into_value() {

@@ -1,0 +1,47 @@
+name: VC Model Spec Test
+# Tests the VC Model Spec against the vc-test-suite - https://github.com/w3c/vc-test-suite
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/rust-setup
+        name: Setup rust toolchain
+
+      - uses: knox-networks/github-actions-public/.github/actions/setup-protofetch@main
+        with:
+          cross-repo-username: "developersKnox"
+          cross-repo-token: ${{ secrets.PROTOFETCH_GITHUB_TOKEN }}
+
+      - name: Test protos
+        run: (cd registry_resolver; protofetch fetch) && git diff --exit-code
+
+      - name: Build CLI
+        run: cargo build --package cli --release
+
+      - name: Add CLI to bin
+        run: sudo cp $PWD/target/release/ssi_cli /bin/ssi_cli
+
+      - name: Install Node & NPM
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+
+      - name: Clone & Install vc-test-suite
+        run: |
+          git clone https://github.com/knox-networks/vc-test-suite
+          cd vc-test-suite
+          npm install
+
+      - name: Copy vc-test-suite config
+        run: cp tests/vc_model_spec_test/config.json vc-test-suite/config.json
+
+      - name: Run vc-test-suite
+        run: |
+          cd vc-test-suite
+          npm run test

@@ -16,6 +16,14 @@ pub enum MnemonicLanguage {
     English,
 }
 
+impl std::fmt::Display for MnemonicLanguage {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            MnemonicLanguage::English => write!(f, "english"),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Mnemonic {
     pub language: MnemonicLanguage,
@@ -110,18 +118,25 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> f
     }
 
     fn get_public_key_encoded(&self, relation: crate::suite::VerificationRelation) -> String {
+        let public_key = self.get_public_key_by_relation(relation);
+        super::PublicKey::get_encoded_public_key(&public_key)
+    }
+
+    fn get_public_key_by_relation(
+        &self,
+        relation: super::VerificationRelation,
+    ) -> ed25519_zebra::VerificationKey
+    where
+        Self: Sized,
+    {
         match relation {
-            crate::suite::VerificationRelation::AssertionMethod => {
-                super::PublicKey::get_encoded_public_key(&self.assertion_method_public_key)
+            super::VerificationRelation::AssertionMethod => self.assertion_method_public_key,
+            super::VerificationRelation::Authentication => self.authetication_public_key,
+            super::VerificationRelation::CapabilityInvocation => {
+                self.capability_invocation_public_key
             }
-            crate::suite::VerificationRelation::Authentication => {
-                super::PublicKey::get_encoded_public_key(&self.authetication_public_key)
-            }
-            crate::suite::VerificationRelation::CapabilityInvocation => {
-                super::PublicKey::get_encoded_public_key(&self.capability_invocation_public_key)
-            }
-            crate::suite::VerificationRelation::CapabilityDelegation => {
-                super::PublicKey::get_encoded_public_key(&self.capability_delegation_public_key)
+            super::VerificationRelation::CapabilityDelegation => {
+                self.capability_delegation_public_key
             }
         }
     }
@@ -158,6 +173,52 @@ impl super::KeyPair<ed25519_zebra::SigningKey, ed25519_zebra::VerificationKey> f
 }
 
 impl Ed25519KeyPair {
+    pub fn from_private_key(
+        did_method: String,
+        formatted_encoded_private_key: String,
+    ) -> Result<Self, error::Error> {
+        let (base, encoded_private_key) = multibase::decode(formatted_encoded_private_key)?;
+        if base != multibase::Base::Base58Btc {
+            return Err(error::Error::KeyGeneration(
+                "Invalid multibase encoding".to_string(),
+            ));
+        }
+
+        //remove the first two elements of the private key array
+        let raw_private_key = encoded_private_key
+            .into_iter()
+            .skip(MULTICODEC_ED25519_PUB.len())
+            .collect::<Vec<u8>>();
+
+        let sk = ed25519_zebra::SigningKey::try_from(raw_private_key.as_slice())
+            .map_err(|e| error::Error::SigningKeyConversion(e.to_string()))?;
+
+        let vk = ed25519_zebra::VerificationKey::from(&sk);
+
+        Ok(Self {
+            master_public_key: vk,
+            master_private_key: sk,
+
+            authetication_public_key: vk,
+            authetication_private_key: sk,
+
+            capability_invocation_public_key: vk,
+            capability_invocation_private_key: sk,
+
+            capability_delegation_public_key: vk,
+            capability_delegation_private_key: sk,
+
+            assertion_method_public_key: vk,
+            assertion_method_private_key: sk,
+
+            mnemonic: Mnemonic {
+                language: MnemonicLanguage::English,
+                phrase: "".to_string(),
+            },
+            did_method,
+        })
+    }
+
     pub fn new(did_method: String, mnemonic: Option<Mnemonic>) -> Result<Self, error::Error> {
         let mnemonic =
             mnemonic.unwrap_or_else(|| Self::generate_mnemonic(MnemonicLanguage::English));
@@ -391,5 +452,19 @@ impl Ed25519DidSigner {
             crate::suite::VerificationRelation::CapabilityInvocation => self.private_key,
             crate::suite::VerificationRelation::CapabilityDelegation => self.private_key,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::suite::KeyPair;
+
+    #[test]
+    fn test_create_keypair_from_multibase() {
+        let public_key = "z6MkrJVnaZkeFzdQyMZu1cgjg7k1pZZ6pvBQ7XJPt4swbTQ2".to_string();
+        let private_key = "z3u2en7t5LR2WtQH5PfFqMqwVHBeXouLzo6haApm8XHqvjxq".to_string();
+        let did_method = "key".to_string();
+        let kp = super::Ed25519KeyPair::from_private_key(did_method, private_key).unwrap();
+        assert_eq!(kp.get_encoded_master_public_key(), public_key);
     }
 }
