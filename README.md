@@ -74,11 +74,13 @@ Test Suite & Data Integrity Test Vectors.
 
 #### Running VC Data Model Test Suite
 
-Placeholder
+Look at `.github/workflows/vc_model_spec_test.yaml` for a complete reference on
+how to run the test suite.
 
 #### Running Data Integrity Test Vectors
 
-Placeholder
+Look at `.github/workflows/data_integrity_spec_test.yaml` for a complete
+reference on how to run the test vectors.
 
 ### FFI Tests
 
