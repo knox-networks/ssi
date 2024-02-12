@@ -294,7 +294,7 @@ mod tests {
         };
 
         let res = aw!(resolver.resolve(did));
-        println!("{:?}", res);
+        println!("{res:?}");
         assert_eq!(res.is_ok(), expect_ok);
         match res.err() {
             Some(e) => {
