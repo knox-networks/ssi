@@ -9,7 +9,7 @@ edition.workspace = true
 ed25519-zebra = "3.0.0"
 multibase = {workspace = true}
 rand = "0.8.5"
-tiny-bip39 = "0.8.2"
+tiny-bip39 = "1.0"
 thiserror = {workspace = true}
 serde = { workspace = true }
 sha2 = {workspace = true}
